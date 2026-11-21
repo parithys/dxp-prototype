@@ -1,0 +1,171 @@
+- main:
+  - heading "Support" [level=#]
+  - tablist "Support Views":
+    - tab "Tickets" [selected]
+    - tab "Approval Queue"
+  - heading "Tickets Dashboard" [level=#]
+  - text: Trouble tickets and complaints across all queues.
+  - button "New Ticket"
+  - text: Not Solved # Assigned # Escalate # Pending Approval # Solved # Completed # Closed # Cancelled #
+  - tablist "Ticket Views":
+    - tab "All Tickets" [selected]
+    - tab "My Tickets"
+    - tab "Escalated to Me"
+  - img
+  - 'textbox "Search ticket #, customer, category, issue"':
+    - /placeholder: "Search ticket #, customer, category, issue…"
+  - combobox "Filter by status"
+  - button "Open list":
+    - img
+  - combobox "Filter by priority"
+  - button "Open list":
+    - img
+  - combobox "Filter by queue"
+  - button "Open list":
+    - img
+  - button "Export (CSV)"
+  - status:
+    - img
+    - text: "# entry is hidden: access restricted for your role."
+  - table:
+    - rowgroup:
+      - 'row "Actions Ticket # Customer Category Queue Priority Assigned To Status SLA"':
+        - columnheader "Actions"
+        - 'columnheader "Ticket #"':
+          - 'button "Ticket #"':
+            - text: "Ticket #"
+            - img
+        - columnheader "Customer":
+          - button "Customer":
+            - text: Customer
+            - img
+        - columnheader "Category":
+          - button "Category":
+            - text: Category
+            - img
+        - columnheader "Queue":
+          - button "Queue":
+            - text: Queue
+            - img
+        - columnheader "Priority":
+          - button "Priority":
+            - text: Priority
+            - img
+        - columnheader "Assigned To":
+          - button "Assigned To":
+            - text: Assigned To
+            - img
+        - columnheader "Status":
+          - button "Status":
+            - text: Status
+            - img
+        - columnheader "SLA":
+          - button "SLA":
+            - text: SLA
+            - img
+    - rowgroup:
+      - row "Select ticket TT-# TT-# CUST-# Mobile Complaints FL Agents #-Medium - Escalate Red":
+        - cell "Select ticket TT-#":
+          - checkbox "Select ticket TT-#"
+        - cell "TT-#":
+          - link "TT-#":
+            - /url: /trouble-ticketing-complaints/ticket-detail-screen-public-notes-bell-icon-notifications?id=TT-#
+        - cell "CUST-#":
+          - link "CUST-#":
+            - /url: /customer/CUST-#
+        - cell "Mobile Complaints"
+        - cell "FL Agents"
+        - cell "#-Medium"
+        - cell "-"
+        - cell "Escalate"
+        - cell "Red"
+      - row "Select ticket TT-# TT-# CUST-# Fixed/#G Complaints Complaints Team #-Low Current Agent Closed -":
+        - cell "Select ticket TT-#":
+          - checkbox "Select ticket TT-#"
+        - cell "TT-#":
+          - link "TT-#":
+            - /url: /trouble-ticketing-complaints/ticket-detail-screen-public-notes-bell-icon-notifications?id=TT-#
+        - cell "CUST-#":
+          - link "CUST-#":
+            - /url: /customer/CUST-#
+        - cell "Fixed/#G Complaints"
+        - cell "Complaints Team"
+        - cell "#-Low"
+        - cell "Current Agent"
+        - cell "Closed"
+        - cell "-"
+      - row "Select ticket TT-# TT-# CUST-# Mobile Complaints Complaints Team #-High Current Agent Escalate Red":
+        - cell "Select ticket TT-#":
+          - checkbox "Select ticket TT-#"
+        - cell "TT-#":
+          - link "TT-#":
+            - /url: /trouble-ticketing-complaints/ticket-detail-screen-public-notes-bell-icon-notifications?id=TT-#
+        - cell "CUST-#":
+          - link "CUST-#":
+            - /url: /customer/CUST-#
+        - cell "Mobile Complaints"
+        - cell "Complaints Team"
+        - cell "#-High"
+        - cell "Current Agent"
+        - cell "Escalate"
+        - cell "Red"
+      - row "Select ticket TT-# TT-# CUST-# Human Error Complaints Complaints Team #-Medium Current Agent Closed -":
+        - cell "Select ticket TT-#":
+          - checkbox "Select ticket TT-#"
+        - cell "TT-#":
+          - link "TT-#":
+            - /url: /trouble-ticketing-complaints/ticket-detail-screen-public-notes-bell-icon-notifications?id=TT-#
+        - cell "CUST-#":
+          - link "CUST-#":
+            - /url: /customer/CUST-#
+        - cell "Human Error Complaints"
+        - cell "Complaints Team"
+        - cell "#-Medium"
+        - cell "Current Agent"
+        - cell "Closed"
+        - cell "-"
+      - row "Select ticket TT-# TT-# CUST-# SOC Complaints Team #-ASAP Current Agent Escalate Red":
+        - cell "Select ticket TT-#":
+          - checkbox "Select ticket TT-#"
+        - cell "TT-#":
+          - link "TT-#":
+            - /url: /trouble-ticketing-complaints/ticket-detail-screen-public-notes-bell-icon-notifications?id=TT-#
+        - cell "CUST-#":
+          - link "CUST-#":
+            - /url: /customer/CUST-#
+        - cell "SOC"
+        - cell "Complaints Team"
+        - cell "#-ASAP"
+        - cell "Current Agent"
+        - cell "Escalate"
+        - cell "Red"
+      - row "Select ticket TT-# TT-# CUST-# Mobile Complaints FL Agents #-High - Escalate Red":
+        - cell "Select ticket TT-#":
+          - checkbox "Select ticket TT-#"
+        - cell "TT-#":
+          - link "TT-#":
+            - /url: /trouble-ticketing-complaints/ticket-detail-screen-public-notes-bell-icon-notifications?id=TT-#
+        - cell "CUST-#":
+          - link "CUST-#":
+            - /url: /customer/CUST-#
+        - cell "Mobile Complaints"
+        - cell "FL Agents"
+        - cell "#-High"
+        - cell "-"
+        - cell "Escalate"
+        - cell "Red"
+      - row "Select ticket TT-# TT-# CUST-# Billing Complaints Team #-Medium - Escalate Red":
+        - cell "Select ticket TT-#":
+          - checkbox "Select ticket TT-#"
+        - cell "TT-#":
+          - link "TT-#":
+            - /url: /trouble-ticketing-complaints/ticket-detail-screen-public-notes-bell-icon-notifications?id=TT-#
+        - cell "CUST-#":
+          - link "CUST-#":
+            - /url: /customer/CUST-#
+        - cell "Billing"
+        - cell "Complaints Team"
+        - cell "#-Medium"
+        - cell "-"
+        - cell "Escalate"
+        - cell "Red"

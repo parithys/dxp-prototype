@@ -1,0 +1,59 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading" [pressed]
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue"
+  - region "Empty States & Loading":
+    - heading "Empty States & Loading" [level=3]
+    - paragraph: What a list shows when it has nothing, and the busy indicator.
+    - figure "Empty State - with title and message":
+      - status:
+        - paragraph: No Reserved Numbers
+        - paragraph: No numbers have been reserved for this customer.
+      - text: Empty State - with title and message
+    - figure "Empty State - Compact, with action":
+      - status:
+        - paragraph: No orders match your search or filters.
+        - button "Clear Filters"
+      - text: Empty State - Compact, with action
+    - figure "Spinner - small and large":
+      - status "Loading"
+      - status "Scanning the Document"
+      - text: Spinner - small and large

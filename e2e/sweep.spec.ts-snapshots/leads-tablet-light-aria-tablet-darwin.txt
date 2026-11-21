@@ -1,0 +1,117 @@
+- main:
+  - heading "All Leads Across Org" [level=1]
+  - text: 15 lead(s).
+  - table:
+    - rowgroup:
+      - 'row "Lead # Service Needed Status Owner Callback Date"':
+        - 'columnheader "Lead #"':
+          - 'button "Lead #"':
+            - text: "Lead #"
+            - img
+        - columnheader "Service Needed":
+          - button "Service Needed":
+            - text: Service Needed
+            - img
+        - columnheader "Status":
+          - button "Status":
+            - text: Status
+            - img
+        - columnheader "Owner":
+          - button "Owner":
+            - text: Owner
+            - img
+        - columnheader "Callback Date":
+          - button "Callback Date":
+            - text: Callback Date
+            - img
+    - rowgroup:
+      - row "LEAD-20001 Home New AGENT-VINODHINIR 2025-09-20":
+        - cell "LEAD-20001"
+        - cell "Home"
+        - cell "New"
+        - cell "AGENT-VINODHINIR"
+        - cell "2025-09-20"
+      - row "LEAD-20002 MNP Callback Scheduled AGENT-HEMANTHKUMAR -":
+        - cell "LEAD-20002"
+        - cell "MNP"
+        - cell "Callback Scheduled"
+        - cell "AGENT-HEMANTHKUMAR"
+        - cell "-"
+      - row "LEAD-20301 Home New AGENT-VINODHINIR -":
+        - cell "LEAD-20301"
+        - cell "Home"
+        - cell "New"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20302 MNP Callback Scheduled AGENT-VINODHINIR -":
+        - cell "LEAD-20302"
+        - cell "MNP"
+        - cell "Callback Scheduled"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20303 Home Contacted AGENT-VINODHINIR -":
+        - cell "LEAD-20303"
+        - cell "Home"
+        - cell "Contacted"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20304 Mobile New AGENT-VINODHINIR -":
+        - cell "LEAD-20304"
+        - cell "Mobile"
+        - cell "New"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20305 Device Qualified AGENT-VINODHINIR -":
+        - cell "LEAD-20305"
+        - cell "Device"
+        - cell "Qualified"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20401 Home New AGENT-VINODHINIR -":
+        - cell "LEAD-20401"
+        - cell "Home"
+        - cell "New"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20402 Mobile Contacted AGENT-VINODHINIR -":
+        - cell "LEAD-20402"
+        - cell "Mobile"
+        - cell "Contacted"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20403 Device Qualified AGENT-VINODHINIR -":
+        - cell "LEAD-20403"
+        - cell "Device"
+        - cell "Qualified"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20404 Mobile Callback Scheduled AGENT-VINODHINIR -":
+        - cell "LEAD-20404"
+        - cell "Mobile"
+        - cell "Callback Scheduled"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20405 Home New AGENT-VINODHINIR -":
+        - cell "LEAD-20405"
+        - cell "Home"
+        - cell "New"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20406 Home Contacted AGENT-VINODHINIR -":
+        - cell "LEAD-20406"
+        - cell "Home"
+        - cell "Contacted"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20407 Mobile New AGENT-VINODHINIR -":
+        - cell "LEAD-20407"
+        - cell "Mobile"
+        - cell "New"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"
+      - row "LEAD-20408 Device Qualified AGENT-VINODHINIR -":
+        - cell "LEAD-20408"
+        - cell "Device"
+        - cell "Qualified"
+        - cell "AGENT-VINODHINIR"
+        - cell "-"

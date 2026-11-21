@@ -1,0 +1,10 @@
+@import "tailwindcss" source(".");
+/* The design-system library: its compiled components carry Tailwind utilities, so Tailwind scans its build for them. */
+@source "../node_modules/dxp-ui/dist";
+@import "dxp-ui/preset.css";
+@import "dxp-ui/components.css";
+@import "dxp-ui/tooltip.css";
+@import "./app-tokens.css";
+@import "./tablet.css";
+@import "./app-components.css";
+@import "./app-base.css";

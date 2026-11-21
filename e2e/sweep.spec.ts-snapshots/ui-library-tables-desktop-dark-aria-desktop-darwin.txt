@@ -1,0 +1,145 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables" [pressed]
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue"
+  - region "Tables":
+    - heading "Tables" [level=3]
+    - paragraph: "The one data table: sortable columns, numeric alignment, row selection by click."
+    - figure "Data Table - click a header to sort":
+      - table:
+        - rowgroup:
+          - row "Order Customer Plan Monthly (QAR)":
+            - columnheader "Order":
+              - button "Order":
+                - text: Order
+                - img
+            - columnheader "Customer":
+              - button "Customer":
+                - text: Customer
+                - img
+            - columnheader "Plan":
+              - button "Plan":
+                - text: Plan
+                - img
+            - columnheader "Monthly (QAR)":
+              - button "Monthly (QAR)":
+                - text: Monthly (QAR)
+                - img
+        - rowgroup:
+          - row "ORD-1001 Ahmed Al-Sulaiti Postpaid Plus Extra 145":
+            - cell "ORD-1001"
+            - cell "Ahmed Al-Sulaiti"
+            - cell "Postpaid Plus Extra"
+            - cell "145"
+          - row "ORD-1002 Sophie Laurent Postpaid Essential 115":
+            - cell "ORD-1002"
+            - cell "Sophie Laurent"
+            - cell "Postpaid Essential"
+            - cell "115"
+          - row "ORD-1003 Farhan Chaudhry Postpaid Max 180":
+            - cell "ORD-1003"
+            - cell "Farhan Chaudhry"
+            - cell "Postpaid Max"
+            - cell "180"
+      - text: Data Table - click a header to sort
+    - 'figure "Data Table - Plain - inside a card that already frames it: no outer border, the header stays in view while the rows scroll"':
+      - table:
+        - rowgroup:
+          - row "Order Customer Plan Monthly (QAR)":
+            - columnheader "Order":
+              - button "Order":
+                - text: Order
+                - img
+            - columnheader "Customer":
+              - button "Customer":
+                - text: Customer
+                - img
+            - columnheader "Plan":
+              - button "Plan":
+                - text: Plan
+                - img
+            - columnheader "Monthly (QAR)":
+              - button "Monthly (QAR)":
+                - text: Monthly (QAR)
+                - img
+        - rowgroup:
+          - row "ORD-1001 Ahmed Al-Sulaiti Postpaid Plus Extra 145":
+            - cell "ORD-1001"
+            - cell "Ahmed Al-Sulaiti"
+            - cell "Postpaid Plus Extra"
+            - cell "145"
+          - row "ORD-1002 Sophie Laurent Postpaid Essential 115":
+            - cell "ORD-1002"
+            - cell "Sophie Laurent"
+            - cell "Postpaid Essential"
+            - cell "115"
+          - row "ORD-1003 Farhan Chaudhry Postpaid Max 180":
+            - cell "ORD-1003"
+            - cell "Farhan Chaudhry"
+            - cell "Postpaid Max"
+            - cell "180"
+      - text: "Data Table - Plain - inside a card that already frames it: no outer border, the header stays in view while the rows scroll"
+    - figure "Data Table - Empty - no rows":
+      - table:
+        - rowgroup:
+          - row "Order Customer Plan Monthly (QAR)":
+            - columnheader "Order":
+              - button "Order":
+                - text: Order
+                - img
+            - columnheader "Customer":
+              - button "Customer":
+                - text: Customer
+                - img
+            - columnheader "Plan":
+              - button "Plan":
+                - text: Plan
+                - img
+            - columnheader "Monthly (QAR)":
+              - button "Monthly (QAR)":
+                - text: Monthly (QAR)
+                - img
+        - rowgroup:
+          - row:
+            - cell:
+              - status:
+                - paragraph: No orders match your filters.
+      - text: Data Table - Empty - no rows

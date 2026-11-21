@@ -1,0 +1,73 @@
+'use client';
+// The screen behind each Next route file in app/: the application's own screen or wrapper, with the same props and the same feature guard
+// it always had. A route file adds a URL, never behaviour. Workspaces and journeys load on first visit (lazy); the dashboard, the module
+// screens and the screen registry stay eager - needed on first paint or by every route.
+import { lazy } from 'react';
+import { Dashboard } from '../modules/Dashboard';
+import { ModuleScreenList } from '../modules/ModuleScreenList';
+import { ScreenRouteResolver } from '../modules/ScreenRouteResolver';
+import { NotFound } from '../modules/NotFound';
+import { CheckRfsPage } from '../modules/check-rfs/CheckRfsPage';
+import { NewConnectionWizard } from '../modules/new-connection/NewConnectionWizard';
+import { LeadListView } from '../modules/lead-management/LeadListView';
+import { CustomerOrBusiness360 } from '../workspace/customer360/CustomerOrBusiness360';
+import { WorkspaceNotYetBuilt } from '../modules/WorkspaceNotYetBuilt';
+import { RequireFeature } from '../navigation/RequireFeature';
+import { UiShowcase } from '../dev/UiShowcase';
+import { IS_DEV } from '../lib/buildEnv';
+import '../modules/registerAllScreens';
+
+const CustomerSearchPage = lazy(() => import('../workspace/customer-search/CustomerSearchPage').then((m) => ({ default: m.CustomerSearchPage })));
+const FamilyPackageAddonsPage = lazy(() => import('../workspace/customer360/FamilyPackageAddonsPage').then((m) => ({ default: m.FamilyPackageAddonsPage })));
+const BillingAccountPage = lazy(() => import('../workspace/customer360/BillingAccountPage').then((m) => ({ default: m.BillingAccountPage })));
+const SalesWorkspace = lazy(() => import('../workspace/sales/SalesWorkspace').then((m) => ({ default: m.SalesWorkspace })));
+const SupportWorkspace = lazy(() => import('../workspace/support/SupportWorkspace').then((m) => ({ default: m.SupportWorkspace })));
+const BillFormatterWorkspace = lazy(() => import('../workspace/bill-formatter/BillFormatterWorkspace').then((m) => ({ default: m.BillFormatterWorkspace })));
+const OrdersWorkspace = lazy(() => import('../workspace/orders/OrdersWorkspace').then((m) => ({ default: m.OrdersWorkspace })));
+const AdministrationWorkspace = lazy(() => import('../workspace/administration/AdministrationWorkspace').then((m) => ({ default: m.AdministrationWorkspace })));
+const AgentProfileWorkspace = lazy(() => import('../workspace/profile/AgentProfileWorkspace').then((m) => ({ default: m.AgentProfileWorkspace })));
+const ChangePostpaidPlanWizard = lazy(() => import('../modules/mobile-service-changes/wizards').then((m) => ({ default: m.ChangePostpaidPlanWizard })));
+const ChangePrepaidPackWizard = lazy(() => import('../modules/mobile-service-changes/wizards').then((m) => ({ default: m.ChangePrepaidPackWizard })));
+const AddAddonWizard = lazy(() => import('../modules/mobile-service-changes/wizards').then((m) => ({ default: m.AddAddonWizard })));
+const TaskListView = lazy(() => import('../workspace/tasks/TaskListView').then((m) => ({ default: m.TaskListView })));
+const TaskDetailView = lazy(() => import('../workspace/tasks/TaskDetailView').then((m) => ({ default: m.TaskDetailView })));
+const QnomyTicketHistory = lazy(() => import('../workspace/tickets/QnomyTicketHistory').then((m) => ({ default: m.QnomyTicketHistory })));
+const ProductLinePage = lazy(() => import('../modules/product-lines/ProductLinePage').then((m) => ({ default: m.ProductLinePage })));
+const TicketApprovalQueue = lazy(() => import('../modules/trouble-ticketing-complaints/screens/TicketApprovalQueue').then((m) => ({ default: m.TicketApprovalQueue })));
+const TicketApprovalReview = lazy(() => import('../modules/trouble-ticketing-complaints/screens/TicketApprovalReview').then((m) => ({ default: m.TicketApprovalReview })));
+
+export const DashboardRoute = () => (<Dashboard />);
+export const CustomerSearchRoute = () => (<CustomerSearchPage />);
+export const LeadsRoute = () => (<LeadListView scope="all" />);
+export const OperationsRoute = () => (<WorkspaceNotYetBuilt navKey="operations" />);
+export const NewConnectionsRoute = () => (<ProductLinePage lineKey="new-connections" />);
+export const MobileRoute = () => (<ProductLinePage lineKey="mobile" />);
+export const StartConnectionRoute = () => (<RequireFeature featureKey="postpaid.new-postpaid-wizard"><NewConnectionWizard flow="new" /></RequireFeature>);
+export const StartConnectionExistingRoute = () => (<RequireFeature featureKey="postpaid.new-postpaid-wizard"><NewConnectionWizard flow="existing" /></RequireFeature>);
+export const ChangePostpaidPlanRoute = () => (<RequireFeature featureKey="mobile.change-postpaid-plan"><ChangePostpaidPlanWizard /></RequireFeature>);
+export const ChangePrepaidPackRoute = () => (<RequireFeature featureKey="mobile.change-prepaid-pack"><ChangePrepaidPackWizard /></RequireFeature>);
+export const AddAddonRoute = () => (<RequireFeature featureKey="mobile.add-addon"><AddAddonWizard /></RequireFeature>);
+export const MobileLineRoute = () => (<ProductLinePage lineKey="mobile" />);
+export const FibreHomeRoute = () => (<ProductLinePage lineKey="fibre-home" />);
+export const CheckRfsRoute = () => (<RequireFeature featureKey="fixedline.new-fixed-line-wizard"><CheckRfsPage /></RequireFeature>);
+export const FibreStartExistingRoute = () => (<RequireFeature featureKey="fixedline.new-fixed-line-wizard"><NewConnectionWizard flow="existing" journey="home" /></RequireFeature>);
+export const FibreHomeCategoryRoute = () => (<ProductLinePage lineKey="fibre-home" />);
+export const CustomerRoute = () => (<CustomerOrBusiness360 />);
+export const FamilyPackageAddonsRoute = () => (<RequireFeature featureKey="workspace.customer360-view"><FamilyPackageAddonsPage /></RequireFeature>);
+export const BillingAccountRoute = () => (<BillingAccountPage />);
+export const SalesRoute = () => (<SalesWorkspace />);
+export const SupportRoute = () => (<SupportWorkspace />);
+export const ApprovalQueueRoute = () => (<TicketApprovalQueue />);
+export const ApprovalReviewRoute = () => (<TicketApprovalReview />);
+export const OrdersRoute = () => (<OrdersWorkspace />);
+export const BillFormatterRoute = () => (<BillFormatterWorkspace />);
+export const AdministrationRoute = () => (<RequireFeature featureKey="workspace.admin-role-access-viewer"><AdministrationWorkspace /></RequireFeature>);
+export const ProfileRoute = () => (<AgentProfileWorkspace />);
+export const TasksRoute = () => (<TaskListView />);
+export const TaskDetailRoute = () => (<TaskDetailView />);
+export const TicketHistoryRoute = () => (<QnomyTicketHistory />);
+export const ModuleRoute = () => (<ModuleScreenList />);
+export const ScreenRoute = () => (<ScreenRouteResolver />);
+export const NotFoundRoute = () => <NotFound />;
+// Development only (shadcn/ui showcase): anything but a development build answers "not found".
+export const UiShowcaseRoute = () => (IS_DEV ? <UiShowcase /> : <NotFound />);

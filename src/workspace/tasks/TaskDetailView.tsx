@@ -1,0 +1,197 @@
+
+import { useRestrictedCustomers } from '../../hooks/useRestrictedCustomers';
+import { RestrictedCustomerNotice } from '../../components/patterns/RestrictedCustomerNotice';
+import { EntityMissing } from '../../components/patterns/EntityMissing';
+import { badgeVariantFor } from '../../lib/statusTone';
+import { formatDateTime } from '../../lib/format';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from '../../lib/router';
+import { DRAFT_ORDERS_PATH } from '../../capabilities';
+import { Badge, Button, Select, Card } from 'dxp-ui';
+
+import { canAssignTasks } from '../../engines/agentPrivilegeEngine';
+import { notificationActions } from '../../stores/notificationSlice';
+import { PageHeader } from '../../components/patterns/PageHeader';
+import { useSubmitGuard } from '../../hooks/useSubmit';
+import { useAction, useAppSelector } from '../../stores/hooks';
+import { useEntityOps, useEntityRecords, useKindPending } from '../../services/entityHooks';
+import { listEntities } from '../../services/entityOps';
+import { transition } from '../../engines/lifecycleEngine';
+
+// Agent 360 ATV-06 / Annex_02: Task status model - "Open -> Assigned/In
+// Progress/Closed -> (In Progress/Closed) -> Closed; no transition out of
+// Closed." Passed to mockDataEngine.transition() so this is a real,
+// falsifiable guard rather than the previous UI-only button-hiding (which
+// a direct store call could bypass entirely).
+const TASK_STATUS_TRANSITIONS: string[][] = [
+  ['Open', 'Assigned'],
+  ['Open', 'In Progress'],
+  ['Open', 'Closed'],
+  ['Assigned', 'In Progress'],
+  ['Assigned', 'Closed'],
+  ['In Progress', 'Closed'],
+];
+
+interface AgentDirectoryEntry {
+  userId: string;
+  firstName: string;
+  lastName: string;
+}
+
+interface AgentTask {
+  taskId: string;
+  taskName: string;
+  taskDescription?: string;
+  taskType: string;
+  taskStatus: string;
+  priorityFlag: boolean;
+  assignedAgentId: string | null;
+  createdAt: string;
+  /** The order a Draft Order task is about, from which its customer is known. */
+  /** The order a Draft Order task is about, from which its customer is known. */
+  relatedOrderId?: string;
+}
+
+// Agent 360 ATV-04/06 (detail view + status transitions) and ATV-03/BR-05
+// (supervisor-only assignment). The Assign control below renders for roles
+// carrying the `task-assign` capability: Supervisor and Manager/Approver
+// (whose "approval and escalation authority" is a superset of supervision),
+// plus Dispatcher, whose entire role is "work allocation and scheduling".
+// Previously a single PERSONA-024 id comparison - the only supervisor-shaped
+// record the 66-persona catalogue offered.
+export function TaskDetailView() {
+  const { taskId } = useParams<{ taskId: string }>();
+  const navigate = useNavigate();
+  const tasks = (useEntityRecords('tasks') ?? []) as unknown as AgentTask[];
+  const updateRecord = useEntityOps().updateRecord;
+  const orders = (useEntityRecords('orders') ?? []) as unknown as { orderId: string; customerId?: string }[];
+  const ordersPending = useKindPending('orders');
+  const restricted = useRestrictedCustomers();
+  const activePersonaId = useAppSelector((s) => s.persona.activePersonaId);
+  const isSupervisor = canAssignTasks(activePersonaId);
+  const pushToast = useAction(notificationActions.pushToast);
+  const { guard } = useSubmitGuard();
+
+  const [assignTo, setAssignTo] = useState('');
+  const [agents, setAgents] = useState<AgentDirectoryEntry[]>([]);
+
+  // Real userIds, not free text - an assignment has to produce an ID that
+  // actually matches the assignee's authStore.profile.userId on their next
+  // login, or ATV-02's per-agent scoping (agentTaskEngine.ts) would never
+  // show them this task.
+  useEffect(() => {
+    let cancelled = false;
+    listEntities<AgentDirectoryEntry>('users-agents')
+      .then((a) => {
+        if (!cancelled) setAgents(a);
+      })
+      .catch(() => {
+        if (!cancelled) setAgents([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const tasksPending = useKindPending('tasks');
+  const task = tasks.find((t) => t.taskId === taskId);
+  if (!task) {
+    return <EntityMissing what="task" loading={tasksPending} backTo="/tasks" backLabel="Back to my tasks" />;
+  }
+  // A task about a protected-segment customer this role may not see (by the customer of its related order, or a customer named in the task's own
+  // name) is not drawn at all - only the restriction, and nothing until the orders and customers are known.
+  if (!restricted.ready || (task.relatedOrderId && ordersPending)) return <div className="p-8 text-fg-2" role="status">Loading…</div>;
+  const taskCustomerId = task.relatedOrderId ? orders.find((o) => o.orderId === task.relatedOrderId)?.customerId : undefined;
+  if (restricted.isRestricted(taskCustomerId) || restricted.mentionsRestricted(task.taskName)) {
+    return (
+      <div className="p-8 max-w-2xl">
+        <RestrictedCustomerNotice backTo="/tasks" backLabel="Back to my tasks" />
+      </div>
+    );
+  }
+
+  const applyStatusTransition = async (toState: string, patch: Record<string, unknown>): Promise<boolean> => {
+    const result = transition(TASK_STATUS_TRANSITIONS, task.taskStatus, toState);
+    if (!result.ok) {
+      pushToast('error', result.reason ?? `Cannot move task from ${task.taskStatus} to ${toState}.`);
+      return false;
+    }
+    await updateRecord('tasks', 'taskId', task.taskId, { ...patch, updatedAt: new Date().toISOString() });
+    return true;
+  };
+
+  // Moves the task to In Progress, then returns the agent to the Draft Orders list (where the task now reads In Progress).
+  const moveToInProgress = () =>
+    guard(async () => {
+      if (await applyStatusTransition('In Progress', { taskStatus: 'In Progress' })) navigate(DRAFT_ORDERS_PATH);
+    });
+  const closeTask = () => guard(() => applyStatusTransition('Closed', { taskStatus: 'Closed' }));
+  const assign = () =>
+    guard(async () => {
+    if (!assignTo.trim()) return;
+    // Assignment always sets the owner; it only drives the Open -> Assigned
+    // status transition for a still-open task. Reassigning a task already
+    // In Progress/Assigned changes the owner without illegally moving
+    // status sideways or backward per the Annex_02 model above.
+    if (task.taskStatus === 'Open') {
+      await applyStatusTransition('Assigned', { assignedAgentId: assignTo.trim(), taskStatus: 'Assigned' });
+    } else {
+      await updateRecord('tasks', 'taskId', task.taskId, { assignedAgentId: assignTo.trim(), updatedAt: new Date().toISOString() });
+    }
+    setAssignTo('');
+    });
+
+  return (
+    <div className="p-8">
+      <PageHeader
+        title={<>{task.taskName}</>}
+        badges={<><Badge variant={badgeVariantFor(task.taskStatus)}>{task.taskStatus}</Badge>
+        {task.priorityFlag && <Badge variant="danger">Priority</Badge>}</>}
+        description={<>
+        {task.taskId} · {task.taskType} · Created {formatDateTime(task.createdAt)}
+      </>}
+      />
+
+      <Card className="p-5 mb-6">
+        <div className="caption-muted mb-1">Description</div>
+        <p className="body-text">{task.taskDescription || 'No description on file.'}</p>
+        <div className="caption-muted mt-4 mb-1">Assigned To</div>
+        <p className="body-text">{task.assignedAgentId ?? 'Unassigned'}</p>
+      </Card>
+
+      {task.taskStatus !== 'Closed' && (
+        <div className="wrap-loose gap-2 mb-6">
+          {task.taskStatus !== 'In Progress' && (
+            <Button variant="secondary" onClick={moveToInProgress}>
+              Move to In Progress
+            </Button>
+          )}
+          <Button onClick={closeTask}>
+            Close Task
+          </Button>
+        </div>
+      )}
+
+      {isSupervisor && task.taskStatus !== 'Closed' && (
+        <Card className="p-5">
+          <h2 className="title title-md mb-1">Assign to a Team Member</h2>
+          <p className="caption-secondary mb-3">Supervisor-only action.</p>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Select
+                aria-label="Team member"
+                placeholder="Select a team member"
+                value={assignTo}
+                onChange={(e) => setAssignTo(e.target.value)}
+                options={agents.map((a) => ({ value: a.userId, label: `${a.firstName} ${a.lastName}` }))}
+              />
+            </div>
+            <Button onClick={assign} disabled={!assignTo.trim()}>
+              Assign
+            </Button>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}

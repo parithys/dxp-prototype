@@ -1,0 +1,24 @@
+- main:
+  - heading "Agent Profile" [level=1]
+  - text: View your details and manage your password and MFA settings. Name Imran Bhatti Staff ID VFQ12343 Job Title Direct Sales Team Enterprise Direct Sales
+  - heading "Change Password" [level=2]
+  - paragraph: "Requires your current password and a verification code. (Demo code: 123456 - pending VFQ Security's real Authcode/OTP method.)"
+  - text: Current Password
+  - textbox "Current Password"
+  - text: New Password
+  - textbox "New Password"
+  - text: Confirm New Password
+  - textbox "Confirm New Password"
+  - text: Verification Code
+  - textbox "Verification Code"
+  - button "Save Password" [disabled]
+  - heading "Multi-Factor Authentication" [level=2]
+  - text: Disabled
+  - button "Enable MFA"
+  - heading "Export Your Data" [level=2]
+  - paragraph: Download a CSV of every visible record for an entity type. Which of these you can export depends on your role's access rights.
+  - text: Entity Type
+  - combobox "Entity Type": Orders
+  - button "Open list":
+    - img
+  - button "Export 71 records"

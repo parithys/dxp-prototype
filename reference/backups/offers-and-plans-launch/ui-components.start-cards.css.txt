@@ -1,0 +1,14 @@
+  .card-option-lg {
+    @apply rounded-[var(--radius-card-lg)] border transition-colors focus:outline-none focus-visible:shadow-[var(--focus-ring)];
+  }
+
+  .start-card {
+    @apply flex flex-col gap-3 items-start p-5 text-left;
+  }
+
+  .primary-tile {
+    @apply enabled:hover:bg-[image:var(--accent-gradient-hover)];
+  }
+
+(also: the `.primary-tile` selector was grouped with `.primary-link` in the primary-fill rule: `.primary-link, .primary-tile { border-transparent bg-[image:var(--accent-gradient)] text-accent-on }`)
+(also: `.title-inherit` was grouped with `.title` as `.title, .title-inherit { font-bold }`; only StartCards used it)

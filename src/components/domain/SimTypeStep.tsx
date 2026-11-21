@@ -1,0 +1,224 @@
+import { useState } from 'react';
+import { Button, Badge, type DeviceType } from 'dxp-ui';
+import { SimSerialScanner } from './SimSerialScanner';
+import { issueEsimProfile } from './esimProfile';
+
+export type SimType = 'Physical' | 'eSIM';
+
+export interface SimTypeValue {
+  simType?: SimType;
+  simSerial?: string;
+  simValid?: boolean;
+  /** Captured alongside simValid (2026-09-28 request: display ICCID and
+   * Stock Status after validation) - see SimSerialScanner's onChange. */
+  simIccid?: string;
+  simStockStatus?: string;
+  /** What the scanned serial is in stock as: 'Physical', or 'Printed eSIM' (a stocked card carrying an eSIM profile). */
+  simKind?: string;
+  /** A Pre-Paired SIM: the MSISDN comes from the SIM, so Number Selection was bypassed. */
+  prePaired?: boolean;
+  prePairedMsisdn?: string;
+  esimIssued?: boolean;
+  esimActivationCode?: string;
+}
+
+interface SimTypeStepProps {
+  value: SimTypeValue;
+  customerEmail: string | undefined;
+  onChange: (value: SimTypeValue) => void;
+  /** Passed to the serial field: scan-led on a tablet, type-led on the web. Omitted, the field is unchanged. */
+  device?: DeviceType;
+  /**
+   * The agent chose a Pre-Paired SIM on the SIM Selection step (Mobile Prepaid BRSD MPRA_001_NUM_02 / SIM_02): this step
+   * scans it from the Pre-Paired inventory and shows the SIM and the MSISDN already on it, read-only. eSIM is not
+   * offered, since a Pre-Paired SIM is a card.
+   */
+  prePaired?: boolean;
+  /**
+   * The scanned serial decides whether the SIM is Paired or Unpaired (Mobile Prepaid): either stock is accepted, `prePaired` / `prePairedMsisdn` on the value are set from the SIM
+   * record, and the agent makes no choice. Ignored when `prePaired` is set.
+   */
+  pairingFromScan?: boolean;
+  /** The order will be held for approval, so an eSIM's QR code is released on approval rather than on submission. */
+  approvalRequired?: boolean;
+  /** Serials already used for another SIM in this order (the primary's and the other Multi-SIMs'): this SIM cannot take one. */
+  excludeSerials?: readonly string[];
+  /** ICCIDs already taken by another eSIM of this order. */
+  excludeIccids?: readonly string[];
+  /** Extra label / value rows for the selected SIM's read-back - Physical, Pre-Paired and eSIM alike - inside the same green container (New Prepaid: Paired / Unpaired). */
+  extraRows?: readonly (readonly [string, string])[];
+  /** Whether the serial field takes focus on arrival. Default: the device decides; several SIMs on one page pass false for all but the first. */
+  autoFocus?: boolean;
+  /** Physical SIM and eSIM one below the other (a narrow container such as a drawer) instead of side by side. */
+  stacked?: boolean;
+}
+
+// "SIM Type" (reference flow step 8). Reworked 2026-09-28 from a Physical/
+// eSIM TAB pair (agent picks a path before seeing either control) to both
+// paths shown SIDE BY SIDE from the start - Physical's scan field is the
+// default-focused, primary action; eSIM's "Generate eSIM" sits beside it as
+// the explicit alternative, not a second screen behind a tab click.
+//
+// Physical issuance keeps the existing, evidenced real-time-inventory serial
+// scan (Pattern 11), now auto-advancing the wizard the moment a scan
+// validates - the agent no longer clicks Continue on a step this step's own
+// two checks (serial validity + stock) already resolved for them. eSIM has
+// no evidenced inventory/serial check in this corpus - generating a QR/
+// activation code and optionally emailing it is the standard telco pattern,
+// kept deliberately lightweight (no fabricated eSIM provisioning API), and
+// still does NOT auto-advance: selecting eSIM is a choice to review, not a
+// validation result to act on immediately.
+export function SimTypeStep({ value, customerEmail, onChange, device, prePaired, pairingFromScan, approvalRequired = false, excludeSerials, excludeIccids, autoFocus, extraRows, stacked = false }: SimTypeStepProps) {
+  const [issuing, setIssuing] = useState(false);
+
+  if (prePaired) {
+    return (
+      <div className="max-w-xl space-y-3">
+        <h4 className="value-text">Pre-Paired SIM</h4>
+        <SimSerialScanner
+          value={value.simSerial ?? ''}
+          device={device}
+          inventory="pre-paired"
+          label="Pre-Paired SIM Serial Number"
+          // One container for a Pre-Paired SIM: the read-back below carries the SIM and the number already on it.
+          hideDetails
+          onChange={(serial, valid, details) =>
+            onChange({
+              ...value,
+              simType: 'Physical',
+              simSerial: serial,
+              simValid: valid,
+              simIccid: details?.iccid,
+              simStockStatus: details?.stockStatus,
+              simKind: details?.simKind,
+              prePaired: true,
+              prePairedMsisdn: valid ? details?.msisdn : undefined,
+            })
+          }
+        />
+        {value.prePaired && value.simValid && (
+          <dl className="notice-success notice-body-sm">
+            <div className="flex justify-between gap-3">
+              <dt className="text-fg">SIM Type</dt>
+              <dd className="text-fg font-medium">Pre-Paired SIM</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-fg">SIM Serial Number</dt>
+              <dd className="text-fg font-medium">{value.simSerial}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-fg">ICCID</dt>
+              <dd className="text-fg font-medium">{value.simIccid ?? '-'}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-fg">Mobile Number</dt>
+              {/* Read-only: the number is the one already on the SIM and cannot be edited here. */}
+              <dd className="text-fg font-medium">{value.prePairedMsisdn ?? '-'}</dd>
+            </div>
+            {extraRows?.map(([rowLabel, rowValue]) => (
+              <div key={rowLabel} className="flex justify-between gap-3">
+                <dt className="text-fg">{rowLabel}</dt>
+                <dd className="text-fg font-medium">{rowValue}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </div>
+    );
+  }
+
+  const generateEsim = async () => {
+    setIssuing(true);
+    const profile = await issueEsimProfile(excludeIccids);
+    setIssuing(false);
+    onChange({ ...value, prePaired: undefined, prePairedMsisdn: undefined, simType: 'eSIM', esimIssued: true, esimActivationCode: profile.activationCode, simIccid: profile.iccid, simSerial: undefined, simValid: undefined });
+  };
+
+  return (
+    <div className={stacked ? 'stack gap-6' : 'grid grid-cols-[repeat(auto-fill,minmax(max(15rem,calc((100%-1.5rem)/2)),1fr))] gap-6'}>
+      {/* Physical SIM - the default-focused, primary path. */}
+      <div className="space-y-3">
+        <h4 className="value-text">Physical SIM</h4>
+        <SimSerialScanner
+          value={value.simSerial ?? ''}
+          device={device}
+          excludeSerials={excludeSerials}
+          autoFocus={autoFocus}
+          extraRows={extraRows}
+          inventory={pairingFromScan ? 'any' : undefined}
+          // eSIM is a valid alternative to a Physical serial, not an
+          // additional requirement on top of it (2026-09-28 "Require either
+          // eSIM selection or SIM Serial Number") - this panel's own blur
+          // validation should stay quiet while the agent has gone the eSIM
+          // route, rather than complain about a field they were never
+          // going to fill in.
+          suppressValidation={value.simType === 'eSIM'}
+          onChange={(serial, valid, details) =>
+            onChange({
+              ...value,
+              simType: 'Physical',
+              simSerial: serial,
+              simValid: valid,
+              simIccid: details?.iccid,
+              simStockStatus: details?.stockStatus,
+              simKind: details?.simKind,
+              ...(pairingFromScan ? { prePaired: valid && details?.prePaired === true ? true : undefined, prePairedMsisdn: valid ? details?.msisdn : undefined } : {}),
+            })
+          }
+        />
+        {/* The validated serial's read-back (SIM Type, SIM Serial Number, ICCID) is the SIM Serial capability's own: SimSerialScanner. */}
+      </div>
+
+      {/* eSIM - the explicit alternative, not a second tab behind a click. */}
+      <div className="space-y-3">
+        <h4 className="value-text">eSIM</h4>
+        {/* The QR code and send-to-email controls have moved to the
+            activation-complete screen (EsimActivationPanel). This step only
+            issues the code; showing a scannable QR here meant the customer
+            could install an eSIM for an order still four steps from being
+            submitted. What stays is the confirmation that it was issued. */}
+        {value.simType === 'eSIM' && value.esimIssued && value.esimActivationCode ? (
+          <>
+            {/* "eSIM selected", not "eSIM issued" (2026-09-27). Nothing has
+                been handed over at this point and the profile is not live -
+                the walkthrough is explicit that an eSIM must not reach the
+                customer before payment. Calling it "issued" four steps early
+                described a handover that has not happened. */}
+            <Badge variant="success">eSIM selected</Badge>
+            <dl className="notice-success notice-body-sm">
+              <div className="flex justify-between gap-3">
+                <dt className="text-fg">SIM Type</dt>
+                <dd className="text-fg font-medium">eSIM</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-fg">SIM Serial Number</dt>
+                <dd className="text-fg font-medium">{value.simIccid ?? '-'}</dd>
+              </div>
+              {extraRows?.map(([rowLabel, rowValue]) => (
+                <div key={rowLabel} className="flex justify-between gap-3">
+                  <dt className="text-fg">{rowLabel}</dt>
+                  <dd className="text-fg font-medium">{rowValue}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-secondary">
+              The eSIM activation QR code will be generated only after successful payment and order {approvalRequired ? 'approval' : 'submission'}, and will then be sent to {customerEmail ?? 'the customer'}.
+            </p>
+          </>
+        ) : (
+          <>
+            <Button onClick={generateEsim} disabled={issuing}>
+              {issuing ? 'Generating eSIM…' : 'Generate eSIM'}
+            </Button>
+            {/* Stated up front (2026-09-28 request), not only after
+                selecting - the agent should know this before choosing eSIM,
+                not discover it afterward. */}
+            <p className="caption-muted">
+              The eSIM QR code will be generated only after successful payment and order {approvalRequired ? 'approval' : 'submission'}.
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

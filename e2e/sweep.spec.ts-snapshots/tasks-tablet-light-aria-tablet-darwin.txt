@@ -1,0 +1,71 @@
+- main:
+  - heading "Open Tasks" [level=1]
+  - text: 4 task(s).
+  - status:
+    - img
+    - text: "1 entry is hidden: access restricted for your role."
+  - table:
+    - rowgroup:
+      - row "Task ID Task Name Customer Name Last Updated Status Comments":
+        - columnheader "Task ID":
+          - button "Task ID":
+            - text: Task ID
+            - img
+        - columnheader "Task Name":
+          - button "Task Name":
+            - text: Task Name
+            - img
+        - columnheader "Customer Name":
+          - button "Customer Name":
+            - text: Customer Name
+            - img
+        - columnheader "Last Updated":
+          - button "Last Updated":
+            - text: Last Updated
+            - img
+        - columnheader "Status":
+          - button "Status":
+            - text: Status
+            - img
+        - columnheader "Comments":
+          - button "Comments":
+            - text: Comments
+            - img
+    - rowgroup:
+      - row "TASK-70009 Payment retry needed - 09/09/2026, 17:40 Open -":
+        - cell "TASK-70009":
+          - link "TASK-70009":
+            - /url: /tasks/TASK-70009
+        - cell "Payment retry needed"
+        - cell "-"
+        - cell "09/09/2026, 17:40"
+        - cell "Open"
+        - cell "-"
+      - row "Priority TASK-70002 Escalated billing dispute - 09/09/2026, 14:05 Open -":
+        - cell "Priority TASK-70002":
+          - img
+          - link "TASK-70002":
+            - /url: /tasks/TASK-70002
+        - cell "Escalated billing dispute"
+        - cell "-"
+        - cell "09/09/2026, 14:05"
+        - cell "Open"
+        - cell "-"
+      - row "TASK-70006 GigaHome Upgrade - 08/09/2026, 16:20 Open -":
+        - cell "TASK-70006":
+          - link "TASK-70006":
+            - /url: /tasks/TASK-70006
+        - cell "GigaHome Upgrade"
+        - cell "-"
+        - cell "08/09/2026, 16:20"
+        - cell "Open"
+        - cell "-"
+      - row "TASK-70001 Verify customer ID mismatch - 08/09/2026, 09:12 Open -":
+        - cell "TASK-70001":
+          - link "TASK-70001":
+            - /url: /tasks/TASK-70001
+        - cell "Verify customer ID mismatch"
+        - cell "-"
+        - cell "08/09/2026, 09:12"
+        - cell "Open"
+        - cell "-"

@@ -1,0 +1,175 @@
+import { useEffect, useState } from 'react';
+import { Button, Badge } from 'dxp-ui';
+import { cartTotals, priceLine } from './prepaidCartModel';
+import type { PriceOptions, PrepaidCheckoutTotals, PrepaidLine, PricingExtra, PricingProduct, PricingRecharge } from './prepaidCartModel';
+import { formatQar } from '../../lib/format';
+import { listEntities } from '../../services/entityOps';
+
+interface PrepaidCheckoutStepProps {
+  customerName: string | undefined;
+  idType: string | undefined;
+  /** Every subscription on the order (the cart, plus the one just finished). */
+  /** Every subscription on the order (the cart, plus the one just finished). */
+  lines: PrepaidLine[];
+  onTotalsComputed: (totals: PrepaidCheckoutTotals) => void;
+  /** Returns the agent to the Subscriptions step to change or add a subscription. */
+  /** Returns the agent to the Subscriptions step to change or add a subscription. */
+  onEdit?: () => void;
+  /** Label of the edit button (default "Edit subscriptions"). */
+  /** Label of the edit button (default "Edit subscriptions"). */
+  editLabel?: string;
+  /** Further facts about the order, under the customer (a port-in's number and donor operator). */
+  /** Further facts about the order, under the customer (a port-in's number and donor operator). */
+  details?: { label: string; value: string }[];
+  /**
+   * The order collects only these fees today, not the pack, add-ons and SIM card charge (a port-in: BR-MNP-011 lists the port-in
+   * charge and deposit, and the BRSD gives none). The pack is then listed without a price and the total is the sum of the fees.
+   */
+  /**
+   * The order collects only these fees today, not the pack, add-ons and SIM card charge (a port-in: BR-MNP-011 lists the port-in
+   * charge and deposit, and the BRSD gives none). The pack is then listed without a price and the total is the sum of the fees.
+   */
+  fees?: { label: string; amountQar: number }[];
+  /**
+   * The order changes a line the customer already has (a pack change, an add-on): the SIM is theirs, so no SIM rows and no SIM card
+   * charge; with `excludePack` the pack is the line's current one and not being bought (an add-on), so no starter pack charge.
+   */
+  /**
+   * The order changes a line the customer already has (a pack change, an add-on): the SIM is theirs, so no SIM rows and no SIM card
+   * charge; with `excludePack` the pack is the line's current one and not being bought (an add-on), so no starter pack charge.
+   */
+  existingLine?: PriceOptions;
+}
+
+const qar = (n: number) => formatQar(n);
+
+// MPRA_001_CVC_01-03 (cart validation, starter pack and recharge charge collection, payment summary): the read-back of
+// the whole cart before the customer signs and pays - each subscription's pack, add-ons, number and SIM, the starter
+// pack and any SIM card charge, and the total payable today that the Payment step collects. A prepaid line has no credit
+// limit, billing account or monthly charge, so none is shown (CAM_02, ECC_03, BAM_01).
+export function PrepaidCheckoutStep({ customerName, idType, lines, onTotalsComputed, onEdit, editLabel = 'Edit subscriptions', details, fees, existingLine }: PrepaidCheckoutStepProps) {
+  const [products, setProducts] = useState<PricingProduct[]>([]);
+  const [extras, setExtras] = useState<PricingExtra[]>([]);
+  const [recharges, setRecharges] = useState<PricingRecharge[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      listEntities<PricingProduct>('products'),
+      listEntities<PricingExtra>('addons-discounts'),
+      listEntities<PricingRecharge>('recharge-products'),
+    ]).then(([p, e, r]) => {
+      setProducts(p);
+      setExtras(e);
+      setRecharges(r);
+      setLoaded(true);
+    });
+  }, []);
+
+  const priceOptions: PriceOptions = { ...existingLine, recharges };
+  const cart = cartTotals(lines, idType, products, extras, priceOptions);
+  const feesQar = (fees ?? []).reduce((sum, f) => sum + f.amountQar, 0);
+  const totals: PrepaidCheckoutTotals = fees
+    ? { starterPackChargeQar: 0, addonsChargeQar: 0, rechargeChargeQar: 0, simCardChargeQar: 0, numberPriceQar: 0, numberListPriceQar: 0, numberWaivedQar: 0, totalDueQar: feesQar, lineCount: lines.length }
+    : cart;
+
+  useEffect(() => {
+    if (loaded) onTotalsComputed(totals);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, totals.totalDueQar, totals.simCardChargeQar, totals.addonsChargeQar, totals.rechargeChargeQar, totals.starterPackChargeQar, totals.numberPriceQar, totals.numberWaivedQar, totals.lineCount]);
+
+  const Row = ({ label, value }: { label: string; value: string }) => (
+    <div className="spread py-2 row-rule">
+      <dt className="text-fg">{label}</dt>
+      <dd className="text-fg text-right">{value}</dd>
+    </div>
+  );
+
+  if (!loaded) return <p className="muted-body">Preparing the payment summary…</p>;
+  if (lines.length === 0) return <p className="text-danger text-[length:var(--fs-body)]">There is no subscription on this order yet. Go back and complete the pack, number and SIM.</p>;
+
+  return (
+    <div className="space-y-4">
+      <dl className="card card-surface p-4">
+        <Row label="Customer" value={customerName ?? '-'} />
+        {!fees && !existingLine && <Row label="Subscriptions" value={String(lines.length)} />}
+        {details?.map((d) => (
+          <Row key={d.label} label={d.label} value={d.value} />
+        ))}
+      </dl>
+
+      {lines.map((line, i) => {
+        const plan = products.find((p) => p.productId === line.productId);
+        const charges = priceLine(line, idType, products, extras, priceOptions);
+        const recharge = recharges.find((r) => r.rechargeId === line.rechargeId);
+        const discount = extras.find((e) => e.addonDiscountId === line.discountId);
+        const addons = line.addonIds.map((id) => extras.find((e) => e.addonDiscountId === id)).filter((e): e is PricingExtra => Boolean(e));
+        return (
+          <section key={`${line.msisdn}-${i}`} aria-label={`Subscription ${i + 1}`} className="card card-surface p-4 space-y-2">
+            <div className="split-nowrap">
+              <h3 className="title title-md font-semibold">{fees || existingLine ? 'Order' : `Subscription ${i + 1}`}</h3>
+              {line.prePaired && <Badge variant="accent">Pre-Paired SIM</Badge>}
+            </div>
+            <dl>
+              <Row label="Pack" value={plan ? (fees ? plan.name : existingLine?.excludePack ? `${plan.name} (current pack)` : `${plan.name} - ${qar(charges.starterPackQar)}`) : 'SIM only, no pack selected'} />
+              {discount && <Row label="Discount" value={`${discount.name} (${Math.round(Math.abs(discount.price) * 100)}% off the starter pack)`} />}
+              {addons.map((a) => (
+                <Row key={a.addonDiscountId} label="Add-On" value={`${a.name} - ${qar(a.price)}`} />
+              ))}
+              {recharge && !existingLine && <Row label="Recharge" value={`${recharge.name} - ${qar(charges.rechargeQar)}`} />}
+              <Row label={existingLine ? 'Line' : 'Number'} value={`${line.msisdn}${charges.numberListQar > 0 ? ' (Star number)' : ''}`} />
+              {/* A Star number: its list price, any additional discount the agent gave, and what the customer pays up front (BRSD V0.3 Number and upfront charge details). */}
+              {charges.numberListQar > 0 && (
+                <>
+                  <Row label="Number List Price" value={qar(charges.numberListQar)} />
+                  {charges.numberWaivedQar > 0 && <Row label="Additional Discount" value={`-${qar(charges.numberWaivedQar)}`} />}
+                  <Row label="Customer Amount to Pay (Number)" value={qar(charges.numberQar)} />
+                </>
+              )}
+              {!existingLine && (
+                <>
+                  <Row
+                    label="SIM Type"
+                    value={line.prePaired ? 'Pre-Paired SIM' : line.simType.simType === 'eSIM' ? 'eSIM' : (line.simType.simKind ?? line.simType.simType ?? '-')}
+                  />
+                  <Row label="SIM Serial Number" value={line.simType.simSerial ?? line.simType.simIccid ?? '-'} />
+                </>
+              )}
+              {!fees && !existingLine && <Row label="SIM Card Charge" value={charges.simCardChargeQar > 0 ? qar(charges.simCardChargeQar) : 'Waived'} />}
+              {!fees && <Row label="Due for This Subscription" value={qar(charges.totalQar)} />}
+            </dl>
+            {!fees && !existingLine && <p className="caption-muted">{charges.simCardMessage}</p>}
+          </section>
+        );
+      })}
+
+      <div className="notice-accent p-4">
+        {fees?.map((f) => (
+          <div key={f.label} className="flex justify-between body-text mb-1">
+            <span>{f.label}</span>
+            <span>{qar(f.amountQar)}</span>
+          </div>
+        ))}
+        <div className="total-row">
+          <span>Total Payable Today</span>
+          <span>{qar(totals.totalDueQar)}</span>
+        </div>
+        <p className="mt-1 caption-secondary">
+          {fees
+            ? totals.totalDueQar === 0
+              ? 'Nothing is due, so a zero-value receipt is issued at payment.'
+              : 'The port-in charges and deposit due today.'
+            : 'Includes the starter pack and any initial recharge, add-ons, premium numbers and SIM card charges. Nothing is billed later.'}
+        </p>
+      </div>
+
+      {onEdit && (
+        <div>
+          <Button variant="secondary" size="sm" onClick={onEdit}>
+            {editLabel}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

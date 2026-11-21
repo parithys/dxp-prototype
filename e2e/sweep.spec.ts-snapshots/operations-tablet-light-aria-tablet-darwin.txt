@@ -1,0 +1,31 @@
+- main:
+  - text: Planned
+  - heading "Operations" [level=1]
+  - paragraph: "An operations console consolidating the work queues that today live inside individual modules: fulfilment, field activities, appointments and bulk jobs."
+  - heading "Planned Capabilities" [level=2]
+  - list:
+    - listitem: Unified work queue across fulfilment and field operations
+    - listitem: WFM activity and appointment scheduling
+    - listitem: Bulk job monitoring
+    - listitem: SLA and ageing views per queue
+  - heading "Available Today" [level=2]
+  - link "Order Management":
+    - /url: /order-management
+    - text: Order Management
+    - img
+  - link "SIM & Number Management":
+    - /url: /sim-number-management
+    - text: SIM & Number Management
+    - img
+  - link "Pre-to-Post Migration":
+    - /url: /pre-to-post-migration
+    - text: Pre-to-Post Migration
+    - img
+  - link "Orders":
+    - /url: /orders
+    - text: Orders
+    - img
+  - link "Support":
+    - /url: /support
+    - text: Support
+    - img

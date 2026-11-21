@@ -1,0 +1,7 @@
+- main:
+  - alert:
+    - heading "No Access" [level=1]
+    - paragraph: Your role does not have access to this page.
+    - link "Back to Dashboard":
+      - /url: /
+      - button "Back to Dashboard"

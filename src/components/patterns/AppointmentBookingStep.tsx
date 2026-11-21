@@ -1,0 +1,234 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Badge, Checkbox, Icon, Input, DateInput, Textarea, CLOCK, Label } from 'dxp-ui';
+import { CARD_IDLE, CARD_SELECTED, SelectedTick } from '../primitives/offerCardParts';
+import {
+  APPOINTMENT_DOCUMENTS,
+  CLUSTERS,
+  LEAD_TIME_DAYS,
+  MAX_DAYS_AHEAD,
+  TIME_SLOTS,
+  addDaysIso,
+  bookableSlots,
+  dateLong,
+  dateShort,
+  dayOfMonth,
+  defaultDocumentsFor,
+  earliestDate,
+  isFutureDated,
+  isSlotFull,
+  monthYear,
+  requestedDateError,
+  requestedTimeError,
+  slotLabel,
+  techniciansAvailable,
+  todayIso,
+  weekdayShort,
+  workingDaysFrom,
+} from './appointmentModel';
+import type { AppointmentBookingValue, BookedAppointment } from './appointmentModel';
+import { useAppSelector } from '../../stores/hooks';
+import { listEntities } from '../../services/entityOps';
+
+export type { AppointmentBookingValue } from './appointmentModel';
+
+interface AppointmentBookingStepProps {
+  value: AppointmentBookingValue;
+  onChange: (value: AppointmentBookingValue) => void;
+}
+
+// Pattern 9: Appointment Booking - the SLA cluster, then the date strip (the next working days from the earliest date, each with the
+// slots it still has), the day's time slots with the technicians free, the customer's own request for a specific date and time
+// (a later date makes the order future-dated), the appointment notes and the documents the technician collects (defaulted from
+// the persona). Bounded by the location's SLA cluster (SCR-028/049/083/109/115). Book Appointment fields (FLD-372-377): Collect
+// QID/CAF are the document choices here; the FNP Identifier is handled by the caller.
+export function AppointmentBookingStep({ value, onChange }: AppointmentBookingStepProps) {
+  const [existing, setExisting] = useState<BookedAppointment[]>([]);
+  const personaId = useAppSelector((s) => s.persona.activePersonaId);
+  const today = todayIso();
+  const earliest = earliestDate(today);
+  const strip = useMemo(() => workingDaysFrom(earliest), [earliest]);
+
+  useEffect(() => {
+    listEntities<BookedAppointment>('appointments').then(setExisting);
+    // Starts on the earliest date with the persona's documents; a date outside the strip or a slot this step no longer offers is dropped.
+    const dateOk = value.date !== undefined && strip.includes(value.date);
+    const slotOk = dateOk && value.timeSlot !== undefined && TIME_SLOTS.includes(value.timeSlot);
+    const patch: AppointmentBookingValue = {};
+    if (!dateOk) patch.date = earliest;
+    if (!slotOk && value.timeSlot !== undefined) patch.timeSlot = undefined;
+    if (value.documents === undefined) patch.documents = defaultDocumentsFor(personaId);
+    if (Object.keys(patch).length > 0) onChange({ ...value, ...patch });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { cluster, date, timeSlot } = value;
+  const slotFull = (c: string | undefined, d: string | undefined, s: string) => Boolean(c && d && isSlotFull(existing, c, d, s));
+  // A cluster or date change keeps the chosen slot only while it is still free there.
+  const choose = (patch: Partial<AppointmentBookingValue>) => {
+    const next = { ...value, ...patch };
+    onChange(next.timeSlot && slotFull(next.cluster, next.date, next.timeSlot) ? { ...next, timeSlot: undefined } : next);
+  };
+
+  const documents = value.documents ?? defaultDocumentsFor(personaId);
+  const defaults = defaultDocumentsFor(personaId);
+  const toggleDocument = (id: string, on: boolean) => onChange({ ...value, documents: on ? [...documents, id] : documents.filter((d) => d !== id) });
+
+  const dateError = value.requestSpecific ? requestedDateError(value.requestedDate, today) : undefined;
+  const timeError = value.requestSpecific ? requestedTimeError(value.requestedTime) : undefined;
+  const technicians = cluster && date ? techniciansAvailable(existing, cluster, date, timeSlot) : undefined;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="text-[length:var(--fs-label)] text-fg-2 mb-1">SLA Cluster</div>
+        <div className="wrap-loose gap-2">
+          {CLUSTERS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              aria-pressed={cluster === c}
+              onClick={() => choose({ cluster: c })}
+              className={`pill-option ${
+                cluster === c ? 'option-chosen text-fg' : 'border-border-soft bg-bg text-fg'
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <section aria-label="Appointment date" className="space-y-3">
+        <div className="split gap-2">
+          <h3 className="title title-lg">Select appointment date - {monthYear(date ?? earliest)}</h3>
+          <span className="chip-soft">
+            <Icon path={CLOCK} className="size-4 " />
+            Earliest: {dateShort(earliest)} (lead time {LEAD_TIME_DAYS} days)
+          </span>
+        </div>
+        <div className="calendar-grid">
+          {strip.map((d) => {
+            const selected = date === d;
+            return (
+              <button
+                key={d}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => choose({ date: d })}
+                className={`option-cell ${selected ? CARD_SELECTED : CARD_IDLE}`}
+              >
+                {selected && <SelectedTick />}
+                <span className="block text-secondary">{weekdayShort(d)}</span>
+                <span className="block title title-xl">{dayOfMonth(d)}</span>
+                {cluster && <span className="block caption-muted">{bookableSlots(existing, cluster, d)} slots</span>}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section aria-label="Available slots" className="space-y-3">
+        <div className="split gap-2">
+          <h3 className="title title-lg">Available slots - {dateLong(date ?? earliest)}</h3>
+          {technicians !== undefined && (
+            <Badge variant="success">
+              {technicians} technician{technicians === 1 ? '' : 's'} available
+            </Badge>
+          )}
+        </div>
+        {cluster ? (
+          <div className="pair-grid-sm sm:grid-cols-5">
+            {TIME_SLOTS.map((slot) => {
+              const full = slotFull(cluster, date, slot);
+              const selected = timeSlot === slot;
+              return (
+                <button
+                  key={slot}
+                  type="button"
+                  aria-pressed={selected}
+                  disabled={full}
+                  onClick={() => choose({ timeSlot: slot })}
+                  className={`option-cell disabled:cursor-not-allowed ${
+                    full ? 'option-unavailable' : selected ? CARD_SELECTED : CARD_IDLE
+                  }`}
+                >
+                  {selected && !full && <SelectedTick />}
+                  <span className={`title title-md block ${full ? 'text-muted' : ''}`}>{slotLabel(slot)}</span>
+                  <span className={`block text-[length:var(--fs-body)] ${full ? 'text-muted' : 'text-fg-2'}`}>{full ? 'Full' : selected ? 'Selected' : 'Available'}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="muted-body">Choose an SLA cluster to see its slots.</p>
+        )}
+      </section>
+
+      <section aria-label="Specific date and time" className="card card-inherit-fill p-4 space-y-3">
+        <Label className="row text-[length:var(--fs-body-lg)] text-fg cursor-pointer">
+          <Checkbox
+            checked={Boolean(value.requestSpecific)}
+            onCheckedChange={(checked) => onChange((checked === true) ? { ...value, requestSpecific: true } : { ...value, requestSpecific: false, requestedDate: undefined, requestedTime: undefined })}
+          />
+          Customer requests a specific date and time
+        </Label>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <DateInput
+            label="Requested Date"
+            format="iso"
+            disabled={!value.requestSpecific}
+            min={earliest}
+            max={addDaysIso(today, MAX_DAYS_AHEAD)}
+            value={value.requestedDate ?? ''}
+            onChange={(e) => onChange({ ...value, requestedDate: e.target.value || undefined })}
+            error={dateError}
+          />
+          <Input
+            label="Requested Time"
+            type="time"
+            disabled={!value.requestSpecific}
+            min={TIME_SLOTS[0].slice(0, 5)}
+            max={TIME_SLOTS[TIME_SLOTS.length - 1].slice(6)}
+            value={value.requestedTime ?? ''}
+            onChange={(e) => onChange({ ...value, requestedTime: e.target.value || undefined })}
+            error={timeError}
+          />
+          <Input
+            label="Future-Dated Order"
+            readOnly
+            disabled
+            value={isFutureDated(value, today) ? `Yes - ${dateShort(value.requestedDate!)}` : 'Not set'}
+          />
+        </div>
+      </section>
+
+      <Textarea
+        label="Appointment Notes"
+        placeholder="Customer available after 10:00. Gate code 4471. Call before arrival."
+        value={value.comments ?? ''}
+        onChange={(e) => onChange({ ...value, comments: e.target.value })}
+      />
+
+      <section aria-label="Documents the technician collects" className="space-y-2">
+        <div className="wrap-loose gap-2 items-baseline justify-between">
+          <h3 className="title title-lg">Documents the Technician Collects</h3>
+          <span className="caption-muted">Defaulted from Persona</span>
+        </div>
+        <ul className="card card-inherit-fill divide-y divide-border-soft">
+          {APPOINTMENT_DOCUMENTS.map((doc) => {
+            const checked = documents.includes(doc.id);
+            return (
+              <li key={doc.id}>
+                <Label className="row pad-row body-text cursor-pointer">
+                  <Checkbox checked={checked} onCheckedChange={(checked) => toggleDocument(doc.id, (checked === true))} />
+                  <span className="flex-1">{doc.label}</span>
+                  <Badge>{checked ? (defaults.includes(doc.id) ? 'Default' : 'Added') : 'Not required'}</Badge>
+                </Label>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    </div>
+  );
+}

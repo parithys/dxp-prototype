@@ -1,0 +1,20 @@
+- main:
+  - heading "Enterprise Account Creation" [level=1]
+  - text: Account/Company Name
+  - textbox "Account/Company Name"
+  - text: CR Type / ID Type
+  - combobox "CR Type / ID Type": Commercial Registration
+  - button "Open list":
+    - img
+  - text: CR Number
+  - textbox "CR Number"
+  - button "Search" [disabled]
+  - text: Agent ID (for Commission)
+  - textbox "Agent ID (for Commission)"
+  - text: Business Type
+  - combobox "Business Type": Enterprise
+  - button "Open list":
+    - img
+  - text: Credit Limit (QAR) - no default for enterprise
+  - spinbutton "Credit Limit (QAR) - no default for enterprise"
+  - button "Create Account" [disabled]

@@ -1,0 +1,57 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other" [pressed]
+      - listitem:
+        - button "Component Catalogue"
+  - region "Other":
+    - heading "Other" [level=3]
+    - paragraph: Smaller shared pieces.
+    - figure "Country Marker - the flag beside a dial code"
+    - figure "Vodafone Mark - the red disc with the speech-mark"
+    - figure "Vodafone Wordmark - the full logo's lettering, shown beside the mark":
+      - img "Vodafone"
+      - text: Vodafone Wordmark - the full logo's lettering, shown beside the mark
+    - 'figure "Panel Icon - the sidebar toggle: click to flip expanded / collapsed"':
+      - button "Collapse navigation" [expanded]
+      - text: "Panel Icon - the sidebar toggle: click to flip expanded / collapsed"
+    - figure "Icon - the shared SVG icon (24px grid)":
+      - img
+      - img
+      - text: Icon - the shared SVG icon (24px grid)

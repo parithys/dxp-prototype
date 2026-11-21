@@ -1,0 +1,108 @@
+/* The application's own design tokens (offer tones, journey and footer dimensions, page-specific sizes): not part of the design-system library. */
+
+:root {
+  /* The page title band (PageHeader, the wizard title): charcoal in the light theme, the section-header surface in dark. */
+  --title-band-bg: var(--charcoal-panel);
+  /* Hover on a selectable card: a lighter wash of the selected fill. Hover changes the background only - never the border or a ring. */
+  --detail-icon-tile-bg: color-mix(in oklab, var(--bg), var(--field-hover-border) 18%);  /* the tile behind a detail icon (Identity Details, the document cards): a soft teal, stronger than --surface but well short of a solid fill */
+  --upload-section-bg: color-mix(in oklab, var(--bg), var(--field-hover-border) 7%); /* 4.6:1 on the page tint, where the wizard rail shows it */
+  --nav-section: var(--muted-2);
+  --nav-group-bg: var(--surface-warm);
+  /* Icon tile on an unselected selectable card: pale blue-grey tile, navy glyph. */
+  /* Landing page: dark slate-to-plum hero, and the soft borderless card shadow its tiles use. */
+  --dash-hero-gradient: linear-gradient(120deg, #1f2740 0%, #2d2a4a 40%, #5e2750 80%, #6b2d4a 100%); /* dark navy into brand aubergine (2026-10-08 reference) */
+  --shadow-dash-card: 0 1px 2px rgba(20,30,50,0.05), 0 8px 24px -10px rgba(20,30,50,0.16);
+  --shadow-dash-card-hover: 0 2px 4px rgba(20,30,50,0.06), 0 14px 30px -10px rgba(20,30,50,0.24);
+  /* "Customer view" toggle (idle): pale teal-grey fill, teal label. */
+  --brand-plum: #5e2750; /* brand aubergine */
+  --summary-milestone: #eb9700; /* accent used AS TEXT: 5.0:1 on the page background (the fill red #e60000 is 4.4:1 there) */
+  --priority: var(--summary-milestone);
+  /* The running-total panel on the Add-ons step: a fixed dark navy in both themes, white text on it (15:1). */
+  /* The tone of a Recommended Offers card (set by .offer-tone-*): the text / rule colour and the wash. Plain until a tone is applied. */
+  --offer-fg: var(--muted);
+  --offer-bg: var(--surface);
+  --customer-view-bg: var(--surface);
+  --customer-view-fg: #256f81;
+  --white-glass-10: rgba(255,255,255,.1);   /* 'tag-amber' fill; its label is --warn-text */
+  /* Info banner (e.g. MSISDN picker notice). */
+  --info-banner-bg: var(--tint-blue-bg);
+  /* Telesales Customer 360: chart series, status dots, module tag, map placeholder. */
+  --telesales-chart-slate: #546a91;
+  --telesales-blue: #2563eb;
+  --telesales-amber: #d97706;
+  --telesales-module-tag-bg: var(--tint-indigo-bg); --telesales-module-tag-fg: #3b3fb5;
+  --telesales-map-from: #d5f7e3;      --telesales-map-to: #a7f0c8;
+  /* Login page: dark hero, its scrim, and the glass card shadow. */
+  --login-bg: #0a0a0d;
+  /* Staff-portal design: the skyline reads through at the top; the headline and the update cards sit on the darker navy below. */
+  --login-scrim: linear-gradient(180deg, rgba(8,14,34,0.35) 0%, rgba(8,14,34,0.5) 40%, rgba(8,14,34,0.88) 100%);
+  --shadow-login-card: 0 8px 24px rgba(0,0,0,0.35);
+  /* Toast 'info' status dot. */
+  --toast-dot-info: rgba(255,255,255,.55);
+  /* The info callout's edge: the info text blue, softened into the page (the fill is --info-banner-bg). */
+  --info-banner-border: color-mix(in oklab, var(--tint-blue-fg), var(--bg) 75%);
+
+  /* Dark toast: tone text, reference-number text, and the status dots. */
+  --toast-fg-success: color-mix(in oklab, var(--success), white 35%);
+  --toast-fg-id: color-mix(in oklab, var(--field-calendar-range), white 45%);
+  --toast-dot-success: color-mix(in oklab, var(--success), white 30%);
+  --toast-dot-error: color-mix(in oklab, var(--danger), white 30%);
+  --toast-dot-warning: color-mix(in oklab, var(--warn), white 15%);
+  /* Customer-view button hover. */
+  --customer-view-bg-hover: color-mix(in oklab, var(--customer-view-bg), var(--customer-view-fg) 8%);       /* stepper buttons beside a 42px field */
+  --size-dropzone-min-h: 9rem;      /* upload drop zones */
+  --size-field-message-max-w: 24rem;/* wrapped error lists under an upload zone */
+  /* Layout dimensions that used to be arbitrary lengths in a class (w-[280px], max-w-[34rem] ...): named here once, read through var(). */
+  --size-card-tag-row-min-h: 25px;
+  --size-kit-title-min-w: 10rem;
+  --size-linked-footer-indent: calc(1.25rem + 4rem + 1rem);
+  --size-nav-drawer-w: 280px;
+  --size-nav-subtree-indent: 26px;
+  --size-nav-subtree-indent-tight: 22px;
+  --size-scan-pair-max-w: 44rem;
+  --size-specimen-card-min-w: 12rem;
+  --size-specimen-row-min-h: 3.5rem;
+  --size-step-header-min-h: 39px;
+  --size-announcement-basis: calc(50% - 0.5rem);
+  --size-detail-icon: 18px;
+  --size-step-header-pad-tray: 22rem;
+  --size-step-header-pad-action: 26rem;
+  --size-tall-footer-h: 130px; /* the floating bar of Recommended Offers (the Start Another Journey bar): the room the page leaves under the step card for it */
+  --size-scrollbar: 0.75rem; /* the always-visible scrollbar of a fixed-height reading container */
+  --size-caf-terms-h: 21.875rem; /* 350px: the fixed height of the CAF terms container - shorter than its content, so the vertical scrollbar is always in use */
+  --size-scan-figure-max-w: 15rem;
+  --size-orders-filter-max-w: 200px;
+  --size-orders-filter-max-w-wide: 300px;
+  --size-scan-frame-id-max-w: 22rem;
+  /* The wash of an eligibility result card (set by .eligibility-alert-*): the card's fill, and the colour its icon is drawn in on the outcome-coloured panel. Plain until an outcome is applied. */
+  --alert-wash: var(--surface);
+  /* How much the result cards' icon panels are softened toward the page background (the outcome colour stays readable as that hue). */
+  --alert-panel-soften: 8%;
+  --size-alert-icon-w: 4rem;
+  --size-alert-icon: 2.5rem;
+  --size-toast-max-w: 34rem;
+  --size-toast-max-w-wide: 60rem;
+  --size-device-preview-w: 375px;
+  --size-scan-frame-passport-max-w: 9.5rem;
+  --size-stat-tile-min-w: 7.5rem;
+  --size-toast-top: calc(4rem + 0.75rem);
+}
+:root.dark {
+  /* Dark mode only: the page title band takes the section-header surface (--bg), not the fixed charcoal of the light theme. */
+  --title-band-bg: var(--bg);
+  --nav-section: #a3a7ac;
+  --customer-view-bg: rgba(0,176,202,.16);
+  --customer-view-fg: #5fd3e6;
+  --brand-plum: #e3b8d8;
+  --priority: #f5c36a;
+  --shadow-dash-card: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -10px rgba(0,0,0,0.6);
+  --shadow-dash-card-hover: 0 2px 4px rgba(0,0,0,0.45), 0 14px 30px -10px rgba(0,0,0,0.7);
+  --nav-group-bg: rgba(187,183,255,.12);
+  --detail-icon-tile-bg: color-mix(in oklab, var(--bg), var(--link) 20%);
+  --upload-section-bg: color-mix(in oklab, var(--bg), var(--link) 8%);
+}
+:root.dark {
+  --info-banner-bg: rgba(80,140,255,.12);
+  --telesales-module-tag-bg: rgba(130,140,255,.16); --telesales-module-tag-fg: #b5bbff;
+  --telesales-map-from: rgba(62,203,110,.12); --telesales-map-to: rgba(62,203,110,.2);
+}

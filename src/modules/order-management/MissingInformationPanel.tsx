@@ -1,0 +1,122 @@
+import { useState } from 'react';
+import { AdditionalDocumentsUpload, DocumentCaptureActions, UPLOAD_RULES, uploadFileProblem, type AdditionalDocument } from '../../capabilities';
+import { Badge, Button, Textarea } from 'dxp-ui';
+import { SignatureCapture } from '../../components/patterns/SignatureCapture';
+import { readFileAsDataUrl } from '../../lib/documentFileStore';
+import { isMissingInformationComplete, type MissingInformationAnswer, type MissingInformationRequest } from '../../engines/approvalAuthority';
+import type { OrderAttachment } from './attachmentModel';
+
+// What the agent who submitted an order does when the approver marked it Missing Information: only what was asked for - a document captured
+// again, a new signature on the CAF, supporting documents with their type. Nothing else about the order is shown as editable here or anywhere
+// while the request is open. Resubmitting goes back to the Approval Queue.
+
+export interface MissingInformationSubmit {
+  answer: MissingInformationAnswer;
+  comment: string;
+}
+
+export function MissingInformationPanel({
+  request,
+  attachments,
+  approverComment,
+  busy,
+  onResubmit,
+}: {
+  request: MissingInformationRequest;
+  attachments: OrderAttachment[];
+  approverComment?: string;
+  busy: boolean;
+  onResubmit: (s: MissingInformationSubmit) => void;
+}) {
+  const [reuploaded, setReuploaded] = useState<MissingInformationAnswer['reuploaded']>({});
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string | undefined>();
+  const [documents, setDocuments] = useState<AdditionalDocument[]>([]);
+  const [comment, setComment] = useState('');
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const answer: MissingInformationAnswer = { reuploaded, signatureDataUrl, supporting: documents.map((d) => ({ label: d.label, fileName: d.fileName })) };
+  const complete = isMissingInformationComplete(request, answer);
+  const outstanding =
+    request.attachmentIndexes.filter((i) => !reuploaded[i]).length + (request.resignCaf && !signatureDataUrl ? 1 : 0) + (request.supportingDocuments && documents.length === 0 ? 1 : 0);
+
+  const take = async (i: number, file: File) => {
+    const issue = uploadFileProblem(file, UPLOAD_RULES.supporting);
+    if (issue) return setProblem(issue);
+    setProblem(null);
+    const previewUrl = /^image\//.test(file.type) ? await readFileAsDataUrl(file) : undefined;
+    setReuploaded((r) => ({ ...r, [i]: { fileName: file.name, previewUrl } }));
+  };
+
+  return (
+    <section className="mt-4 card pad-row space-y-4" aria-label="Information requested by the approver">
+      <div className="split">
+        <div className="min-w-0">
+          <h3 className="title title-md font-semibold">Information Requested</h3>
+          <p className="caption-secondary">Contact the customer, then provide only what is listed. The order itself is locked: its lines and details cannot be changed here.</p>
+        </div>
+        <Badge variant={outstanding === 0 ? 'success' : 'warning'}>{outstanding === 0 ? 'All provided' : `${outstanding} to provide`}</Badge>
+      </div>
+      {approverComment && (
+        <div className="notice-warning pad-row">
+          <p className="warn-title">Approver's Comment</p>
+          <p className="label-caption">{approverComment}</p>
+        </div>
+      )}
+
+      {problem && <p role="alert" className="text-danger caption-secondary">{problem}</p>}
+
+      {request.attachmentIndexes.length > 0 && (
+        <div className="space-y-2">
+          <p className="title title-sm font-semibold">Recapture or Re-Upload</p>
+          <ul className="space-y-2">
+            {request.attachmentIndexes.map((i) => {
+              const a = attachments[i];
+              const done = reuploaded[i];
+              return (
+                <li key={i} className="row-between">
+                  <span className="min-w-0">
+                    <span className="value-text">{a?.label ?? `Document ${i + 1}`}</span>
+                    <span className="caption-muted"> {done ? `Replaced with ${done.fileName}` : a?.detail ? `Current: ${a.detail}` : ''}</span>
+                  </span>
+                  {/* Recaptured the way the device does it (scan on the web, camera on a tablet) or re-uploaded. */}
+                  <span className="cluster">
+                    <DocumentCaptureActions what={(a?.label ?? `Document ${i + 1}`).toLowerCase()} documentType={a?.label ?? `Document ${i + 1}`} hasDocument={Boolean(done)} onFile={(f) => void take(i, f)} />
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {request.resignCaf && (
+        <div className="space-y-2">
+          <p className="title title-sm font-semibold">Re-Sign the CAF</p>
+          {signatureDataUrl ? (
+            <div className="row">
+              <Badge variant="success">New Signature Captured</Badge>
+              <img src={signatureDataUrl} alt="New customer signature" className="signature-thumb" />
+              <Button variant="secondary" onClick={() => setSignatureDataUrl(undefined)}>Sign Again</Button>
+            </div>
+          ) : (
+            <SignatureCapture label="Customer Signature" onSave={setSignatureDataUrl} />
+          )}
+        </div>
+      )}
+
+      {request.supportingDocuments && (
+        <div className="space-y-2">
+          <p className="title title-sm font-semibold">Supporting Documents</p>
+          <AdditionalDocumentsUpload documents={documents} onChange={setDocuments} />
+        </div>
+      )}
+
+      <Textarea label="What Was Provided (Required)" required value={comment} onChange={(e) => setComment(e.target.value)} />
+      <div className="actions-end">
+        <Button onClick={() => onResubmit({ answer, comment: comment.trim() })} disabled={!complete || !comment.trim() || busy}>
+          Resubmit for Approval
+        </Button>
+      </div>
+    </section>
+  );
+}

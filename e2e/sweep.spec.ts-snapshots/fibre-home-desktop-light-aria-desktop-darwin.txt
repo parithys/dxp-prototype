@@ -1,0 +1,69 @@
+- main:
+  - heading "Fibre & Home Services" [level=1]
+  - text: Journeys available to Direct Sales across Fibre & Home Services.
+  - link "All":
+    - /url: /fibre-home
+  - link "Plans & Installation":
+    - /url: /fibre-home/plans-installation
+  - link "Service Management":
+    - /url: /fibre-home/service-management
+  - link "Customer & Account":
+    - /url: /fibre-home/customer-account
+  - img
+  - heading "Plans & Installation" [level=2]
+  - paragraph: Manage FWA / 5G services and plans, check coverage, relocate or move a service, and book installations.
+  - text: Planned 01 Change Plan
+  - paragraph: Move a customer to a different plan tier
+  - text: Planned 02 Upgrade Service
+  - paragraph: Upgrade speed tier or service type
+  - link "Partly Available 03 Coverage Check Check fibre or FWA availability at an address Check compatibility":
+    - /url: /fixed-line-fibre/new-fixed-line-wizard-contact-step
+    - text: Partly Available 03 Coverage Check
+    - paragraph: Check fibre or FWA availability at an address
+    - text: Check compatibility
+  - text: Planned 04 Relocate Fibre Service
+  - paragraph: Move an active fibre service to a new address
+  - text: Planned 05 Change Installation Address
+  - paragraph: Update the registered installation address
+  - text: 0 of 5 available
+  - img
+  - heading "Service Management" [level=2]
+  - paragraph: View and manage active fibre and home services, routers and equipment, and suspend, resume, or terminate a service.
+  - link "Available 01 View Existing Service View account details, usage, and plan Start now":
+    - /url: /customer-search
+    - text: Available 01 View Existing Service
+    - paragraph: View account details, usage, and plan
+    - text: Start now
+    - img
+  - text: Planned 02 Router Management
+  - paragraph: View router details and perform a remote reset
+  - text: Planned 03 Equipment Replacement
+  - paragraph: Replace a faulty or damaged CPE device
+  - text: Planned 04 Device Return
+  - paragraph: Initiate a CPE return on contract termination
+  - text: Planned 05 IPTV Equipment
+  - paragraph: Manage set-top boxes and IPTV hardware
+  - text: Planned 06 Suspend Service
+  - paragraph: Temporarily suspend a fixed service
+  - text: Planned 07 Resume Service
+  - paragraph: Reactivate a suspended fixed service
+  - text: Planned 08 Terminate Service
+  - paragraph: Close and terminate a fixed contract
+  - text: 1 of 8 available
+  - img
+  - heading "Customer & Account" [level=2]
+  - paragraph: Validate identity, update customer details, and manage service ownership.
+  - link "Available 01 Customer Validation Validate a customer's identity and QID Start now":
+    - /url: /identity-customer-management/passport-to-qid-update-wizard
+    - text: Available 01 Customer Validation
+    - paragraph: Validate a customer's identity and QID
+    - text: Start now
+    - img
+  - link "Partly Available 02 Contact Information Update Update email, address, or phone details Check compatibility":
+    - /url: /customer-search
+    - text: Partly Available 02 Contact Information Update
+    - paragraph: Update email, address, or phone details
+    - text: Check compatibility
+  - text: Planned 03 Authorised Representative
+  - paragraph: Add or manage an authorised representative
+  - text: 1 of 3 available

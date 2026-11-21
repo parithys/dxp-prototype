@@ -1,0 +1,17 @@
+- main:
+  - heading "New Connections" [level=1]
+  - text: Journeys available to Direct Sales across New Connections.
+  - img
+  - heading "New Connections" [level=2]
+  - paragraph: Start a new mobile or home connection, add a line to an account, or activate an IPTV service.
+  - 'link "Available Fibre & Home 01 New Home Connection Activate a new home connection: fibre, fixed line, FWA or 5G Home Start now"':
+    - /url: /fixed-line-fibre/new-fixed-line-wizard-contact-step
+    - text: Available Fibre & Home 01 New Home Connection
+    - paragraph: "Activate a new home connection: fibre, fixed line, FWA or 5G Home"
+    - text: Start now
+    - img
+  - text: Planned All products 02 Add a New Line
+  - paragraph: "Add a line to an existing account: Postpaid, Prepaid or Fibre"
+  - text: Planned Fibre & Home 03 New IPTV Service
+  - paragraph: Add an IPTV subscription to a fibre account
+  - text: 1 of 3 available

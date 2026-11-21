@@ -1,0 +1,10 @@
+- main:
+  - heading "Customer Search" [level=1]
+  - text: Look up a customer by mobile number, QID, customer number, account number, name, email, or service ID.
+  - search "Customer search":
+    - img
+    - textbox "Customer search query":
+      - /placeholder: Search a customer by mobile, QID, account number…
+    - button "Search" [disabled]:
+      - img
+  - paragraph: Enter at least 3 characters, then press Enter or Search to see results.

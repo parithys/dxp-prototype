@@ -1,0 +1,200 @@
+import { isNumberWaiver } from '../../engines/numberWaiver';
+import type { ReactNode } from 'react';
+import { effectiveCreditLimitQar } from '../../components/patterns/billingAccountModel';
+import { CHECKOUT_LABEL, SUBSCRIPTIONS_LABEL } from '../../data/stepLabels';
+import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
+import { CheckoutSummary, PrepaidCheckout, PrepaidOrderSummary } from './CheckoutSummary';
+import { PrepaidCartBody } from './PrepaidCartBody';
+import { allLines, isCartValid } from '../../components/patterns/prepaidCartModel';
+import type { PrepaidCheckoutTotals, PrepaidLine } from '../../components/patterns/prepaidCartModel';
+import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
+import { at } from '../summaryKit';
+import { checkoutSummary } from './summary';
+import type { BillingAccountValue } from '../../components/patterns/billingAccountModel';
+import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
+import type { SimTypeValue } from '../../components/domain/SimTypeStep';
+import type { GuidedContactValue } from '../../components/patterns/guidedContactModel';
+import { formatQar } from '../../lib/format';
+
+/**
+ * Checkout summary: reads the order's facts from the standard value keys (contact, billingAccount, productId,
+ * discountId, addonIds, msisdn, numberPriceQAR, eligibility, billLimit, simType) and stores what it computes
+ * (checkoutTotals, cafSummary, legalFacts) for the CAF & Signature step. `editStepKey` says which step
+ * the summary's Edit action returns to (the plan step, unless an accepted offer skipped it).
+ */
+export function checkoutSummaryStep(
+  opts: {
+    editStepKey?: (values: Record<string, unknown>) => string;
+    /** The number the order is for, when it is not `msisdn` (an MNP port-in's donor number). */
+    msisdn?: (values: Record<string, unknown>) => string | undefined;
+    /** Content above the read-back (a port-in's validation gate). */
+    before?: (ctx: { values: Record<string, unknown>; goToStepKey: (key: string) => void }) => ReactNode;
+    /** A further condition on continuing (the gate holds); the read-back itself never blocks. */
+    isValid?: (values: Record<string, unknown>) => boolean;
+    /** Rows the order adds to the read-back and the CAF's key information, after the plan (a Family Plan's package and line). */
+    familyRows?: (values: Record<string, unknown>) => { label: string; value: string }[];
+    /** The plan's rental is included in a Family Package the customer already pays for (Primary Line 2): read back as included, nothing added to the monthly total. */
+    planRentalIncluded?: (values: Record<string, unknown>) => boolean;
+  } = {}
+): WizardStep {
+  return {
+    key: 'checkout',
+    label: CHECKOUT_LABEL,
+    summary: checkoutSummary,
+    render: ({ values, setValue, goToStepKey }) => {
+      const contact = values.contact as GuidedContactValue | undefined;
+      const billingAccount = values.billingAccount as BillingAccountValue | undefined;
+      const billingMethod = billingAccount?.selectedProfileId
+        ? `Existing account ending …${billingAccount.selectedProfileId.slice(-4)}`
+        : billingAccount?.newAccount?.profileName
+          ? `${billingAccount.newAccount.profileName} (${billingAccount.newAccount.billMedia ?? 'Email'})`
+          : undefined;
+      const summary = (
+        <CheckoutSummary
+          layout="detailed"
+          customerName={
+            [contact?.firstName, contact?.middleName, contact?.lastName].filter(Boolean).join(' ') || contact?.moiResult?.name
+ }
+          altPhone={contact?.altPhone}
+          billingMethod={billingMethod}
+          productId={values.productId as string | undefined}
+          discountId={values.discountId as string | undefined}
+          addonIds={(values.addonIds as string[] | undefined) ?? []}
+          addonBilling={values.addonBilling as Record<string, import('../../engines/addonCategories').AddonBillingFrequency> | undefined}
+          addonDiscounts={values.addonDiscounts as Record<string, string> | undefined}
+          msisdn={opts.msisdn ? opts.msisdn(values) : (values.msisdn as string | undefined)}
+          numberPriceQar={values.numberPriceQAR as number | undefined}
+          eligibility={values.eligibility as EligibilityResult | undefined}
+          creditLimitQar={effectiveCreditLimitQar(values.eligibility as EligibilityResult | undefined, values.billingAccount as BillingAccountValue | undefined)}
+          billLimit={values.billLimit as number | undefined}
+          simType={values.simType as SimTypeValue | undefined}
+          multiSims={values.multiSims as SimTypeValue[] | undefined}
+          numberWaiver={isNumberWaiver(values.numberWaiver) ? values.numberWaiver : undefined}
+          onTotalsComputed={(totals) => setValue('checkoutTotals', totals)}
+          onSummaryComputed={(rows) => setValue('cafSummary', rows)}
+          onLegalFactsComputed={(facts) => setValue('legalFacts', facts)}
+          familyRows={opts.familyRows?.(values)}
+          planRentalIncluded={opts.planRentalIncluded?.(values)}
+          onEdit={() => goToStepKey(opts.editStepKey?.(values) ?? 'plan')}
+        />
+      );
+      if (!opts.before) return summary;
+      return (
+        <div className="space-y-6">
+          {opts.before({ values, goToStepKey })}
+          {summary}
+        </div>
+      );
+    },
+    isValid: (values) => opts.isValid?.(values) ?? true,
+ };
+}
+
+/** The subscriptions on a prepaid order, for the running Summary panel. */
+const subscriptionsSummary: SummaryField[] = [
+  {
+    key: 'subscriptions',
+    label: 'Subscriptions',
+    type: 'text',
+    value: (v) => {
+      const lines = allLines(v);
+      return lines.length === 0 ? undefined : lines.map((l) => l.msisdn).join(', ');
+    },
+  },
+];
+
+/**
+ * Prepaid "Add another subscription?" (process flow #8.1): lists the subscriptions so far; the footer's Continue is
+ * the "No" branch (go on to checkout). Valid once there is a finished subscription and none repeats a number or SIM.
+ */
+export function prepaidCartStep(): WizardStep {
+  return {
+    key: 'cart',
+    label: SUBSCRIPTIONS_LABEL,
+    heading: 'Add another subscription?',
+    subheading: 'Each subscription is one pack, one number and one SIM.',
+    summary: subscriptionsSummary,
+    render: ({ values, setValue, goToStepKey }) => <PrepaidCartBody values={values} setValue={setValue} goToStepKey={goToStepKey} />,
+    isValid: isCartValid,
+  };
+}
+
+/**
+ * Prepaid checkout: the read-back of the whole cart. `idType` is the customer's ID type, which decides the SIM card
+ * charge. Stores `checkoutTotals` (totalDueQar is what the Payment step collects).
+ *
+ * A prepaid port-in uses the same step with its own inputs: `lines` (its one subscription), `details` (the port-in number and
+ * donor operator), `fees` (the port-in charges: the amount due is those alone, not the pack), `before` (the validation gate above
+ * the read-back), `isValid`, `editStepKey` and `totals` (how what it computed is stored, as the port-in's Payment step reads it).
+ */
+export function prepaidCheckoutStep(opts: {
+  idType: (values: Record<string, unknown>) => string | undefined;
+  customerName: (values: Record<string, unknown>) => string | undefined;
+  lines?: (values: Record<string, unknown>) => PrepaidLine[];
+  details?: (values: Record<string, unknown>) => { label: string; value: string }[];
+  fees?: { label: string; amountQar: number }[];
+  before?: (ctx: { values: Record<string, unknown>; goToStepKey: (key: string) => void }) => ReactNode;
+  isValid?: (values: Record<string, unknown>) => boolean;
+  editStepKey?: string;
+  editLabel?: string;
+  /** False hides the edit button: the journey's own Journey Summary is how the agent goes back (New Prepaid). Default true. */
+  editable?: boolean;
+  totals?: (totals: PrepaidCheckoutTotals) => unknown;
+  /** The order changes a line the customer already has (a pack change, an add-on): no SIM rows or SIM card charge; `excludePack` for an add-on on the current pack. */
+  existingLine?: { existingSim?: boolean; excludePack?: boolean };
+  /**
+   * New Prepaid activation: the Order Summary with the order's checks under the title, the Recharge row and the Charge Summary with VAT (instead of the plain read-back and
+   * "Upfront Charges"). `idNumber` and `segment` are read from the journey for the checks. Absent: the read-back every other prepaid journey shows.
+   */
+  activation?: { idNumber: (values: Record<string, unknown>) => string | undefined; segment?: (values: Record<string, unknown>) => string | undefined };
+}): WizardStep {
+  const linesOf = opts.lines ?? allLines;
+  return {
+    key: 'checkout',
+    label: CHECKOUT_LABEL,
+    summary: [{ key: 'due', label: 'Total Payable Today', type: 'text', value: (v) => {
+      const due = at(v, 'checkoutTotals', 'totalDueQar') ?? at(v, 'checkoutTotals', 'dueTodayQar');
+      return typeof due === 'number' ? formatQar(due) : undefined;
+    } }],
+    render: ({ values, setValue, goToStepKey }) => {
+      const checkout = opts.activation ? (
+        <PrepaidOrderSummary
+          customerName={opts.customerName(values)}
+          idType={opts.idType(values)}
+          idNumber={opts.activation.idNumber(values)}
+          segment={opts.activation.segment?.(values)}
+          lines={linesOf(values)}
+          editLabel={opts.editLabel}
+          onTotalsComputed={(totals) => setValue('checkoutTotals', opts.totals ? opts.totals(totals) : totals)}
+          onValidated={(errors) => setValue('orderValidation', errors)}
+          onSummaryComputed={(rows) => setValue('cafSummary', rows)}
+          onEdit={opts.editable === false ? undefined : () => goToStepKey(opts.editStepKey ?? 'cart')}
+        />
+      ) : (
+        <PrepaidCheckout
+          customerName={opts.customerName(values)}
+          idType={opts.idType(values)}
+          lines={linesOf(values)}
+          details={opts.details?.(values)}
+          fees={opts.fees}
+          editLabel={opts.editLabel}
+          existingLine={opts.existingLine}
+          onTotalsComputed={(totals) => setValue('checkoutTotals', opts.totals ? opts.totals(totals) : totals)}
+          onEdit={opts.editable === false ? undefined : () => goToStepKey(opts.editStepKey ?? 'cart')}
+        />
+      );
+      if (!opts.before) return checkout;
+      return (
+        <div className="space-y-6">
+          {opts.before({ values, goToStepKey })}
+          {checkout}
+        </div>
+      );
+    },
+    // The activation Order Summary reports its own checks once the catalogue is read; Continue waits for them to come back clean.
+    isValid: (values) =>
+      opts.activation
+        ? Array.isArray(values.orderValidation) && values.orderValidation.length === 0 && (opts.isValid?.(values) ?? isCartValid(values))
+        : (opts.isValid?.(values) ?? isCartValid(values)),
+  };
+}

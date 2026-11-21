@@ -1,0 +1,62 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards" [pressed]
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue"
+  - region "Cards":
+    - heading "Cards" [level=3]
+    - paragraph: The card surface and the selectable-card states every card grid shares.
+    - figure "Card - the standard surface": Standard Card Card - the standard surface
+    - figure "Card - Quiet surface": Card on the Quieter Fill Card - Quiet surface
+    - figure "Selectable Card - Default, selected, highlighted - click the first to toggle it":
+      - button "Selected Hover changes the fill only" [pressed]
+      - text: Highlighted A card the app singles out Selectable Card - Default, selected, highlighted - click the first to toggle it
+    - figure "Selected Card Tick - the corner mark on a selected card": Card Selected Card Tick - the corner mark on a selected card
+    - figure "Selected Card Texture - the faint circles behind a selected card's content": Selected Card Selected Card Texture - the faint circles behind a selected card's content
+    - figure "Stat - a label over a bold value; the alert tone is the upfront charge":
+      - paragraph: Price
+      - paragraph: QAR 18,000
+      - paragraph: Upfront Charge
+      - paragraph: QAR 9,000
+      - text: Stat - a label over a bold value; the alert tone is the upfront charge
+    - figure "Selected Figure - the chosen plan's price":
+      - paragraph: Monthly Plan
+      - paragraph: QAR 145
+      - text: Selected Figure - the chosen plan's price

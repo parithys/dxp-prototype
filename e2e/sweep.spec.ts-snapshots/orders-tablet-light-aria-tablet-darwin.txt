@@ -1,0 +1,605 @@
+- main:
+  - heading "Orders" [level=1]
+  - tablist "Order Views":
+    - tab "My Orders" [selected]
+    - tab "Approval Requested"
+  - 'combobox "Order Type: All"':
+    - text: "Order Type: All"
+    - img
+  - 'combobox "Status: All"':
+    - text: "Status: All"
+    - img
+  - img
+  - textbox "Search orders":
+    - /placeholder: "Search by order #, customer, order type, status or scenario"
+  - status:
+    - img
+    - text: "1 entry is hidden: access restricted for your role."
+  - table:
+    - rowgroup:
+      - 'row "Order # Demo Content Customer Name Order Type Last Updated On Approval Status"':
+        - 'columnheader "Order #"':
+          - 'button "Order #"':
+            - text: "Order #"
+            - img
+        - columnheader "Demo Content":
+          - button "Demo Content":
+            - text: Demo Content
+            - img
+        - columnheader "Customer Name":
+          - button "Customer Name":
+            - text: Customer Name
+            - img
+        - columnheader "Order Type":
+          - button "Order Type":
+            - text: Order Type
+            - img
+        - columnheader "Last Updated On":
+          - button "Last Updated On":
+            - text: Last Updated On
+            - img
+        - columnheader "Approval Status":
+          - button "Approval Status":
+            - text: Approval Status
+            - img
+    - rowgroup:
+      - row "ORD-90035 Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed. - New Postpaid Activation 06/11/2026, 13:10 Draft":
+        - cell "ORD-90035":
+          - link "ORD-90035":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-90035
+        - cell "Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed."
+        - cell "-":
+          - link "-":
+            - /url: /customer/CUST-3003
+        - cell "New Postpaid Activation"
+        - cell "06/11/2026, 13:10"
+        - cell "Draft"
+      - row "ORD-90034 Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed. - New Postpaid Activation 05/11/2026, 09:00 Draft":
+        - cell "ORD-90034":
+          - link "ORD-90034":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-90034
+        - cell "Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed."
+        - cell "-":
+          - link "-":
+            - /url: /customer/CUST-3003
+        - cell "New Postpaid Activation"
+        - cell "05/11/2026, 09:00"
+        - cell "Draft"
+      - row "ORD-90031 Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed. - New Postpaid Activation 04/11/2026, 14:05 Draft":
+        - cell "ORD-90031":
+          - link "ORD-90031":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-90031
+        - cell "Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed."
+        - cell "-":
+          - link "-":
+            - /url: /customer/CUST-3002
+        - cell "New Postpaid Activation"
+        - cell "04/11/2026, 14:05"
+        - cell "Draft"
+      - row "ORD-90032 Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed. - New Postpaid Activation 03/11/2026, 11:00 Draft":
+        - cell "ORD-90032":
+          - link "ORD-90032":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-90032
+        - cell "Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed."
+        - cell "-":
+          - link "-":
+            - /url: /customer/CUST-3401
+        - cell "New Postpaid Activation"
+        - cell "03/11/2026, 11:00"
+        - cell "Draft"
+      - row "ORD-FAM-3207-3 Standard customer The order can proceed with direct activation without approval. Shaikha Jassim Rashid Al-Mohannadi New Postpaid Activation 03/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3207-3":
+          - link "ORD-FAM-3207-3":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3207-3
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Shaikha Jassim Rashid Al-Mohannadi":
+          - link "Shaikha Jassim Rashid Al-Mohannadi":
+            - /url: /customer/CUST-3207
+        - cell "New Postpaid Activation"
+        - cell "03/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3208-3 Standard customer The order can proceed with direct activation without approval. Hamad Khalid Saeed Al-Bakri New Postpaid Activation 03/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3208-3":
+          - link "ORD-FAM-3208-3":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3208-3
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Hamad Khalid Saeed Al-Bakri":
+          - link "Hamad Khalid Saeed Al-Bakri":
+            - /url: /customer/CUST-3208
+        - cell "New Postpaid Activation"
+        - cell "03/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3206-3 Standard customer The order can proceed with direct activation without approval. Abdulrahman Salem Hamad Al-Ali New Postpaid Activation 03/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3206-3":
+          - link "ORD-FAM-3206-3":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3206-3
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Abdulrahman Salem Hamad Al-Ali":
+          - link "Abdulrahman Salem Hamad Al-Ali":
+            - /url: /customer/CUST-3206
+        - cell "New Postpaid Activation"
+        - cell "03/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3210-3 Awaiting Approval New Postpaid Activation was submitted and requires approval. Ghanim Ali Mubarak Al-Sulaiti New Postpaid Activation 03/11/2026, 10:00 Submitted for Approval":
+        - cell "ORD-FAM-3210-3":
+          - link "ORD-FAM-3210-3":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3210-3
+        - cell "Awaiting Approval New Postpaid Activation was submitted and requires approval."
+        - cell "Ghanim Ali Mubarak Al-Sulaiti":
+          - link "Ghanim Ali Mubarak Al-Sulaiti":
+            - /url: /customer/CUST-3210
+        - cell "New Postpaid Activation"
+        - cell "03/11/2026, 10:00"
+        - cell "Submitted for Approval"
+      - row "ORD-FAM-3204-3 Standard customer The order can proceed with direct activation without approval. Yousef Mansoor Saeed Al-Ghanim New Postpaid Activation 03/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3204-3":
+          - link "ORD-FAM-3204-3":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3204-3
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Yousef Mansoor Saeed Al-Ghanim":
+          - link "Yousef Mansoor Saeed Al-Ghanim":
+            - /url: /customer/CUST-3204
+        - cell "New Postpaid Activation"
+        - cell "03/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3205-3 Standard customer The order can proceed with direct activation without approval. Latifa Khalifa Nasser Al-Suwaidi New Postpaid Activation 03/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3205-3":
+          - link "ORD-FAM-3205-3":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3205-3
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Latifa Khalifa Nasser Al-Suwaidi":
+          - link "Latifa Khalifa Nasser Al-Suwaidi":
+            - /url: /customer/CUST-3205
+        - cell "New Postpaid Activation"
+        - cell "03/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-90030 Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed. - New Postpaid Activation 02/11/2026, 10:15 Draft":
+        - cell "ORD-90030":
+          - link "ORD-90030":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-90030
+        - cell "Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed."
+        - cell "-":
+          - link "-":
+            - /url: /customer/CUST-3002
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:15"
+        - cell "Draft"
+      - row "ORD-FAM-1001 Standard customer The order can proceed with direct activation without approval. Ahmed Abdulla Hassan Al-Sulaiti New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-1001":
+          - link "ORD-FAM-1001":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-1001
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Ahmed Abdulla Hassan Al-Sulaiti":
+          - link "Ahmed Abdulla Hassan Al-Sulaiti":
+            - /url: /customer/CUST-1001
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3084 Awaiting Approval New Postpaid Activation was submitted and requires approval. Aisha Mohammed Khalid Al-Kuwari New Postpaid Activation 02/11/2026, 10:00 Submitted for Approval":
+        - cell "ORD-FAM-3084":
+          - link "ORD-FAM-3084":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3084
+        - cell "Awaiting Approval New Postpaid Activation was submitted and requires approval."
+        - cell "Aisha Mohammed Khalid Al-Kuwari":
+          - link "Aisha Mohammed Khalid Al-Kuwari":
+            - /url: /customer/CUST-3084
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Submitted for Approval"
+      - row "ORD-FAM-3202-2 Standard customer The order can proceed with direct activation without approval. Nasser Hamad Jassim Al-Attiyah New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3202-2":
+          - link "ORD-FAM-3202-2":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3202-2
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Nasser Hamad Jassim Al-Attiyah":
+          - link "Nasser Hamad Jassim Al-Attiyah":
+            - /url: /customer/CUST-3202
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3207-2 Standard customer The order can proceed with direct activation without approval. Shaikha Jassim Rashid Al-Mohannadi New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3207-2":
+          - link "ORD-FAM-3207-2":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3207-2
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Shaikha Jassim Rashid Al-Mohannadi":
+          - link "Shaikha Jassim Rashid Al-Mohannadi":
+            - /url: /customer/CUST-3207
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3208-2 Standard customer The order can proceed with direct activation without approval. Hamad Khalid Saeed Al-Bakri New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3208-2":
+          - link "ORD-FAM-3208-2":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3208-2
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Hamad Khalid Saeed Al-Bakri":
+          - link "Hamad Khalid Saeed Al-Bakri":
+            - /url: /customer/CUST-3208
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3208-5 Standard customer The order can proceed with direct activation without approval. Hamad Khalid Saeed Al-Bakri New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3208-5":
+          - link "ORD-FAM-3208-5":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3208-5
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Hamad Khalid Saeed Al-Bakri":
+          - link "Hamad Khalid Saeed Al-Bakri":
+            - /url: /customer/CUST-3208
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3211-2 Standard customer The order can proceed with direct activation without approval. Vikram Anand Rao Iyengar New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3211-2":
+          - link "ORD-FAM-3211-2":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3211-2
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Vikram Anand Rao Iyengar":
+          - link "Vikram Anand Rao Iyengar":
+            - /url: /customer/CUST-3211
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3203-2 Awaiting Approval New Postpaid Activation was submitted and requires approval. Moza Rashid Ali Al-Kaabi New Postpaid Activation 02/11/2026, 10:00 Submitted for Approval":
+        - cell "ORD-FAM-3203-2":
+          - link "ORD-FAM-3203-2":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3203-2
+        - cell "Awaiting Approval New Postpaid Activation was submitted and requires approval."
+        - cell "Moza Rashid Ali Al-Kaabi":
+          - link "Moza Rashid Ali Al-Kaabi":
+            - /url: /customer/CUST-3203
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Submitted for Approval"
+      - row "ORD-FAM-3206-2 Standard customer The order can proceed with direct activation without approval. Abdulrahman Salem Hamad Al-Ali New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3206-2":
+          - link "ORD-FAM-3206-2":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3206-2
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Abdulrahman Salem Hamad Al-Ali":
+          - link "Abdulrahman Salem Hamad Al-Ali":
+            - /url: /customer/CUST-3206
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3210-2 Standard customer The order can proceed with direct activation without approval. Ghanim Ali Mubarak Al-Sulaiti New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3210-2":
+          - link "ORD-FAM-3210-2":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3210-2
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Ghanim Ali Mubarak Al-Sulaiti":
+          - link "Ghanim Ali Mubarak Al-Sulaiti":
+            - /url: /customer/CUST-3210
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3204-2 Standard customer The order can proceed with direct activation without approval. Yousef Mansoor Saeed Al-Ghanim New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3204-2":
+          - link "ORD-FAM-3204-2":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3204-2
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Yousef Mansoor Saeed Al-Ghanim":
+          - link "Yousef Mansoor Saeed Al-Ghanim":
+            - /url: /customer/CUST-3204
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3205-2 Standard customer The order can proceed with direct activation without approval. Latifa Khalifa Nasser Al-Suwaidi New Postpaid Activation 02/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3205-2":
+          - link "ORD-FAM-3205-2":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3205-2
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Latifa Khalifa Nasser Al-Suwaidi":
+          - link "Latifa Khalifa Nasser Al-Suwaidi":
+            - /url: /customer/CUST-3205
+        - cell "New Postpaid Activation"
+        - cell "02/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-90033 Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed. - New Postpaid Activation 01/11/2026, 16:30 Draft":
+        - cell "ORD-90033":
+          - link "ORD-90033":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-90033
+        - cell "Saved draft Order was saved part-way through the journey. Eligibility checks will run again when the order is resumed."
+        - cell "-":
+          - link "-":
+            - /url: /customer/CUST-3003
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 16:30"
+        - cell "Draft"
+      - row "ORD-FAM-3201-1 Standard customer The order can proceed with direct activation without approval. Hamda Saeed Khalid Al-Dosari New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3201-1":
+          - link "ORD-FAM-3201-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3201-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Hamda Saeed Khalid Al-Dosari":
+          - link "Hamda Saeed Khalid Al-Dosari":
+            - /url: /customer/CUST-3201
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3202-1 Standard customer The order can proceed with direct activation without approval. Nasser Hamad Jassim Al-Attiyah New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3202-1":
+          - link "ORD-FAM-3202-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3202-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Nasser Hamad Jassim Al-Attiyah":
+          - link "Nasser Hamad Jassim Al-Attiyah":
+            - /url: /customer/CUST-3202
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3207-1 Standard customer The order can proceed with direct activation without approval. Shaikha Jassim Rashid Al-Mohannadi New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3207-1":
+          - link "ORD-FAM-3207-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3207-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Shaikha Jassim Rashid Al-Mohannadi":
+          - link "Shaikha Jassim Rashid Al-Mohannadi":
+            - /url: /customer/CUST-3207
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3208-1 Standard customer The order can proceed with direct activation without approval. Hamad Khalid Saeed Al-Bakri New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3208-1":
+          - link "ORD-FAM-3208-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3208-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Hamad Khalid Saeed Al-Bakri":
+          - link "Hamad Khalid Saeed Al-Bakri":
+            - /url: /customer/CUST-3208
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3208-4 Standard customer The order can proceed with direct activation without approval. Hamad Khalid Saeed Al-Bakri New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3208-4":
+          - link "ORD-FAM-3208-4":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3208-4
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Hamad Khalid Saeed Al-Bakri":
+          - link "Hamad Khalid Saeed Al-Bakri":
+            - /url: /customer/CUST-3208
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3209-1 Awaiting Approval New Postpaid Activation was submitted and requires approval. Reem Abdulla Nasser Al-Jaber New Postpaid Activation 01/11/2026, 10:00 Submitted for Approval":
+        - cell "ORD-FAM-3209-1":
+          - link "ORD-FAM-3209-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3209-1
+        - cell "Awaiting Approval New Postpaid Activation was submitted and requires approval."
+        - cell "Reem Abdulla Nasser Al-Jaber":
+          - link "Reem Abdulla Nasser Al-Jaber":
+            - /url: /customer/CUST-3209
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Submitted for Approval"
+      - row "ORD-FAM-3211-1 Standard customer The order can proceed with direct activation without approval. Vikram Anand Rao Iyengar New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3211-1":
+          - link "ORD-FAM-3211-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3211-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Vikram Anand Rao Iyengar":
+          - link "Vikram Anand Rao Iyengar":
+            - /url: /customer/CUST-3211
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3212-1 Standard customer The order can proceed with direct activation without approval. Naveed Iqbal Ahmed Chaudhry New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3212-1":
+          - link "ORD-FAM-3212-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3212-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Naveed Iqbal Ahmed Chaudhry":
+          - link "Naveed Iqbal Ahmed Chaudhry":
+            - /url: /customer/CUST-3212
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3203-1 Standard customer The order can proceed with direct activation without approval. Moza Rashid Ali Al-Kaabi New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3203-1":
+          - link "ORD-FAM-3203-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3203-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Moza Rashid Ali Al-Kaabi":
+          - link "Moza Rashid Ali Al-Kaabi":
+            - /url: /customer/CUST-3203
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3206-1 Standard customer The order can proceed with direct activation without approval. Abdulrahman Salem Hamad Al-Ali New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3206-1":
+          - link "ORD-FAM-3206-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3206-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Abdulrahman Salem Hamad Al-Ali":
+          - link "Abdulrahman Salem Hamad Al-Ali":
+            - /url: /customer/CUST-3206
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3206-4 Standard customer The order can proceed with direct activation without approval. Abdulrahman Salem Hamad Al-Ali New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3206-4":
+          - link "ORD-FAM-3206-4":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3206-4
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Abdulrahman Salem Hamad Al-Ali":
+          - link "Abdulrahman Salem Hamad Al-Ali":
+            - /url: /customer/CUST-3206
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3210-1 Standard customer The order can proceed with direct activation without approval. Ghanim Ali Mubarak Al-Sulaiti New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3210-1":
+          - link "ORD-FAM-3210-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3210-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Ghanim Ali Mubarak Al-Sulaiti":
+          - link "Ghanim Ali Mubarak Al-Sulaiti":
+            - /url: /customer/CUST-3210
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3204-1 Standard customer The order can proceed with direct activation without approval. Yousef Mansoor Saeed Al-Ghanim New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3204-1":
+          - link "ORD-FAM-3204-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3204-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Yousef Mansoor Saeed Al-Ghanim":
+          - link "Yousef Mansoor Saeed Al-Ghanim":
+            - /url: /customer/CUST-3204
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3205-1 Standard customer The order can proceed with direct activation without approval. Latifa Khalifa Nasser Al-Suwaidi New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3205-1":
+          - link "ORD-FAM-3205-1":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3205-1
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Latifa Khalifa Nasser Al-Suwaidi":
+          - link "Latifa Khalifa Nasser Al-Suwaidi":
+            - /url: /customer/CUST-3205
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-FAM-3205-4 Standard customer The order can proceed with direct activation without approval. Latifa Khalifa Nasser Al-Suwaidi New Postpaid Activation 01/11/2026, 10:00 Complete":
+        - cell "ORD-FAM-3205-4":
+          - link "ORD-FAM-3205-4":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-FAM-3205-4
+        - cell "Standard customer The order can proceed with direct activation without approval."
+        - cell "Latifa Khalifa Nasser Al-Suwaidi":
+          - link "Latifa Khalifa Nasser Al-Suwaidi":
+            - /url: /customer/CUST-3205
+        - cell "New Postpaid Activation"
+        - cell "01/11/2026, 10:00"
+        - cell "Complete"
+      - row "ORD-92023 Loyalty discount Customer is eligible for a Loyalty discount on the Red Unlimited plan. Karim Elias Youssef Haddad New Postpaid Activation 09/10/2026, 11:04 Complete":
+        - cell "ORD-92023":
+          - link "ORD-92023":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92023
+        - cell "Loyalty discount Customer is eligible for a Loyalty discount on the Red Unlimited plan."
+        - cell "Karim Elias Youssef Haddad":
+          - link "Karim Elias Youssef Haddad":
+            - /url: /customer/CUST-3028
+        - cell "New Postpaid Activation"
+        - cell "09/10/2026, 11:04"
+        - cell "Complete"
+      - row "ORD-92022 Cross-sales offer Customer accepted the Red 500 offer. The plan is automatically selected based on the offer. Rajesh Kumar Pillai New Postpaid Activation 08/10/2026, 11:47 Complete":
+        - cell "ORD-92022":
+          - link "ORD-92022":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92022
+        - cell "Cross-sales offer Customer accepted the Red 500 offer. The plan is automatically selected based on the offer."
+        - cell "Rajesh Kumar Pillai":
+          - link "Rajesh Kumar Pillai":
+            - /url: /customer/CUST-3011
+        - cell "New Postpaid Activation"
+        - cell "08/10/2026, 11:47"
+        - cell "Complete"
+      - row "ORD-92021 Returned to the queue Passport order was returned to the Sales Agent to complete the missing information. Lakshmi Venkat Iyer New Postpaid Activation 07/10/2026, 14:40 Submitted for Approval":
+        - cell "ORD-92021":
+          - link "ORD-92021":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92021
+        - cell "Returned to the queue Passport order was returned to the Sales Agent to complete the missing information."
+        - cell "Lakshmi Venkat Iyer":
+          - link "Lakshmi Venkat Iyer":
+            - /url: /customer/CUST-3032
+        - cell "New Postpaid Activation"
+        - cell "07/10/2026, 14:40"
+        - cell "Submitted for Approval"
+      - row "ORD-92020 Dropped by approver Order was cancelled after the credit check failed. Mohamed Nabil Ibrahim Soliman New Postpaid Activation 07/10/2026, 14:33 Cancelled":
+        - cell "ORD-92020":
+          - link "ORD-92020":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92020
+        - cell "Dropped by approver Order was cancelled after the credit check failed."
+        - cell "Mohamed Nabil Ibrahim Soliman":
+          - link "Mohamed Nabil Ibrahim Soliman":
+            - /url: /customer/CUST-3067
+        - cell "New Postpaid Activation"
+        - cell "07/10/2026, 14:33"
+        - cell "Cancelled"
+      - row "ORD-92019 Rejected - Correction Order was returned for correction because the ID details did not match the scanned document. Zahid Mehmood Butt New Postpaid Activation 06/10/2026, 14:26 Rejected - Correction":
+        - cell "ORD-92019":
+          - link "ORD-92019":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92019
+        - cell "Rejected - Correction Order was returned for correction because the ID details did not match the scanned document."
+        - cell "Zahid Mehmood Butt":
+          - link "Zahid Mehmood Butt":
+            - /url: /customer/CUST-3063
+        - cell "New Postpaid Activation"
+        - cell "06/10/2026, 14:26"
+        - cell "Rejected - Correction"
+      - row "ORD-92018 Approved after review The line-limit request was approved by Credit Control and the order was completed. Sunil Chandana Kumara Perera New Postpaid Activation 06/10/2026, 14:19 Complete":
+        - cell "ORD-92018":
+          - link "ORD-92018":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92018
+        - cell "Approved after review The line-limit request was approved by Credit Control and the order was completed."
+        - cell "Sunil Chandana Kumara Perera":
+          - link "Sunil Chandana Kumara Perera":
+            - /url: /customer/CUST-3014
+        - cell "New Postpaid Activation"
+        - cell "06/10/2026, 14:19"
+        - cell "Complete"
+      - row "ORD-92017 MADA (also Retired) Customer is eligible for both MADA and Retired benefits. MADA was selected for this order. Fahad Saeed Ali Al-Ansari New Postpaid Activation 05/10/2026, 11:12 Submitted for Approval":
+        - cell "ORD-92017":
+          - link "ORD-92017":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92017
+        - cell "MADA (also Retired) Customer is eligible for both MADA and Retired benefits. MADA was selected for this order."
+        - cell "Fahad Saeed Ali Al-Ansari":
+          - link "Fahad Saeed Ali Al-Ansari":
+            - /url: /customer/CUST-3027
+        - cell "New Postpaid Activation"
+        - cell "05/10/2026, 11:12"
+        - cell "Submitted for Approval"
+      - row "ORD-92015 HRN + B2B2C Customer requires an HRN advance payment and B2B2C employer verification. The B2B2C discount also applies. Imran Ahmed Khan Qureshi New Postpaid Activation 04/10/2026, 11:48 Submitted for Approval":
+        - cell "ORD-92015":
+          - link "ORD-92015":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92015
+        - cell "HRN + B2B2C Customer requires an HRN advance payment and B2B2C employer verification. The B2B2C discount also applies."
+        - cell "Imran Ahmed Khan Qureshi":
+          - link "Imran Ahmed Khan Qureshi":
+            - /url: /customer/CUST-3026
+        - cell "New Postpaid Activation"
+        - cell "04/10/2026, 11:48"
+        - cell "Submitted for Approval"
+      - row "ORD-92016 MADA + B2B2C employer Customer is eligible for MADA and has a B2B2C employer. MADA was selected and the order is also flagged as B2B2C. Nasser Mohammed Saad Al-Hajri New Postpaid Activation 04/10/2026, 11:05 Submitted for Approval":
+        - cell "ORD-92016":
+          - link "ORD-92016":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92016
+        - cell "MADA + B2B2C employer Customer is eligible for MADA and has a B2B2C employer. MADA was selected and the order is also flagged as B2B2C."
+        - cell "Nasser Mohammed Saad Al-Hajri":
+          - link "Nasser Mohammed Saad Al-Hajri":
+            - /url: /customer/CUST-3024
+        - cell "New Postpaid Activation"
+        - cell "04/10/2026, 11:05"
+        - cell "Submitted for Approval"
+      - row "ORD-92014 GCC ID + line cap GCC ID customer has reached the 2-line limit. The order requires approval based on ID type and line limit. Khalid Saeed Rashid Al-Mazrouei New Postpaid Activation 03/10/2026, 11:41 Submitted for Approval":
+        - cell "ORD-92014":
+          - link "ORD-92014":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92014
+        - cell "GCC ID + line cap GCC ID customer has reached the 2-line limit. The order requires approval based on ID type and line limit."
+        - cell "Khalid Saeed Rashid Al-Mazrouei":
+          - link "Khalid Saeed Rashid Al-Mazrouei":
+            - /url: /customer/CUST-1005
+        - cell "New Postpaid Activation"
+        - cell "03/10/2026, 11:41"
+        - cell "Submitted for Approval"
+      - row "ORD-92013 HRN + line cap Expat customer has reached the 2-line limit and also requires an HRN advance payment. Kyaw Zin Htet New Postpaid Activation 03/10/2026, 11:34 Submitted for Approval":
+        - cell "ORD-92013":
+          - link "ORD-92013":
+            - /url: /order-management/order-approval-detail-attachments-order-details-activities-a?id=ORD-92013
+        - cell "HRN + line cap Expat customer has reached the 2-line limit and also requires an HRN advance payment."
+        - cell "Kyaw Zin Htet":
+          - link "Kyaw Zin Htet":
+            - /url: /customer/CUST-3064
+        - cell "New Postpaid Activation"
+        - cell "03/10/2026, 11:34"
+        - cell "Submitted for Approval"
+  - text: Page 1 of 2
+  - navigation "Pagination":
+    - button "Previous page" [disabled]:
+      - img
+      - text: Previous
+    - button "Page 1": "1"
+    - button "Page 2": "2"
+    - button "Next page":
+      - text: Next
+      - img

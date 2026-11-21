@@ -1,0 +1,54 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers" [pressed]
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue"
+  - region "Modals & Drawers":
+    - heading "Modals & Drawers" [level=3]
+    - paragraph: "Open each to see the real dialog: the modal for short confirmations, the side drawer for forms and reference."
+    - figure "Modal - centred confirmation dialog":
+      - button "Open Modal"
+      - text: Modal - centred confirmation dialog
+    - figure "OverlayPortal - renders its children on the page body, outside the opener, so nothing paints over it":
+      - button "Show Portal Content"
+      - text: OverlayPortal - renders its children on the page body, outside the opener, so nothing paints over it
+    - figure "Drawer - side panel with title, body and footer":
+      - button "Open Drawer"
+      - text: Drawer - side panel with title, body and footer

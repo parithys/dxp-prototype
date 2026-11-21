@@ -1,0 +1,50 @@
+- main:
+  - heading "Mobile Services" [level=1]
+  - text: Journeys available to Direct Sales across Mobile Services.
+  - link "All":
+    - /url: /mobile
+  - link "Service Management":
+    - /url: /mobile/service-management
+  - link "Customer & Account":
+    - /url: /mobile/customer-account
+  - img
+  - heading "Service Management" [level=2]
+  - paragraph: "View and manage active mobile services: SIM replacements and swaps, eSIM activation and conversions, device upgrades, suspension and termination."
+  - link "Available 01 View Mobile Service View account, usage, and service details Start now":
+    - /url: /customer-search
+    - text: Available 01 View Mobile Service
+    - paragraph: View account, usage, and service details
+    - text: Start now
+    - img
+  - text: Planned 02 eSIM Activation
+  - paragraph: Provision an eSIM for a compatible device
+  - text: Planned 03 Physical SIM to eSIM
+  - paragraph: Convert a physical SIM to an eSIM profile
+  - text: Planned 04 eSIM to Physical SIM
+  - paragraph: Revert an eSIM to a physical SIM card
+  - text: Planned 05 Device Upgrade
+  - paragraph: Upgrade a bundled handset on an active contract
+  - text: Planned 06 Suspend Service
+  - paragraph: Temporarily suspend a mobile line
+  - text: Planned 07 Resume Service
+  - paragraph: Reactivate a suspended mobile line
+  - text: Planned 08 Terminate Service
+  - paragraph: Close and terminate a mobile contract
+  - text: 1 of 8 available
+  - img
+  - heading "Customer & Account" [level=2]
+  - paragraph: Validate identity, update customer details, and manage service ownership.
+  - link "Available 01 Customer Validation Validate a customer's identity and QID Start now":
+    - /url: /identity-customer-management/passport-to-qid-update-wizard
+    - text: Available 01 Customer Validation
+    - paragraph: Validate a customer's identity and QID
+    - text: Start now
+    - img
+  - link "Partly Available 02 Contact Information Update Update email, address, or phone details Check compatibility":
+    - /url: /customer-search
+    - text: Partly Available 02 Contact Information Update
+    - paragraph: Update email, address, or phone details
+    - text: Check compatibility
+  - text: Planned 03 Authorised Representative
+  - paragraph: Add or manage an authorised representative
+  - text: 1 of 3 available

@@ -1,0 +1,154 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls" [pressed]
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue"
+  - region "Form Controls":
+    - heading "Form Controls" [level=3]
+    - paragraph: Fields and choice controls with their default, filled, error, read-only and disabled states.
+    - figure "Input - Default and helper text":
+      - text: Full Name
+      - textbox "Full Name"
+      - text: Email
+      - textbox "Email"
+      - text: We send the receipt here. Input - Default and helper text
+    - figure "Input - Filled, error, read-only, disabled":
+      - text: Filled
+      - textbox "Filled": Ahmed Al-Sulaiti
+      - text: Error
+      - textbox "Error" [invalid]: abc
+      - alert: Enter a valid value.
+      - text: Read-Only
+      - textbox "Read-Only": "28456701234"
+      - text: Disabled
+      - textbox "Disabled" [disabled]: Not editable
+      - text: Input - Filled, error, read-only, disabled
+    - figure "Input - Types - email, number, password, date, time and date-time fields":
+      - text: Email
+      - textbox "Email": name@example.qa
+      - text: Amount
+      - spinbutton "Amount": "250"
+      - text: Password
+      - textbox "Password": secret
+      - text: Date
+      - textbox "Date": 2026-11-09
+      - text: Time
+      - textbox "Time": 10:30
+      - text: Date and Time
+      - textbox "Date and Time": 2026-11-09T10:30
+      - text: Input - Types - email, number, password, date, time and date-time fields
+    - figure "Input - With leading addon - the phone number field uses it":
+      - text: Mobile Number
+      - combobox "Country calling code, currently Qatar +974":
+        - text: "+974"
+        - img
+      - textbox "Mobile Number"
+      - text: Input - With leading addon - the phone number field uses it
+    - 'figure "Select - searchable dropdown: default, error, disabled"':
+      - text: Plan Type
+      - combobox "Plan Type"
+      - button "Open list":
+        - img
+      - text: With Error
+      - combobox "With Error" [invalid]
+      - button "Open list":
+        - img
+      - alert: Choose an option.
+      - text: Disabled
+      - combobox "Disabled" [disabled]: Option One
+      - button "Open list" [disabled]:
+        - img
+      - text: "Select - searchable dropdown: default, error, disabled"
+    - figure "Search Field - with clear button once it has text":
+      - img
+      - textbox "Search":
+        - /placeholder: Search customers
+      - img
+      - textbox "Search filled": Al-Sulaiti
+      - button "Clear search":
+        - img
+      - text: Search Field - with clear button once it has text
+    - figure "Textarea - default and error":
+      - text: Comments
+      - textbox "Comments"
+      - text: Required Comment
+      - textbox "Required Comment" [invalid]
+      - alert: Enter a comment.
+      - text: Textarea - default and error
+    - figure "Label - names a control; clicking it focuses or toggles the control":
+      - checkbox "I agree to the terms"
+      - text: I agree to the terms
+      - checkbox "Disabled control" [disabled]
+      - text: Disabled control Label - names a control; clicking it focuses or toggles the control
+    - figure "Checkbox - unchecked, checked, disabled":
+      - checkbox "Unchecked"
+      - text: Unchecked
+      - checkbox "Checked" [checked]
+      - text: Checked
+      - checkbox "Disabled" [disabled]
+      - text: Disabled Checkbox - unchecked, checked, disabled
+    - figure "Radio - unselected, selected, disabled":
+      - radio "Unselected"
+      - text: Unselected
+      - radio "Selected" [checked]
+      - text: Selected
+      - radio "Disabled" [disabled]
+      - text: Disabled Radio - unselected, selected, disabled
+    - 'figure "Choice Cards - icon cards: default and selected (the ID type choice)"':
+      - paragraph: ID Type
+      - radiogroup "ID Type":
+        - radio "Qatar ID (QID)":
+          - img
+          - text: Qatar ID (QID)
+        - radio "Passport" [checked]:
+          - img
+          - text: Passport
+        - radio "GCC ID":
+          - img
+          - text: GCC ID
+        - radio "Diplomatic ID":
+          - img
+          - text: Diplomatic ID
+      - text: "Choice Cards - icon cards: default and selected (the ID type choice)"
+    - figure "Signature Pad - draw to enable Clear and Done; the ink is a fixed dark colour so it reads on a white form":
+      - button "Clear" [disabled]
+      - button "Cancel"
+      - button "Done" [disabled]
+      - text: Signature Pad - draw to enable Clear and Done; the ink is a fixed dark colour so it reads on a white form

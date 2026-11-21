@@ -1,0 +1,97 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs" [pressed]
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue"
+  - region "Tabs":
+    - heading "Tabs" [level=3]
+    - paragraph: "One Tab Strip, two variants: the underline for navigating between sections, the segmented pill for filtering what is shown."
+    - figure "Tab Strip - Navigation (default) - underline":
+      - tablist:
+        - tab "Open Tasks 4" [selected]
+        - tab "Drafts 3"
+        - tab "Completed"
+      - text: Tab Strip - Navigation (default) - underline
+    - 'figure "Tabs - horizontal: the underline strip with its panel"':
+      - tablist "Specimen Sections":
+        - tab "Summary" [selected]
+        - tab "History"
+      - paragraph: Summary panel content.
+      - text: "Tabs - horizontal: the underline strip with its panel"
+    - figure "NestedTabs - inside a tab panel, a Tab Strip is Level 2 and keeps the underline":
+      - tablist:
+        - tab "First" [selected]
+        - tab "Second"
+      - text: NestedTabs - inside a tab panel, a Tab Strip is Level 2 and keeps the underline
+    - 'figure "PageLevelTabs - resets to page level: the same Tab Strip is Level 1"':
+      - tablist:
+        - tab "First" [selected]
+        - tab "Second"
+      - text: "PageLevelTabs - resets to page level: the same Tab Strip is Level 1"
+    - figure "Tabs - Vertical rail (IconRail) - the numbered step rail the guided wizards use":
+      - navigation "Customer sections":
+        - button "Collapse sections" [expanded]
+        - list:
+          - listitem:
+            - button "Contact":
+              - img
+              - text: Contact
+          - listitem:
+            - button "Address":
+              - img
+              - text: Address
+          - listitem:
+            - button "Plan":
+              - img
+              - text: Plan
+      - paragraph: Contact step content.
+      - text: Tabs - Vertical rail (IconRail) - the numbered step rail the guided wizards use
+    - figure "Tab Strip, filter - variant=filter - segmented pill":
+      - tablist:
+        - tab "Offers" [selected]
+        - tab "Standard Plans"
+        - tab "Special Offers"
+      - text: Tab Strip, filter - variant=filter - segmented pill
+    - figure "Option Toggle - values of one field - an add-on's billing frequency":
+      - radiogroup "Billing Frequency Specimen":
+        - radio "Monthly · QAR 20" [checked]
+        - radio "Weekly · QAR 5"
+        - radio "One-Time · QAR 8"
+      - text: Option Toggle - values of one field - an add-on's billing frequency

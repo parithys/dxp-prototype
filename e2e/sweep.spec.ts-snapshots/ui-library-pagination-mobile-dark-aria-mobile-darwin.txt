@@ -1,0 +1,62 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination" [pressed]
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue"
+  - region "Pagination":
+    - heading "Pagination" [level=3]
+    - paragraph: The page bar and the pager inside it.
+    - 'figure "Pagination - Page n of N, with its pager: Previous, numbered pages with gaps, Next"':
+      - text: Page 3 of 10
+      - navigation "Pagination":
+        - button "Previous page":
+          - img
+          - text: Previous
+        - button "Page 1": "1"
+        - button "Page 2": "2"
+        - button "Page 3": "3"
+        - button "Page 4": "4"
+        - button "Page 8": "8"
+        - button "Page 9": "9"
+        - button "Page 10": "10"
+        - button "Next page":
+          - text: Next
+          - img
+      - text: "Pagination - Page n of N, with its pager: Previous, numbered pages with gaps, Next"

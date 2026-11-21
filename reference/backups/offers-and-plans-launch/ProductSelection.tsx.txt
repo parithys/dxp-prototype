@@ -1,0 +1,215 @@
+import { CARD_IDLE, CARD_SELECTED, SelectedTick, CrossSalesStep, journeyLabel } from '../../../capabilities';
+import type { CrossSalesValue, GuidedContactValue, Offer } from '../../../capabilities';
+import { useEffect } from 'react';
+import type { NavigateFunction } from '../../../lib/router';
+
+import { notificationActions } from '../../../stores/notificationSlice';
+import type { EntityKind } from '../../../engines/mockDataEngine';
+import type { EligibilityResult } from '../../../components/domain/eligibilityTypes';
+import { Radio } from '../../../components/primitives/Radio';
+import { Icon } from '../../../components/primitives/Icon';
+import { HOME_PRODUCT_ICON } from './homeProductIcon';
+import { clearAndQuiet, handOverToJourney, productEligibilityClear, selectProduct } from './productChoice';
+import { ProductEligibility } from './ProductEligibility';
+import { StartCards } from './StartCards';
+import { ID_TYPE_NOTICE, idTypeApprovalOf } from './idTypeNotice';
+import { HOME_PRODUCTS, IN_JOURNEY_OFFERS, PRODUCTS, PRODUCT_OF_OFFER_JOURNEY, homeProductOfOffer, mnpTypeOfOffer } from '../products';
+import type { HomeProduct, MnpType, ConnectionProduct } from '../products';
+import type { ConnectionJourney } from '../newConnectionModel';
+import { store } from '../../../stores/store';
+import { Label } from '@/components/ui/label';
+
+/** What the product step needs from the journey. */
+
+/** What the product step needs from the journey. */
+export interface ProductStepContext {
+  wizardId: string;
+  /** 'connection' (New Connection) or 'home' (New Home Connection): which products Product Selection offers. */
+  /** 'connection' (New Connection) or 'home' (New Home Connection): which products Product Selection offers. */
+  journey: ConnectionJourney;
+  /** 'new' (Agent 360 / Mobile) or 'existing' (Customer 360) - how Customer Verification treated the customer. */
+  /** 'new' (Agent 360 / Mobile) or 'existing' (Customer 360) - how Customer Verification treated the customer. */
+  flow: 'new' | 'existing';
+  existingCustomerId: string | undefined;
+  applyCrossSales: (setValue: (field: string, value: unknown) => void, v: CrossSalesValue) => void;
+  navigate: NavigateFunction;
+  createRecord: (kind: EntityKind, record: Record<string, unknown>) => Promise<void>;
+}
+
+/**
+ * Product selection: the point in the one New Connection journey where the agent, with the customer already identified,
+ * chooses what to sell. The customer's recommended offers (when there are any) sit above the four products; choosing a
+ * product, or selecting an offer for one, continues in THIS wizard - there is no exit and no restart. The eligibility
+ * checks that depend on the product (ID-type routing, collections, line cap) are judged here for the product chosen, and
+ * a billing account is resolved here for the products that have one.
+ */
+
+/**
+ * Product selection: the point in the one New Connection journey where the agent, with the customer already identified,
+ * chooses what to sell. The customer's recommended offers (when there are any) sit above the four products; choosing a
+ * product, or selecting an offer for one, continues in THIS wizard - there is no exit and no restart. The eligibility
+ * checks that depend on the product (ID-type routing, collections, line cap) are judged here for the product chosen, and
+ * a billing account is resolved here for the products that have one.
+ */
+export function ProductSelection({
+  values,
+  setValue,
+  goNext,
+  ctx,
+  variant = 'cards',
+}: {
+  values: Record<string, unknown>;
+  setValue: (field: string, value: unknown) => void;
+  /** Moves the wizard on one step (the one its own Continue calls). */
+  /** Moves the wizard on one step (the one its own Continue calls). */
+  goNext: () => void;
+  ctx: ProductStepContext;
+  /** 'buttons': the mobile page, whose products are the footer buttons (New Fixed Line, New MNP, New Prepaid, New Postpaid). 'cards': the home product cards. */
+  /** 'buttons': the mobile page, whose products are the footer buttons (New Fixed Line, New MNP, New Prepaid, New Postpaid). 'cards': the home product cards. */
+  variant?: 'cards' | 'buttons' | 'launch';
+}) {
+  const product = values.product as ConnectionProduct | undefined;
+  const mnpType = values.mnpType as MnpType | undefined;
+  const homeProduct = values.homeProduct as HomeProduct | undefined;
+  const homeJourney = ctx.journey === 'home';
+  const contact = values.contact as GuidedContactValue | undefined;
+  const eligibility = values.eligibility as EligibilityResult | undefined;
+  const crossSales = values.crossSales as CrossSalesValue | undefined;
+
+  // 'launch': a new customer has no cross-sales offer, so there is no Recommended Offers page - the five ways to start are the page itself, as cards.
+  const launch = variant === 'launch';
+  const buttons = variant === 'buttons' || launch;
+  // A product chosen by a footer button (or named by the entry point) moves on by itself once its eligibility is judged and
+  // quiet. The flag is cleared as it fires, so coming Back to this page later never skips it again.
+  // An offer the agent selected (Select Offer) also goes on when its eligibility routes the order for approval: the routing is shown on this page
+  // and the order is held when it is submitted, and there is no Continue here to go on with.
+  const advance = values.productPreselected === true && Boolean(product) && (values.advanceOnApproval === true ? productEligibilityClear(values, { requireHomeKind: homeJourney }) : clearAndQuiet(values, { requireHomeKind: homeJourney }));
+  useEffect(() => {
+    if (!advance || new URLSearchParams(window.location.search).get('mirror') === '1') return;
+    // A Recommended Offer moves on at once, so the ID type's approval (judged now the journey is known) cannot be read on this page: the page it lands on says it.
+    if (values.advanceOnApproval === true && idTypeApprovalOf(eligibility)) setValue(ID_TYPE_NOTICE, true);
+    setValue('productPreselected', false);
+    setValue('advanceOnApproval', false);
+    goNext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advance]);
+  // The mobile page moves on by itself once the product (and its kind) is chosen; the home cards wait for Continue.
+  const chooseProduct = (next: ConnectionProduct, nextMnpType?: MnpType, nextHome?: HomeProduct) => {
+    selectProduct(ctx, values, setValue, next, { mnpType: nextMnpType, homeProduct: nextHome, advance: buttons });
+  };
+
+  const onOfferChange = (v: CrossSalesValue) => {
+    const target = v.decision === 'accepted' ? PRODUCT_OF_OFFER_JOURNEY[v.journey as never] : undefined;
+    if (target) chooseProduct(target, mnpTypeOfOffer(v.journey), homeProductOfOffer(v.journey));
+    ctx.applyCrossSales(setValue, v);
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* The billing account the product needs is selected or created by its Billing Profile step (billingStep.headless). */}
+
+      {/* Recommended offers belong to New Connection; New Home Connection goes straight to the home products. */}
+      {launch && <StartCards values={values} setValue={setValue} goNext={goNext} ctx={ctx} choose={chooseProduct} />}
+
+      {/* A connection added to a Family Package is on the package's plan: there is no offer to choose, only the product's eligibility to judge. */}
+      {!homeJourney && !launch && !values.familyLine && (
+        <CrossSalesStep
+          customerId={eligibility?.customerId}
+          value={crossSales ?? {}}
+          onChange={onOfferChange}
+          // An offer for another journey (an upgrade) opens that journey for the customer identified here: this draft has done its job.
+          onHandOff={(route, customer) => handOverToJourney(ctx, route, customer)}
+          // Select Offer on a card: the offer's product is chosen (onChange above), then the page moves on by itself once that product's eligibility is
+          // judged and quiet - the same hand-over the footer buttons use. Without this the offer was only selected and the agent was left on the page.
+          onContinue={() => {
+            setValue('advanceOnApproval', true);
+            setValue('productPreselected', true);
+          }}
+          journey={IN_JOURNEY_OFFERS}
+          // An existing customer sees every offer type, topped up with sample offers; a new customer sees only what they have.
+          showAllOfferTypes={eligibility?.isExistingCustomer === true}
+          onInterestedOffer={async (offer: Offer) => {
+            const leadId = `LEAD-${Date.now().toString().slice(-6)}`;
+            await ctx.createRecord('leads', {
+              leadId,
+              serviceNeeded: journeyLabel(offer.serviceJourney) ?? 'Mobile',
+              status: 'New',
+              ownerId: store.getState().auth.profile?.userId ?? null,
+              createdVia: 'New Connection - Cross Sales Offer',
+              offerId: offer.offerId,
+              offerName: offer.offerName,
+              customerId: eligibility?.customerId,
+              mobileNumber: contact?.moiResult?.phone,
+            });
+            store.dispatch(notificationActions.pushToast('success', `Lead ${leadId} has been created`, { key: `lead-${leadId}` }));
+          }}
+        />
+      )}
+
+      <section aria-labelledby="product-choice" className="space-y-3">
+        {!buttons && (
+          <>
+          <h3 id="product-choice" className="title title-lg">
+            {homeJourney ? 'Which connection does the customer want?' : 'What does the customer want?'}
+          </h3>
+          {homeJourney ? (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,11rem),1fr))] gap-3" role="radiogroup" aria-labelledby="product-choice">
+              {HOME_PRODUCTS.map((p) => {
+                const selected = product === 'fixed-line' && homeProduct === p.key;
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    title={p.description}
+                    onClick={() => chooseProduct('fixed-line', undefined, p.key)}
+                    className={`choice-tile ${
+                      selected
+                        ? `${CARD_SELECTED} text-[var(--field-card-selected)]`
+                        : 'card-idle text-fg'
+                    }`}
+                  >
+                    {selected && <SelectedTick />}
+                    <span className={`option-glyph ${selected ? 'glyph-chosen' : 'icon-tint'}`}>
+                      <Icon path={HOME_PRODUCT_ICON[p.key]} className="size-6 " strokeWidth={p.key === 'fibre' ? 1.4 : undefined} />
+                    </span>
+                    <span className="text-[length:var(--fs-caption)] font-medium text-center">{p.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div role="radiogroup" aria-labelledby="product-choice" className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+              {PRODUCTS.map((p) => {
+                const selected = product === p.key;
+                return (
+                  <Label key={p.key} className={`row-start card-frame p-4 cursor-pointer ${selected ? CARD_SELECTED : CARD_IDLE}`}>
+                    <Radio name="new-connection-product" className="mt-1" checked={selected} onChange={() => chooseProduct(p.key, p.key === 'mnp' ? (mnpType ?? 'postpaid') : undefined, p.key === 'fixed-line' ? homeProduct : undefined)} />
+                    <span>
+                      <span className="block text-fg font-medium">{p.label}</span>
+                      <span className="block caption-secondary">{p.description}</span>
+                    </span>
+                  </Label>
+                );
+              })}
+            </div>
+          )}
+          </>
+        )}
+      </section>
+
+      {/* What depends on the product: its eligibility rules, judged for the product chosen. Silent on a clean pass. */}
+      {/* The eligibility outcomes (collections, line limits, approval routing) are the agent's: not part of the customer's pop-up. */}
+      <div className="agent-only">
+        <ProductEligibility
+          values={values}
+          setValue={setValue}
+          flow={ctx.flow}
+          existingCustomerId={ctx.existingCustomerId}
+          onSwitchToPrepaid={product === 'prepaid' || product === 'fixed-line' ? undefined : () => chooseProduct('prepaid')}
+        />
+      </div>
+    </div>
+  );
+}

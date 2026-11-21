@@ -1,0 +1,93 @@
+- main:
+  - heading "Component Showcase" [level=1]
+  - paragraph: Development only. Compare the themed shadcn/ui components with the app's own; use the header's theme toggle for dark.
+  - heading "Existing Versus Themed" [level=2]
+  - text: Existing shadcn/ui, themed Primary
+  - button "Primary"
+  - button "Primary"
+  - button "Primary"
+  - button "Primary"
+  - button "Primary"
+  - button "Primary"
+  - text: Secondary
+  - button "Secondary"
+  - button "Secondary"
+  - button "Secondary"
+  - button "Secondary"
+  - button "Secondary"
+  - button "Secondary"
+  - text: Tertiary
+  - button "Tertiary"
+  - button "Tertiary"
+  - button "Tertiary"
+  - button "Tertiary"
+  - button "Tertiary"
+  - button "Tertiary"
+  - text: Destructive
+  - button "Destructive"
+  - button "Destructive"
+  - button "Destructive"
+  - button "Destructive"
+  - button "Destructive"
+  - button "Destructive"
+  - text: Disabled
+  - button "Primary" [disabled]
+  - button "Secondary" [disabled]
+  - button "Destructive" [disabled]
+  - button "Primary" [disabled]
+  - button "Secondary" [disabled]
+  - button "Destructive" [disabled]
+  - text: Leading Icon
+  - button "Add Line"
+  - button "Add Line"
+  - text: Trailing Icon
+  - button "Continue"
+  - button "Continue"
+  - text: Icon Only
+  - button "Search":
+    - img
+  - button "Search"
+  - text: Input Full Name
+  - textbox "Full Name"
+  - text: Full Name
+  - textbox "Full Name"
+  - text: Input Filled Full Name
+  - textbox "Full Name": Fatima Al-Kuwari
+  - text: Full Name
+  - textbox "Full Name": Fatima Al-Kuwari
+  - text: Input Error Full Name
+  - textbox "Full Name" [invalid]
+  - alert: Enter the full name
+  - text: Full Name
+  - textbox "Full Name" [invalid]
+  - text: Input Disabled Full Name
+  - textbox "Full Name" [disabled]: Fatima Al-Kuwari
+  - text: Full Name
+  - textbox "Full Name" [disabled]: Fatima Al-Kuwari
+  - text: Checkbox The app checkbox is now this one
+  - checkbox "Unchecked"
+  - checkbox "Checked" [checked]
+  - checkbox "Disabled" [disabled]
+  - heading "Card" [level=2]
+  - heading "Customer Summary" [level=3]
+  - paragraph: A card with a header, content and footer.
+  - text: Content sits here.
+  - button "Open"
+  - text: Customer Summary A card with a header, content and footer. Content sits here.
+  - button "Open"
+  - heading "Tablet Scale" [level=2]
+  - paragraph: The app sets data-device="tablet" on the page root for touch devices; this switches it on, so every control above takes the touch sizes (the control-height tokens, the touch targets).
+  - button "Switch To Tablet Scale"
+  - heading "Narrow Width" [level=2]
+  - text: Mobile Number
+  - textbox "Mobile Number"
+  - button "Continue"
+  - heading "Nested Overlays" [level=2]
+  - button "Open Radix Dialog Over Legacy Modal"
+  - heading "Other Components" [level=2]
+  - button "Open Dialog"
+  - button "Menu"
+  - tablist:
+    - tab "One" [selected]
+    - tab "Two"
+  - tabpanel "One": First panel

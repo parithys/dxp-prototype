@@ -1,0 +1,75 @@
+name: CI
+
+# Lint, type-check, the automated test suite, the production build and the Storybook build, on every push and pull request to main.
+# The design-system library is NOT part of this repository: it is installed as a package (`npm run lib:install`, see scripts/install-library.mjs).
+# Where the package comes from:
+#   - the repository variable DXP_UI_SOURCE (a tarball URL, e.g. a library release asset, or an npm spec such as npm:@vfq/dxp-ui@0.2.0), else
+#   - the registry: the package and version in package.json -> dxpUi.
+# A manual run can override it (workflow_dispatch input), and the library's release workflow can trigger a run (repository_dispatch: dxp-ui-released).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dxp_ui_source:
+        description: 'Library source: a tarball URL, or an npm spec (npm:@vfq/dxp-ui@x.y.z). Empty: the repository variable DXP_UI_SOURCE, else the registry.'
+        required: false
+        default: ''
+  repository_dispatch:
+    types: [dxp-ui-released]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DXP_UI_SOURCE: ${{ inputs.dxp_ui_source || github.event.client_payload.source || vars.DXP_UI_SOURCE }}
+  # A private registry or GitHub Packages: provide the token as a secret; the library installs with the same npm credentials as everything else.
+  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The packaged library, under the alias the app imports (dxp-ui). It is installed with --no-save, so it must follow `npm ci`.
+      - name: Install the design-system library package
+        run: npm run lib:install
+
+      # oxlint: 0 warnings is the standing state, so any warning (not just an error) fails the run.
+      - name: Lint
+        run: npx oxlint --deny-warnings
+
+      - name: Type-check
+        run: npx tsc -b
+
+      # node:test over tests/*.test.mjs (no browser, no extra dependencies).
+      - name: Test
+        run: npm test
+
+      # prebuild refreshes the sign-in news with --soft: it keeps the committed snapshot if vodafone.qa cannot be reached.
+      - name: Build
+        run: npm run build
+
+      - name: Storybook type-check
+        run: npm run storybook:typecheck
+
+      - name: Build Storybook
+        run: npm run build-storybook

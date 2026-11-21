@@ -1,0 +1,23 @@
+import type { ReactNode } from 'react';
+import { Link } from '../lib/router';
+import { Button } from 'dxp-ui';
+import { canUseFeature } from '../engines/personaEngine';
+import { useAppSelector } from '../stores/hooks';
+
+/**
+ * Renders its page only for a persona granted the feature. For the destinations the navigation manifest marks as an access boundary
+ * (`requiresFeature`, today Administration): hiding the menu item is not enough when the URL is typed or bookmarked.
+ */
+export function RequireFeature({ featureKey, children }: { featureKey: string; children: ReactNode }) {
+  const personaId = useAppSelector((s) => s.persona.activePersonaId);
+  if (canUseFeature(personaId, featureKey)) return <>{children}</>;
+  return (
+    <div className="p-8 w-full" role="alert">
+      <h1 className="title title-2xl mt-3 mb-2">No Access</h1>
+      <p className="text-fg-2 mb-4">Your role does not have access to this page.</p>
+      <Link to="/">
+        <Button>Back to Dashboard</Button>
+      </Link>
+    </div>
+  );
+}

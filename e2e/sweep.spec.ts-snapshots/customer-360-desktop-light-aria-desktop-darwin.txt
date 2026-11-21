@@ -1,0 +1,157 @@
+- main:
+  - heading "Ahmed Abdulla Hassan Al-Sulaiti" [level=1]
+  - text: "Primary QID: 28456701234"
+  - img
+  - text: Arabic Preferred Language Segment Consumer · Retired Total Connections 5
+  - complementary "Alerts and attention":
+    - img
+    - text: Alerts & Attention 2
+    - list:
+      - listitem: Outstanding Balance
+      - listitem: 1 open ticket
+  - navigation "Customer sections":
+    - button "Collapse sections" [expanded]
+    - list:
+      - listitem:
+        - button "Overview":
+          - img
+          - text: Overview
+      - listitem:
+        - button "Account Information":
+          - img
+          - text: Account Information
+      - listitem:
+        - button "Billing & Payments":
+          - img
+          - text: Billing & Payments
+      - listitem:
+        - button "Offers & Leads":
+          - img
+          - text: Offers & Leads
+      - listitem:
+        - button "Contact & Identity":
+          - img
+          - text: Contact & Identity
+      - listitem:
+        - button "Documents":
+          - img
+          - text: Documents
+      - listitem:
+        - button "Orders":
+          - img
+          - text: Orders
+      - listitem:
+        - button "Tickets & Support":
+          - img
+          - text: Tickets & Support
+      - listitem:
+        - button "Address & Service":
+          - img
+          - text: Address & Service
+  - region "How can we help today?":
+    - heading "How can we help today?" [level=2]
+    - paragraph: Search for customer issues, queries or requests.
+    - img
+    - textbox "Search for customer issues, queries or requests"
+    - text: "Examples:"
+    - button "Calls"
+    - button "Data + Roaming"
+    - button "Data"
+    - button "Billing"
+    - button "SIM"
+    - button "Plan"
+  - button "Total Connections 5":
+    - img
+    - text: Total Connections 5
+    - img
+  - button "Active Services 4":
+    - img
+    - text: Active Services 4
+    - img
+  - button "Suspended Services 0":
+    - img
+    - text: Suspended Services 0
+    - img
+  - button "Total Due QAR 215.25":
+    - img
+    - text: Total Due QAR 215.25
+    - img
+  - button "Active Offers 6":
+    - img
+    - text: Active Offers 6
+    - img
+  - button "Open Tickets 1":
+    - img
+    - text: Open Tickets 1
+    - img
+  - heading "Account Summary" [level=3]:
+    - img
+    - text: Account Summary
+  - button "View Details →"
+  - text: Account Name
+  - button "Ahmed Abdulla Hassan Al-Sulaiti":
+    - text: Ahmed Abdulla Hassan Al-Sulaiti
+    - img
+  - text: Account Type Consumer Mobile Postpaid Customer Type Individual Category - Segment Consumer Customer Segment (Qatari / Expat) Qatari Customer Category (HRN / Non-HRN) Non-HRN Overall QAR 1,500 Default QAR 4,000 Credit Control Team - Credit Limit Increased Due to Deposit QAR 500 Account Status Active Customer Since 02 Aug 2022 (4 years)
+  - heading "Service Types" [level=3]:
+    - img
+    - text: Service Types
+  - button "View Details →"
+  - list:
+    - listitem:
+      - button "Prepaid 2 services 2":
+        - img
+        - text: Prepaid 2 services 2
+        - img
+    - listitem:
+      - button "Postpaid 1 service 1":
+        - img
+        - text: Postpaid 1 service 1
+        - img
+    - listitem:
+      - button "Home Internet 2 services 2":
+        - img
+        - text: Home Internet 2 services 2
+        - img
+  - heading "Billing & Payments" [level=3]:
+    - img
+    - text: Billing & Payments
+  - button "View Details →"
+  - text: Outstanding Amount QAR 215.25 Due Date 14/08/2026 Bill Cycle Monthly - Day 5
+  - heading "Offers & Opportunities" [level=3]:
+    - img
+    - text: Offers & Opportunities
+  - button "View All →"
+  - list:
+    - listitem:
+      - button "Next Best Offer Postpaid Red 500 Welcome Offer Recommended":
+        - img
+        - text: Next Best Offer Postpaid Red 500 Welcome Offer Recommended
+        - img
+    - listitem:
+      - button "Loyalty Discount 15% Eligible":
+        - img
+        - text: Loyalty Discount 15% Eligible
+        - img
+    - listitem:
+      - button "Samsung Galaxy S24 - QAR 225/month Eligible":
+        - img
+        - text: Samsung Galaxy S24 - QAR 225/month Eligible
+        - img
+    - listitem:
+      - button "GigaHome Fiber Triple Play Fixed Line Offer":
+        - img
+        - text: GigaHome Fiber Triple Play Fixed Line Offer
+    - listitem:
+      - button "Add a Second Line Cross-Sell":
+        - img
+        - text: Add a Second Line Cross-Sell
+    - listitem:
+      - button "Happy Offer Sales Enhancement":
+        - img
+        - text: Happy Offer Sales Enhancement
+  - heading "Lead Information" [level=3]:
+    - img
+    - text: Lead Information
+  - button "View Details →"
+  - text: Lead Type Home MSISDN +97455512001 Created By AGENT-VINODHINIR Lead Status New Comments Asked about GigaHome Fibre for a second address; call back after the weekend. Created On 04 Sept 2026

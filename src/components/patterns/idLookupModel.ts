@@ -1,0 +1,383 @@
+import type { QidImageUploadValue } from '../domain/qidImageUploadModel';
+import { tidyDmy } from 'dxp-ui';
+import type { QidType } from '../domain/QidInput';
+import { isHrn } from '../../engines/hrnConfiguration';
+import { isIdExpired } from '../../engines/eligibilityEngine';
+import { SHOW_DEMO_CONTENT } from '../../data/synthetic/syntheticMarker';
+
+/** A customer record that shares the scanned ID with others - offered to the agent to choose from. */
+export interface DuplicateCandidate {
+  customerId: string;
+  name: string;
+  dob: string;
+}
+
+/**
+ * The address the NAS (national address register) holds for a person. A record of the register, kept as it was returned: it is stored with the
+ * order, NEVER shown to the agent, and never used to fill or overwrite the Address step - the customer's address is captured through the address flow.
+ */
+export interface NationalAddress {
+  zone?: string;
+  streetNo?: string;
+  buildingNo?: string;
+  area?: string;
+  city?: string;
+}
+
+export interface MoiResult {
+  /** Mobile number and notification language on the customer record - shown by
+   * the verify-then-fetch flow only. */
+  phone?: string;
+  preferredLanguage?: string;
+  name: string;
+  /** Set when the ID resolved to an existing Vodafone customer (Siebel); absent for a NAS-only new customer. */
+  customerId?: string;
+  /** The registry's own name parts, when it returns them. The Contact step prefers these over splitting `name` by position, so a middle name of several tokens is never guessed at. */
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  dob: string;
+  nationality: string;
+  email?: string;
+  /** A new customer's mobile number as the NAS holds it (E.164): offered, masked, as the Personal Mobile. */
+  mobile?: string;
+  /** Where `email` came from: Siebel for an existing customer, NAS for a new one. */
+  emailSource?: 'Siebel' | 'NAS' | 'Billing Profile';
+  /** No customer record exists for this ID - details come from NAS, not Siebel. */
+  isNewCustomer?: boolean;
+  /** Set when a QID known only to the registry resolved to an EXISTING customer (through the Passport linked to it): the order adds the QID to that customer's record. */
+  linkedIdUpdate?: import('./idLinkModel').LinkedIdUpdate;
+  /** The agent created this customer: no registry knows the ID, so the identity was typed (see buildNewCustomerIdentity). */
+  createdByAgent?: boolean;
+  /** A NEW customer's National Address, as the NAS returned it. Hidden: carried with the identity, stored with the order, never displayed or edited. */
+  nationalAddress?: NationalAddress;
+  // Added 2026-09-24 so Gender can be registry-sourced. It has to be: the
+  // identity fields are non-editable, and a mandatory field with no source
+  // and no way to type into it would block Continue forever. customers.json
+  // has carried `gender` all along; only MoiResult was not passing it on.
+  gender?: string;
+  // The sponsoring employer, when the registry has one on file. Added
+  // 2026-09-26 so B2B2C can be DERIVED rather than ticked: the Contact step's
+  // "B2B2C Order" checkbox was removed, and this is what replaces it.
+  //
+  // Strictly this is not MOI data - an employment relationship is not held by
+  // the interior ministry - but it travels with the customer record the lookup
+  // resolves, and inventing a second round trip to a system this app has no
+  // evidence of would be pretending to know more about the integration than
+  // the corpus says. Named companyName to match the field it comes from.
+  companyName?: string;
+  /**
+   * The employer's row in `enterprise-accounts`, resolved here rather than by
+   * the Contact step.
+   *
+   * Resolved at the same point the customer is, because this is where the data
+   * layer already is - GuidedContactStep is a pure presentational component
+   * with no state, no effects and no dataset reads, and giving it one just to
+   * turn a name into an id would change its character for no gain. Carrying
+   * the id matters because a NAME is not a link: two Lulu branches share a CR
+   * prefix and differ only by suffix, so downstream needs the id to know which
+   * account sponsors the line.
+   */
+  companyAccountId?: string;
+  /** The occupation on the registry record, when it holds one. */
+  occupation?: string;
+  /**
+   * The scanned document's own expiry date (ISO), not a customer-record field -
+   * it comes off the `identity-documents` match, not `customers`. This is the
+   * same date eligibilityEngine already reads off that record to run its ID
+   * validity check; it just never travelled any further than that engine
+   * until now. See identity-documents.json's `_expiryNote` for why the field
+   * exists on that dataset at all.
+   */
+  expiryDate?: string;
+  /** A Passport's visa as MOI returned it; kept with the customer and the order, never displayed in a journey. */
+  visa?: import('../../data/passportVisa').PassportVisa;
+  /**
+   * When this lookup last resolved (ISO), stamped by runMoiValidation below.
+   * Evidenced as "MOI Update Time" on the backend Contact/Account record
+   * across multiple guided-journey walkthroughs (e.g. "MOI Update Time
+   * 8/18/2025 03:58:20") - not previously carried into this app. Overwritten
+   * on every fresh validation, so it always reads the latest one, not the
+   * first.
+   */
+  moiUpdateTime?: string;
+}
+
+// TWO, per 2026-09-28 direction ("Allow a maximum of two scanning attempts").
+// Was four, from the reference asset's "Scan Attempts: 0 / 4".
+//
+// Both attempts pass over the reader; after the second the scanner locks and
+// the manual fallback opens. Nothing in the UI names this number or shows a
+// count - see the scanner block below.
+export const MAX_SCAN_ATTEMPTS = 2;
+
+// The original budget, still used by the eight journeys that lead with a type
+// selector rather than auto-detection.
+export const LEGACY_MAX_SCAN_ATTEMPTS = 4;
+
+/**
+ * DEMO: the ID Reconciliation scenario is shown on the click on "Retake scan (4)" - the number the Retake button shows - for every document type
+ * (Qatar ID, GCC ID, Diplomatic ID, and a Passport's sides, each counting its own retakes). The reader misreads the printed date of birth on it,
+ * so what was captured disagrees with MOI and the identity is refused with the reconciliation message. Retaking again reads the card correctly.
+ * Only the journeys that verify then fetch (Customer Verification) have it; change the number here to show it on another retake.
+ */
+export const RECONCILIATION_DEMO_RETAKE = 4;
+
+/**
+ * The click on "Retake scan (5)" - the number the Retake button shows - opens the section where the agent types the customer's details from the
+ * document (NewCustomerDetailsForm), the way it did before: the reader has been given every chance, so the identity is entered by hand.
+ * For a Passport each side counts its own retakes.
+ */
+export const MANUAL_DETAILS_RETAKE = 5;
+
+/** The ID types the typed-details section is offered for: every type the reader handles (a GCC ID included, which a customer cannot be created for when no registry knows it - that is a different path). */
+export const TYPED_DETAILS_ID_TYPES: readonly string[] = ['QID', 'Passport', 'GCC ID', 'Diplomatic ID'];
+
+/**
+ * ID types with a physical card the reader can capture, and therefore the
+ * scan-first workflow: both faces in one operation, the number read off the
+ * document, a four-attempt budget and a manual fallback behind it.
+ *
+ * Diplomatic ID joined QID on 2026-09-25 - a postpaid connection may be sold
+ * directly against either, so both get the same process rather than QID
+ * getting a scanner and its equal being typed in by hand.
+ *
+ * All four supported ID types (Qatar ID, Passport, GCC ID, Diplomatic ID) are scanned before the
+ * journey can proceed (2026-10-04): the number is read from the scan, not typed in.
+ */
+export { SCANNABLE_ID_TYPES } from '../../data/idTypes';
+
+export type IdLookupValue = {
+  idType?: QidType;
+  idNumber?: string;
+  moiResult?: MoiResult;
+  qidScans?: QidImageUploadValue;
+  /** verifyThenFetch only: the expiry read off the scan (DD/MM/YYYY), editable so the agent can correct it after comparing with the card. */
+  scannedExpiry?: string;
+  /** verifyThenFetch only: the attribute-level result of comparing what was captured with what MOI returned (kept with the identity evidence). */
+  idReconciliation?: import('./idReconciliation').AttributeMatch[];
+  /** The number was typed after the scan budget ran out, not read from a scan: the order needs Store Manager approval. */
+  manualEntry?: boolean;
+};
+
+// ISO (YYYY-MM-DD) -> DD/MM/YYYY, the format the card shows and the field takes.
+// Simulated OCR misread for the blurred first pass: swaps look-alike digits
+// (3/8, 1/7, 0/6), guaranteed to differ from the real number.
+export const misread = (n: string) => {
+  const swap: Record<string, string> = { '3': '8', '8': '3', '1': '7', '7': '1', '0': '6', '6': '0' };
+  const i = [...n].findIndex((c) => c in swap);
+  if (i < 0) return n.slice(0, -1) + (n.endsWith('9') ? '8' : '9');
+  return n.slice(0, i) + swap[n[i]] + n.slice(i + 1);
+};
+
+export const isoToDmy = (iso: string) => {
+  const [y, m, d] = iso.split('-');
+  return y && m && d ? `${d}/${m}/${y}` : iso;
+};
+
+/**
+ * Which identity documents the reader can resolve a scan to.
+ *  - The customer's own documents (journey opened from Customer 360): the one of the type the agent selected, never a
+ *    different one - a customer who also holds a QID must not have it substituted for the Passport that was chosen.
+ *    With no selection (scan-first flow) their QID is preferred where they hold one.
+ *  - Otherwise every document of a detectable type.
+ */
+export function selectScanCandidates<D extends { documentType: string }>({
+  docs,
+  ownDocs,
+  chosenType,
+  detectable,
+}: {
+  docs: D[];
+  ownDocs: D[] | undefined;
+  chosenType: string | undefined;
+  detectable: readonly string[];
+}): D[] {
+  if (!ownDocs) return docs.filter((d) => detectable.includes(d.documentType));
+  if (chosenType) return ownDocs.filter((d) => d.documentType === chosenType);
+  return [...ownDocs].sort((a, b) => Number(b.documentType === 'QID') - Number(a.documentType === 'QID'));
+}
+
+/** A NAS identity record as the demo scan needs it. */
+export interface DemoNasRecord {
+  documentType: string;
+  documentNumber: string;
+  expiryDate?: string;
+  name: string;
+  dob: string;
+  nationality: string;
+  mobile?: string;
+}
+
+/**
+ * The person the demo reader returns in the New Customer journey (every ID there is treated as a new customer, so the card is a NAS
+ * identity, never a Siebel customer): the first unexpired NAS record of the given document type whose nationality is HRN. Demo scope,
+ * stated plainly - a real reader returns whatever card is in it. The same record drives the card drawn in the reader, the number the
+ * reader reads and what MOI returns, so the scan reconciles. Undefined when the type has no HRN record (the reader then behaves as before).
+ */
+export function pickHrnDemoNas<R extends DemoNasRecord>(records: readonly R[], documentType: string, now: Date = new Date()): R | undefined {
+  return records.find((r) => r.documentType === documentType && isHrn(r.nationality) && !(r.expiryDate && isIdExpired(r.expiryDate, now)));
+}
+
+/**
+ * Review aid (demo content only, like `?device=tablet`): `?demoNas=<ID number>` makes the demo reader return that registry person instead of the HRN
+ * default, so a New Customer journey can be tried with any NAS identity. Remembered for the tab, so moving between pages keeps it; `?demoNas=` (empty)
+ * clears it. Ignored when the number is not a NAS record of the document type, or the card has expired: the default person is returned.
+ */
+export const DEMO_NAS_PARAM = 'demoNas';
+export function requestedDemoNas(): string | undefined {
+  if (!SHOW_DEMO_CONTENT) return undefined;
+  try {
+    const asked = new URLSearchParams(window.location.search).get(DEMO_NAS_PARAM);
+    if (asked !== null) {
+      if (asked.trim()) window.sessionStorage.setItem('dxp-demo-nas', asked.trim());
+      else window.sessionStorage.removeItem('dxp-demo-nas');
+    }
+    return window.sessionStorage.getItem('dxp-demo-nas') ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The person the demo reader returns: the registry person asked for with `?demoNas=` (see above), else the HRN default (pickHrnDemoNas). */
+export function pickDemoNas<R extends DemoNasRecord>(records: readonly R[], documentType: string, now: Date = new Date(), requested: string | undefined = requestedDemoNas()): R | undefined {
+  const asked = requested ? records.find((r) => r.documentType === documentType && r.documentNumber === requested && !(r.expiryDate && isIdExpired(r.expiryDate, now))) : undefined;
+  return asked ?? pickHrnDemoNas(records, documentType, now);
+}
+
+/**
+ * How the ID number and expiry came in at Customer Verification, which decides what the agent may change:
+ *   'upload'      a file was uploaded: nothing is read; the agent types the number and the expiry, then Fetch.
+ *   'ocr-auto'    the first scan and Retake 1: a clear capture, number and expiry read correctly, MOI called automatically. Nothing to edit.
+ *   'ocr-number'  Retake 2: the number is read (locked); the expiry is typed and stays editable, then Fetch.
+ *   'barcode'     Retake 3 and after: the number comes from the barcode button; the expiry is typed and stays editable, then Fetch. A Passport is typed in full from its
+ *                 second retake (number and expiry), then Validate with MOI.
+ */
+export type CaptureMode = 'upload' | 'ocr-auto' | 'ocr-number' | 'barcode';
+
+/** The capture mode for a completed capture: an upload, or the number of passes over the reader so far. */
+export function captureModeOf(uploaded: boolean, readerPasses: number, documentType?: string): CaptureMode {
+  if (uploaded) return 'upload';
+  if (readerPasses <= 2) return 'ocr-auto';
+  // A Passport has no number to read off in a half-way mode: after the same two unsuccessful reads the agent types both the number and the expiry, then presses
+  // Validate with MOI (the Passport counterpart of the manual entry the other documents open).
+  if (documentType === 'Passport') return 'barcode';
+  if (readerPasses === 3) return 'ocr-number';
+  return 'barcode';
+}
+
+/** A DD/MM/YYYY date as a blurred read would get it wrong: the last digit of the year is off. */
+export function misreadDate(dmy: string): string {
+  return dmy.replace(/(\d)$/, (d) => String((Number(d) + 3) % 10));
+}
+
+/**
+ * A typed date tidied to DD/MM/YYYY when the agent leaves the field: eight digits ("30112029") get their separators, and a date written with
+ * other separators or without leading zeros ("30-11-2029", "3.1.2029") is put in the same form. Anything else is left exactly as typed.
+ */
+export const formatDmyOnBlur = tidyDmy;
+
+/** What the agent enters to create a customer no registry knows. */
+export interface NewCustomerInput {
+  nationality: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  /** DD/MM/YYYY. */
+  dob: string;
+  gender: string;
+  /** DD/MM/YYYY: the ID's own expiry. */
+  expiry: string;
+}
+
+/** DD/MM/YYYY -> ISO, or undefined when it is not a real calendar date. */
+export function dmyToIso(dmy: string): string | undefined {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dmy.trim());
+  if (!m) return undefined;
+  const [d, mo, y] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === mo - 1 && dt.getUTCDate() === d ? `${m[3]}-${m[2]}-${m[1]}` : undefined;
+}
+
+export type NewCustomerErrors = Partial<Record<keyof NewCustomerInput, string>>;
+
+/**
+ * The MOI-shaped identity for a customer the agent creates, or what is wrong with the entry. Nothing is assumed: every field but the middle
+ * name is required, the dates must be real, the birth date cannot be in the future, and the nationality must be one the app knows.
+ */
+export function buildNewCustomerIdentity(
+  input: NewCustomerInput,
+  nationalities: readonly string[],
+  now: Date = new Date()
+): { errors: NewCustomerErrors } | { errors?: undefined; moi: NewCustomerMoi } {
+  const errors: NewCustomerErrors = {};
+  const first = input.firstName.trim();
+  const middle = input.middleName.trim();
+  const last = input.lastName.trim();
+  if (!nationalities.includes(input.nationality)) errors.nationality = 'Choose the nationality.';
+  if (!first) errors.firstName = 'Enter the first name.';
+  if (!last) errors.lastName = 'Enter the last name.';
+  const dob = dmyToIso(input.dob);
+  if (!dob) errors.dob = 'Enter a valid date of birth as DD/MM/YYYY.';
+  else if (new Date(`${dob}T00:00:00Z`).getTime() > now.getTime()) errors.dob = 'The date of birth cannot be in the future.';
+  if (!input.gender) errors.gender = 'Choose the gender.';
+  const expiry = dmyToIso(input.expiry);
+  if (!expiry) errors.expiry = 'Enter a valid expiry date as DD/MM/YYYY.';
+  if (Object.keys(errors).length || !dob || !expiry) return { errors };
+  return {
+    moi: {
+      name: [first, middle, last].filter(Boolean).join(' '),
+      firstName: first,
+      middleName: middle,
+      lastName: last,
+      dob,
+      nationality: input.nationality,
+      gender: input.gender,
+      expiryDate: expiry,
+      isNewCustomer: true,
+      createdByAgent: true,
+      moiUpdateTime: now.toISOString(),
+    },
+  };
+}
+
+/**
+ * DEMO: the details the typed-details form opens with for each ID type (so a tester need not type them), and the contact details offered after the identity is validated. Shown
+ * only while demo content is (SHOW_DEMO_CONTENT); a production build starts the form empty.
+ */
+export const DEMO_TYPED_DETAILS: Readonly<Record<string, { idNumber: string; expiry: string; input: Omit<NewCustomerInput, 'expiry'> }>> = {
+  QID: { idNumber: '29287654321', expiry: '31/12/2030', input: { firstName: 'Tariq', middleName: 'Mansoor', lastName: 'Al-Hashimi', nationality: 'Omani', dob: '14/06/1986', gender: 'Male' } },
+  Passport: { idNumber: 'R7712345', expiry: '31/10/2031', input: { firstName: 'Camille', middleName: 'Anne', lastName: 'Fontaine', nationality: 'French', dob: '03/09/1991', gender: 'Female' } },
+  'GCC ID': { idNumber: '784199876543210', expiry: '30/06/2030', input: { firstName: 'Yousef', middleName: 'Khalil', lastName: 'Al-Rumaihi', nationality: 'Kuwaiti', dob: '22/02/1983', gender: 'Male' } },
+  'Diplomatic ID': { idNumber: 'DIP-QA-009911', expiry: '31/03/2031', input: { firstName: 'Layla', middleName: 'Samir', lastName: 'Haddadin', nationality: 'Jordanian', dob: '11/11/1980', gender: 'Female' } },
+};
+export const DEMO_TYPED_CONTACT = { email: 'abcd@abcd.com', mobile: '+97474012845' } as const;
+
+/** The typed-details form's fields as an identity already on the value shows them (the form opening again after the validation): the identity's own details. */
+export function detailsOf(value: Pick<IdLookupValue, 'moiResult' | 'scannedExpiry'>): Partial<NewCustomerInput> {
+  const m = value.moiResult;
+  if (!m) return {};
+  const parts = m.name.trim().split(/\s+/);
+  return {
+    firstName: m.firstName ?? parts[0] ?? '',
+    middleName: m.middleName ?? (parts.length > 2 ? parts.slice(1, -1).join(' ') : ''),
+    lastName: m.lastName ?? (parts.length > 1 ? parts[parts.length - 1] : ''),
+    nationality: m.nationality,
+    dob: isoToDmy(m.dob),
+    gender: m.gender ?? '',
+    expiry: value.scannedExpiry ?? (m.expiryDate ? isoToDmy(m.expiryDate) : ''),
+  };
+}
+
+/** The ID types a customer can be created for when no registry knows the document. */
+export const NEW_CUSTOMER_ID_TYPES: readonly string[] = ['QID', 'Passport', 'Diplomatic ID'];
+
+/**
+ * What the value gains when the agent creates a customer: the typed identity as the MOI result, the expiry as the entered one, and the
+ * identity marked as manually entered (so the order is routed for manager approval, as for any identity the reader did not read).
+ */
+export type NewCustomerMoi = Pick<MoiResult, 'name' | 'firstName' | 'middleName' | 'lastName' | 'dob' | 'nationality' | 'gender' | 'expiryDate' | 'isNewCustomer' | 'createdByAgent' | 'moiUpdateTime' | 'visa'>;
+
+export function buildNewCustomerPatch(moi: NewCustomerMoi): { moiResult: MoiResult; manualEntry: true; scannedExpiry?: string } {
+  return { moiResult: moi as MoiResult, manualEntry: true, scannedExpiry: moi.expiryDate ? isoToDmy(moi.expiryDate) : undefined };
+}

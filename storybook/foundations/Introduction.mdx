@@ -1,0 +1,57 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction" />
+
+# Vodafone Qatar DXP - Storybook (application)
+
+This Storybook is the catalogue of the **application's own** forms, patterns, capabilities, business components, documents and example screens. Every story
+imports the production component from `src/` and renders it inside the application's real providers, tokens and stylesheet (`src/index.css`), signed in as the
+demo role against the sample data (`public/mock-data`, `public/config`). Nothing here is a copy, and nothing restyles a component.
+
+## The design system is a separate package
+
+The design system - tokens, colours, typography, spacing, icons, the shadcn/ui base components and the field and display primitives (Button, Input, Select,
+Modal, Drawer, Tabs, Tooltip, DataTable ...) - lives in the **`dxp-ui`** package (`dxp-ui-library`) and has **its own Storybook** with one page per
+component. The application imports it (`import { Button } from 'dxp-ui'`) and loads its CSS through `src/index.css`
+(`dxp-ui/preset.css`, `components.css`, `tooltip.css`). Look up a primitive's variants, states and accessibility there; this Storybook shows how the application composes them.
+
+## Single source of truth
+
+- A story **imports** the production component (`src/components/...`, `src/capabilities`) or a design-system component from `dxp-ui`. It never re-implements one.
+- There is **no Storybook-only CSS**. Look comes from the design system's tokens and the application's semantic classes (`src/app-components.css`).
+- If a component cannot be rendered in isolation, or fails an accessibility rule, the story says so under *Restrictions*; the component is fixed in `src/`, never patched for Storybook.
+
+## Categories
+
+The sidebar order is fixed:
+
+1. **Foundations** - the application-level parts: application icons, brand files, application accessibility (skip link, route announcements), Arabic sizing.
+2. **Primitives** - application tags and card parts built on the design-system primitives.
+3. **Forms** - the application's domain inputs (QID, company search, contact phone, service location).
+4. **Navigation** - breadcrumbs, application shell, journey stepper and buttons, menus.
+5. **Feedback & Status** - toasts, notices, confirmation dialogs and domain modals.
+6. **Documents** - uploads, scanners, signature, document previews.
+7. **Business Components** - plan cards, offer cards, number cards, customer and order widgets.
+8. **Patterns** - reusable capabilities and flows (identification, eligibility, number and plan selection, payment).
+9. **Application Examples** - whole screens assembled from the above.
+
+## Toolbar: Theme and Device
+
+- **Theme** (Light / Dark) toggles the `dark` class on `<html>`, exactly as the app does.
+- **Device** (Web / Tablet) sets `data-device="tablet"` and makes the app's own device detection (`lib/deviceType.ts`) report a tablet. The app reads the device once per page, so changing it reloads the preview.
+
+## Running it
+
+```bash
+npm install
+npm run storybook              # dev server (port from SB_PORT, default 6006)
+npm run build-storybook        # static build into storybook-static/
+npm run test-storybook         # runs every story's play function and a11y checks (vitest)
+npm run storybook:typecheck    # type-checks the stories against the real Storybook types
+```
+
+## Adding a story
+
+Create `storybook/<category>/<Name>.stories.tsx` (CSF3), import the production component, add `docsParameters({...})` from `storybook/_shared/docs.ts`,
+one story per real variant and state, and a `play` function for interactive behaviour. Use the app's classes and tokens only, no literal colours. The full
+rules are in `storybook/CONVENTIONS.md`; read it before adding a story. A change to a design-system component belongs in `dxp-ui-library` (and its Storybook).

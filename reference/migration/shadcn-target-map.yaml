@@ -1,0 +1,94 @@
+# Bucket "A" mapping for reference/scripts/build_ui_component_inventory.py.
+#
+# A component gets migration_bucket "A" (and its shadcn_target) when ANY rule below matches its name (a full-match regex against
+# the component name) OR its category (the exact category label from the inventory). Rules are tried in order; the first match wins.
+# Bucket "C" (a component in a near-duplicate group) takes precedence over "A" in the bucket column, but shadcn_target is still filled.
+#
+# Edit this file, not the script. The targets are the modules in src/components/ui/ (see docs/migration/phase4-migration-matrix.md).
+#
+# Deliberately NOT mapped (shadcn has no equivalent that keeps the behaviour; docs/migration/phase5-specialised-components.md):
+#   Select, PhoneNumberInput, QidInput, SignaturePad, DataTable, the Tooltip system, the toast system (ToastContainer),
+#   SearchField, CloseButton, the vertical / rail `Tabs`, the two domain menus (CustomerActionsMenu, PersonaSwitcher).
+version: 1
+a_mapping:
+  # by component name (the primitives that are already shadcn-backed, and their wrappers)
+  - names: ['Button', 'IconButton']
+    target: button
+  - names: ['Card']
+    target: card
+  - names: ['Checkbox']
+    target: checkbox
+  - names: ['Input']
+    target: input
+  - names: ['Textarea']
+    target: textarea
+  - names: ['Label']
+    target: label
+  - names: ['Modal', 'Drawer']
+    target: dialog
+  - names: ['TabStrip']
+    target: tabs
+  # by category (components in a category with a one-to-one shadcn counterpart)
+  - categories: ['Buttons and actions']
+    target: button
+  - categories: ['Cards']
+    target: card
+  - categories: ['Tabs']
+    target: tabs
+  - categories: ['Modals, dialogs and drawers']
+    target: dialog
+
+# Components that are deliberately NOT migrated (docs/migration/phase5-specialised-components.md: "a specialised component is retained unless a
+# replacement is proven to keep every behaviour"). Their migration_status is "Retained", whatever they contain.
+protected_components:
+  - reason: searchable combobox, phone, QID, signature, table, tooltip and toast systems (Phase 5 decision matrix; tests/protectedComponents.test.mjs)
+    names: [Select, SearchField, CompanySearchInput, ServiceLocationSearchInput, PhoneNumberInput, ContactPhoneInput, QidInput, QidNumberField, QidTypeSelector,
+            SignaturePad, DataTable, Tooltip, TooltipGroup, ToastContainer, ToastBrandMark]
+
+# Native elements that stay native, per file and tag. They are not counted in raw_elements; any OTHER raw element in the same file still is.
+native_elements:
+  - file: src/components/ui/input.tsx
+    tags: [input]
+    reason: this is the shadcn Input itself
+  - file: src/components/ui/textarea.tsx
+    tags: [textarea]
+    reason: this is the shadcn Textarea itself
+  - file: src/components/primitives/Input.tsx
+    tags: [input]
+    reason: the field composite's addon branch (Phase 4 "inputs not touched"); its plain branch already renders ui/input
+  - file: src/components/primitives/Radio.tsx
+    tags: [input]
+    reason: native radio (appearance-none, focusable, role=radio); no shadcn RadioGroup is installed and the radio groups are pinned by e2e/a11y.spec.ts
+  - file: src/components/domain/CafDocumentUpload.tsx
+    tags: [input]
+    reason: native file input, visually hidden (no shadcn equivalent)
+  - file: src/components/domain/IdFileUpload.tsx
+    tags: [input]
+    reason: native file input, visually hidden
+  - file: src/components/domain/DocumentCaptureActions.tsx
+    tags: [input]
+    reason: native file inputs (upload and camera capture), visually hidden
+  - file: src/modules/trouble-ticketing-complaints/screens/TicketAttachmentsTab.tsx
+    tags: [input]
+    reason: native file input
+  - file: src/components/domain/MsisdnPicker.tsx
+    tags: [input]
+    reason: specialised number-search field (Phase 4 deferred)
+  - file: src/auth/LoginPage.tsx
+    tags: [input]
+    reason: login fields have their own look (login-field), left on purpose in Phase 4
+  - file: src/navigation/Sidebar.tsx
+    tags: [input]
+    reason: the sidebar menu search (Phase 4 "inputs not touched")
+  - file: src/components/patterns/DemoFaultPanel.tsx
+    tags: [select]
+    reason: demo-only native select (hidden when NEXT_PUBLIC_SHOW_DEMO=false)
+  - file: src/workspace/customer360/sections/C360Kit.tsx
+    tags: [select]
+    reason: Customer 360 inline selector, a domain component that deliberately uses the native popup (Phase 6 audit)
+  - file: src/components/patterns/CheckoutSummaryTables.tsx
+    tags: [table]
+    reason: small static read-only tables; shadcn Table was never installed and a second table system is blocked by tests/protectedComponents.test.mjs
+  - file: src/capabilities/CrossSellOffers/OfferDetailsDrawer.tsx
+    tags: [table]
+    reason: static read-only table, same reason

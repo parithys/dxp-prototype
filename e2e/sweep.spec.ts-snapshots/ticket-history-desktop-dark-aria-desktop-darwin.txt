@@ -1,0 +1,38 @@
+- main:
+  - heading "My Ticket History" [level=1]
+  - text: Qnomy queue tickets you have completed or abandoned. Defaults to today; switch to Last 30 Days for the fuller record.
+  - tablist "Ticket Period":
+    - tab "Today's Tickets (0)" [selected]
+    - tab "Last 30 Days (0)"
+  - table:
+    - rowgroup:
+      - row "Ticket Number Customer Name Interaction / Task Type Date Time Ticket Status":
+        - columnheader "Ticket Number":
+          - button "Ticket Number":
+            - text: Ticket Number
+            - img
+        - columnheader "Customer Name":
+          - button "Customer Name":
+            - text: Customer Name
+            - img
+        - columnheader "Interaction / Task Type":
+          - button "Interaction / Task Type":
+            - text: Interaction / Task Type
+            - img
+        - columnheader "Date":
+          - button "Date":
+            - text: Date
+            - img
+        - columnheader "Time":
+          - button "Time":
+            - text: Time
+            - img
+        - columnheader "Ticket Status":
+          - button "Ticket Status":
+            - text: Ticket Status
+            - img
+    - rowgroup:
+      - row:
+        - cell:
+          - status:
+            - paragraph: No tickets handled today yet.

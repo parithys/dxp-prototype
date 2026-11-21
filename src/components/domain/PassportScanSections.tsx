@@ -1,0 +1,227 @@
+import { useEffect, useRef, useState } from 'react';
+import { SCAN_DOCUMENT_TITLE } from './scanDocumentLabels';
+import { Button, Icon, Spinner, detectDeviceType, SCAN_CORNERS, Card } from 'dxp-ui';
+import { ScannedIdPreview } from './ScannedIdPreview';
+import { capturedFromCard } from './scannedIdModel';
+import { ScanFailureNotice } from './ScanFailureNotice';
+import { IdFileUpload } from './IdFileUpload';
+import { applyIdUpload, idCaptureOptions } from './idUploadModel';
+import { SYNTHETIC_CLASS } from '../../data/synthetic/syntheticMarker';
+import { SCAN_DURATION_MS } from './qidImageUploadModel';
+import type { QidImageUploadProps } from './qidImageUploadModel';
+
+// ---------------------------------------------------------------------------------------------------------
+// Passport: two separate scanning sections, one per side, each captured on the flatbed scanner.
+// The attempt budget is charged once per document pass (the first side to complete), not once per side.
+// ---------------------------------------------------------------------------------------------------------
+// The four corner brackets of a scan frame.
+
+type PassportProps = Pick<QidImageUploadProps, 'value' | 'onChange' | 'onScan' | 'onRetakeDone' | 'error' | 'canScan' | 'bothCaptureActions' | 'readerEverywhere' | 'demoTypes' | 'onDemoScan' | 'blurFirstScan' | 'hideUnclearNotice' | 'variant' | 'identity' | 'onVerify' | 'verifying' | 'verifyDisabled' | 'verified'>;
+
+export function PassportScanSections({ value, onChange, onScan, onRetakeDone, error, canScan = true, bothCaptureActions = false, readerEverywhere = false, demoTypes, onDemoScan, blurFirstScan = false, hideUnclearNotice = false, variant, identity, onVerify, verifying = false, verifyDisabled = false, verified = false }: PassportProps) {
+  const capture = idCaptureOptions(detectDeviceType(), canScan, bothCaptureActions, readerEverywhere);
+  const [scanning, setScanning] = useState<'front' | 'back' | null>(null);
+  const [blurred, setBlurred] = useState({ front: false, back: false });
+  const [retakes, setRetakes] = useState({ front: 0, back: 0 });
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const latest = useRef(value);
+  useEffect(() => {
+    latest.current = value;
+  });
+  const charged = useRef(false);
+  const anyScanned = Boolean(value.frontScanned || value.backScanned);
+  // The front is what is validated; the back is optional.
+  const frontScanned = Boolean(value.frontScanned);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  // A fresh document (both sides cleared from outside) starts a new pass.
+  const [seenAnyScanned, setSeenAnyScanned] = useState(anyScanned);
+  if (seenAnyScanned !== anyScanned) {
+    setSeenAnyScanned(anyScanned);
+    if (!anyScanned) setBlurred({ front: false, back: false });
+  }
+  useEffect(() => {
+    if (!anyScanned) charged.current = false;
+  }, [anyScanned]);
+
+  const scanSide = (side: 'front' | 'back') => {
+    if (scanning || !canScan) return;
+    const scannedKey = side === 'front' ? 'frontScanned' : 'backScanned';
+    const imageKey = side === 'front' ? 'frontImage' : 'backImage';
+    const isRetake = Boolean(latest.current[scannedKey]);
+    if (isRetake) onChange({ ...latest.current, [scannedKey]: false, [imageKey]: undefined, clear: undefined });
+    setScanning(side);
+    timer.current = setTimeout(() => {
+      setScanning(null);
+      // The first side scanned charges the pass; a retake is a further pass over the reader and is charged too, as on the other documents - after the permitted
+      // unsuccessful reads the agent types the passport number and expiry instead (see captureModeOf).
+      if (!charged.current || isRetake) {
+        charged.current = true;
+        if (onScan?.() === false) {
+          charged.current = false;
+          return;
+        }
+      }
+      if (isRetake) setRetakes((r) => ({ ...r, [side]: r[side] + 1 }));
+      const shownCount = retakes[side];
+      // The first pass over each side comes back blurred when the demo asks for it; a retake is clear.
+      const nextBlurred = { ...blurred, [side]: blurFirstScan && !isRetake };
+      setBlurred(nextBlurred);
+      onChange({ ...latest.current, [scannedKey]: true, clear: !(nextBlurred.front || nextBlurred.back) });
+      if (isRetake) onRetakeDone?.(shownCount, capturedFromCard('Passport', identity));
+    }, SCAN_DURATION_MS);
+  };
+
+  const section = (side: 'front' | 'back') => {
+    const done = Boolean(side === 'front' ? value.frontScanned : value.backScanned);
+    const n = retakes[side];
+    const zone = 'dropzone dropzone-fill';
+    return (
+      <div key={side} className={zone}>
+        {scanning === side ? (
+          <>
+            <Spinner size={28} label={`Scanning the Passport ${side} side`} />
+            <span className="caption-secondary uppercase tracking-[0.14em]">Scanning Passport {side} side</span>
+          </>
+        ) : done ? (
+          <>
+            <figure className="stack-center gap-2 max-w-[var(--size-scan-figure-max-w)] w-full">
+              <ScannedIdPreview
+                side={side}
+                documentType="Passport"
+                variant={variant}
+                identity={identity}
+                src={side === 'front' ? value.frontImage : value.backImage}
+                clear={!blurred[side]}
+              />
+              <figcaption className="caption-secondary">Passport {side}</figcaption>
+            </figure>
+            {blurred[side] && !hideUnclearNotice && (
+              <ScanFailureNotice lines={['Image unclear - the reader could not read this capture.', 'Retake the scan for a clear image.']} />
+            )}
+            {capture.scan && (
+              <Button variant="secondary" size="sm" onClick={() => scanSide(side)} aria-label={n > 0 ? `Retake ${side} side scan, ${n} so far` : undefined}>
+                Retake scan{n > 0 && ` (${n})`}
+              </Button>
+            )}
+            {capture.upload && (
+              <IdFileUpload
+                side={side}
+                scanner={false}
+                label={`Upload ${side} side again`}
+                onUpload={(r) => {
+                  setBlurred((b) => ({ ...b, [side]: false }));
+                  onChange(applyIdUpload(latest.current, r));
+                }}
+              />
+            )}
+          </>
+        ) : (
+          <>
+            {/* Guide frame: the passport page as it lies on the glass, with rails at its corners. */}
+            <div className="scan-frame max-w-[var(--size-scan-frame-passport-max-w)] aspect-[88/125]">
+              <span aria-hidden="true" className="scan-corner scan-corner-tl" />
+              <span aria-hidden="true" className="scan-corner scan-corner-tr" />
+              <span aria-hidden="true" className="scan-corner scan-corner-bl" />
+              <span aria-hidden="true" className="scan-corner scan-corner-br" />
+              <Icon path={SCAN_CORNERS} className="size-10 text-border" />
+            </div>
+            <div className="space-y-1">
+              {!canScan && <h4 className="title title-sm">Card Could Not Be Read</h4>}
+              {canScan && <p className="caption-secondary">{side === 'front' ? 'Scan the front side of the passport for verification.' : 'Scanning the back side of the passport is optional.'}</p>}
+            </div>
+            {capture.scan && (
+              <Button onClick={() => scanSide(side)}>
+                <Icon path={SCAN_CORNERS} className="size-4 " />
+                Scan {side} side
+              </Button>
+            )}
+            {/* Upload this side in place of the reader (no reader pass, so no attempt is charged). */}
+            <IdFileUpload
+              side={side}
+              scanner={canScan}
+              bothActions={bothCaptureActions}
+              readerEverywhere={readerEverywhere}
+              label={`Upload ${side} side`}
+              onUpload={(r) => {
+                setBlurred((b) => ({ ...b, [side]: false }));
+                onChange(applyIdUpload(latest.current, r));
+              }}
+            />
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const showDemo = !anyScanned && canScan && demoTypes && demoTypes.length > 0 && onDemoScan;
+  const showError = !anyScanned && error;
+
+  return (
+    <Card className="p-4 stack gap-4">
+      {/* Scanner header: what this is. Whether the reader is available is not shown: the agent only learns of a failure after the permitted attempts. */}
+      <div className="split-top flex-wrap gap-x-4 gap-y-2">
+        <div className="row min-w-0">
+          <Icon path={SCAN_CORNERS} className="size-6 text-accent shrink-0" />
+          <span className="title title-sm uppercase tracking-wide truncate">{SCAN_DOCUMENT_TITLE}</span>
+        </div>
+        {/* Web: the header's "Initiate scan" validates the passport against MOI once the front is scanned - the back is optional (each side is scanned by its own button
+            below); there is no Upload on web. Tablet / mobile: Upload the whole document - two files, or one (both sides in a single image or PDF, or
+            one side) - which is validated as before. Without a reader (it failed) Upload stays on any device.
+            Tablet: no header action - each side below has its own Open Camera and Upload, so the document is not offered twice. */}
+        {!capture.camera && (
+        <IdFileUpload
+          align="end"
+          bothActions={bothCaptureActions}
+          readerEverywhere={readerEverywhere}
+          scanner={canScan}
+          leading={
+            onVerify ? (
+              <Button size="sm" className="shrink-0" disabled={!frontScanned || scanning !== null || verifying || verified || verifyDisabled} onClick={onVerify}>
+                <Icon path={SCAN_CORNERS} className="size-4 " />
+                {verifying ? 'Validating…' : 'Validate with MOI'}
+              </Button>
+            ) : undefined
+          }
+          disabled={scanning !== null}
+          onUpload={(r) => {
+            setBlurred({ front: false, back: false });
+            onChange(applyIdUpload(latest.current, r));
+          }}
+        />
+        )}
+      </div>
+      <div className="fields md:grid-cols-2">
+        {section('front')}
+        {section('back')}
+      </div>
+      {showDemo && (
+        <div className={`${SYNTHETIC_CLASS} stack-center gap-1`}>
+          <span className="text-[length:var(--fs-micro)] uppercase tracking-wide">Demo only - simulate inserting</span>
+          <div className="wrap-center justify-center gap-x-3 gap-y-1">
+            {demoTypes.map((t) => (
+              <Button variant="link"
+                key={t.value}
+                type="button"
+                onClick={() => {
+                  onDemoScan(t.value);
+                  scanSide('front');
+                }}
+                className="link-action"
+              >
+                {t.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+      {showError &&
+        (Array.isArray(error) ? (
+          <ScanFailureNotice lines={error} />
+        ) : (
+          <p role="alert" className="field-message mx-auto">
+            {error}
+          </p>
+        ))}
+    </Card>
+  );
+}

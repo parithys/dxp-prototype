@@ -1,0 +1,95 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons" [pressed]
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue"
+  - region "Buttons":
+    - heading "Buttons" [level=3]
+    - paragraph: The Button component's variants and sizes, the icon-only button, and the close control.
+    - figure "Button - Primary - the page's main action":
+      - button "Continue"
+      - button "Disabled" [disabled]
+      - text: Button - Primary - the page's main action
+    - figure "Button - Secondary - supporting actions":
+      - button "Back"
+      - button "Disabled" [disabled]
+      - text: Button - Secondary - supporting actions
+    - figure "Button - Tertiary - text-link actions":
+      - button "View Details"
+      - button "Disabled" [disabled]
+      - text: Button - Tertiary - text-link actions
+    - 'figure "Button - Link - a link-styled action: red text, underline on hover"':
+      - button "Forgot password?"
+      - button "Disabled" [disabled]
+      - text: "Button - Link - a link-styled action: red text, underline on hover"
+    - figure "Button - Ghost - no fill or border; the icon sizes are the 36px and 28px icon buttons":
+      - button "Download":
+        - img
+      - button "Download Small":
+        - img
+      - button "Remove" [disabled]:
+        - img
+      - text: Button - Ghost - no fill or border; the icon sizes are the 36px and 28px icon buttons
+    - figure "Button - Destructive - removes or discards":
+      - button "Remove"
+      - text: Button - Destructive - removes or discards
+    - figure "Button - Sizes - compact, default, large":
+      - button "Compact"
+      - button "Default"
+      - button "Large"
+      - text: Button - Sizes - compact, default, large
+    - figure "Button - With icon":
+      - button "Download":
+        - img
+        - text: Download
+      - text: Button - With icon
+    - figure "Icon Button - default, bordered, danger, small":
+      - button "Download":
+        - img
+      - button "More Actions":
+        - img
+      - button "Remove":
+        - img
+      - button "Download Small":
+        - img
+      - text: Icon Button - default, bordered, danger, small
+    - figure "Close Button - closes dialogs and drawers":
+      - button "Close"
+      - text: Close Button - closes dialogs and drawers

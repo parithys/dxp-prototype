@@ -1,0 +1,67 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips" [pressed]
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue"
+  - region "Tooltips":
+    - heading "Tooltips" [level=3]
+    - paragraph: The hover and focus label for icon-only controls.
+    - figure "Tooltip - hover or focus the button":
+      - button "Download":
+        - img
+      - text: Tooltip - hover or focus the button
+    - figure "Tooltip - Placement - top, right, bottom and left of the control":
+      - button "Download Above":
+        - img
+      - button "Download Right":
+        - img
+      - button "Download Below":
+        - img
+      - button "Download Left":
+        - img
+      - text: Tooltip - Placement - top, right, bottom and left of the control
+    - 'figure "TooltipGroup - wraps an icon row: after the first tooltip shows, the next ones skip the delay"':
+      - button "Download":
+        - img
+      - button "Delete":
+        - img
+      - button "Security":
+        - img
+      - text: "TooltipGroup - wraps an icon row: after the first tooltip shows, the next ones skip the delay"

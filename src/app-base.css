@@ -1,0 +1,17 @@
+/* The application shell's own base rules (not part of the design system). */
+#root {
+  min-height: 100vh;
+}
+
+@layer components {
+  /* Sign-in fields keep their dark fill when the browser autofills them. Chrome paints autofill pale blue, which left the white
+     show/hide-password eye (and the text) unreadable on it - so the toggle looked like it disappeared once a password was filled in. */
+  .login-field:-webkit-autofill,
+  .login-field:-webkit-autofill:hover,
+  .login-field:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--on-dark);
+    caret-color: var(--on-dark);
+    box-shadow: 0 0 0 1000px var(--charcoal-panel) inset;
+    transition: background-color 9999s ease-out 0s;
+  }
+}

@@ -1,0 +1,744 @@
+import { formatDateTime, formatQar } from '../../lib/format';
+import { EmptyState, TabStrip, Pagination, pageWindow, Button, Badge, Icon, IconButton, Tooltip, Select, Checkbox, SearchField, CLEAR_ICON, SORT_PRICE_DESC, SORT_PRICE_ASC } from 'dxp-ui';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { notificationActions } from '../../stores/notificationSlice';
+import { CARD_IDLE, CARD_SELECTED, SelectedTick, SelectedCardTexture } from '../primitives/offerCardParts';
+
+import { getPersona } from '../../engines/configEngine';
+import { FREE_NUMBER_PRICE_CEILING_QAR, STAR_NUMBER_ENTITLEMENT_MULTIPLIER, roundedEntitlementQar, starNumberOverageQar } from '../../engines/postpaidPricing';
+import { TAB_LABELS, TAB_ORDER, PORTAL_TAB_ORDER, RETAIL_SALES_PERSONA_ID, toLocalMsisdn, MAX_RESERVATIONS_PER_AGENT, PAGE_SIZE, FREE_PAGE_SIZE, FREE_SORT_OPTIONS, SEARCH_MODE_OPTIONS, DEFAULT_SEARCH_MODE, matchesNumberSearch, matchesPriceRange, priceBound, hasRepeatingPairPattern, searchError, SORTERS, STAT_ICONS, blockedForViewer } from './msisdnPickerModel';
+import type { MsisdnRecord, NumberPickerProfile, NumberTab, SearchMode, SortKey } from './msisdnPickerModel';
+import { StarStat } from './StarStat';
+import { chargeAfterWaiverQar } from '../../engines/numberWaiver';
+import { store } from '../../stores/store';
+import { useAppSelector } from '../../stores/hooks';
+import { listEntities } from '../../services/entityOps';
+
+interface MsisdnPickerProps {
+  selected?: string;
+  onSelect: (msisdn: string, priceQAR: number) => void;
+  /** Changes when the agent presses Refresh: the number inventory is read again. */
+  /** Changes when the agent presses Refresh: the number inventory is read again. */
+  refreshKey?: number;
+  /** When given, clicking the selected number again calls this instead of reselecting (toggle). */
+  /** When given, clicking the selected number again calls this instead of reselecting (toggle). */
+  onDeselect?: () => void;
+  /** The additional discount (QAR) the agent has applied to the SELECTED number's upfront charge: that card then shows the charge after it. Other cards show their own charge. */
+  waiverQar?: number;
+  /**
+   * The selected plan's MRC, for BR-115's star-number entitlement note
+   * (2026-09-28) - MRC x STAR_NUMBER_ENTITLEMENT_MULTIPLIER is what a star
+   * number costs nothing extra up to; only the amount above it is ever
+   * billed (see engines/postpaidPricing.ts's starNumberOverageQar, the same
+   * function Checkout uses so the two surfaces cannot disagree). Undefined
+   * simply omits the entitlement note rather than assuming a plan exists -
+   * this component has no other dependency on the Plan & Add-ons step.
+   */
+  /**
+   * The selected plan's MRC, for BR-115's star-number entitlement note
+   * (2026-09-28) - MRC x STAR_NUMBER_ENTITLEMENT_MULTIPLIER is what a star
+   * number costs nothing extra up to; only the amount above it is ever
+   * billed (see engines/postpaidPricing.ts's starNumberOverageQar, the same
+   * function Checkout uses so the two surfaces cannot disagree). Undefined
+   * simply omits the entitlement note rather than assuming a plan exists -
+   * this component has no other dependency on the Plan & Add-ons step.
+   */
+  planMrcQar?: number;
+  /**
+   * The plan's Star Number entitlement limit (engines/postpaidPricing.ts starEntitlementQar):
+   * a Star Number at or below it costs nothing extra, one above it costs the difference.
+   * When omitted it is derived from planMrcQar, as before.
+   */
+  /**
+   * The plan's Star Number entitlement limit (engines/postpaidPricing.ts starEntitlementQar):
+   * a Star Number at or below it costs nothing extra, one above it costs the difference.
+   * When omitted it is derived from planMrcQar, as before.
+   */
+  starEntitlementQar?: number;
+  /**
+   * The Number Management Portal (New Number Selection). Tabs read Star, Free, Reserved, and the Reserved tab lists only the numbers
+   * reserved in this session: no number the agent already held is displayed, and none is chosen for the agent on open. Journeys leave
+   * this off and keep their own tab order and held-number behaviour.
+   */
+  /**
+   * The Number Management Portal (New Number Selection). Tabs read Star, Free, Reserved, and the Reserved tab lists only the numbers
+   * reserved in this session: no number the agent already held is displayed, and none is chosen for the agent on open. Journeys leave
+   * this off and keep their own tab order and held-number behaviour.
+   */
+  portalMode?: boolean;
+  /** Portal only: the numbers reserved in this portal session (after a customer was identified), which its Reserved tab lists. */
+  /** Portal only: the numbers reserved in this portal session (after a customer was identified), which its Reserved tab lists. */
+  reservedHere?: string[];
+  /** Journey: the customer's ID number. The Reserved tab lists only this agent's holds placed for that ID; with none given, every hold of the agent. */
+  /** Journey: the customer's ID number. The Reserved tab lists only this agent's holds placed for that ID; with none given, every hold of the agent. */
+  customerIdNumber?: string;
+  /** Portal only: puts an Unreserve button on each card of the Reserved tab; called with the number to release. */
+  /** Portal only: puts an Unreserve button on each card of the Reserved tab; called with the number to release. */
+  onUnreserve?: (msisdn: string) => void;
+  /** What the journey says about the content by role and plan (see NumberPickerProfile). Omitted: every tab, sorting, lock-in and the plan's entitlement. */
+  /** What the journey says about the content by role and plan (see NumberPickerProfile). Omitted: every tab, sorting, lock-in and the plan's entitlement. */
+  profile?: NumberPickerProfile;
+  /** No longer read: the Reserved tab always shows its green "Reserved" pill (2026-10-04 design). Kept so existing callers still compile. */
+  /** No longer read: the Reserved tab always shows its green "Reserved" pill (2026-10-04 design). Kept so existing callers still compile. */
+  hideReservedBadge?: boolean;
+}
+
+// The price sort as icons: bars shortening with a down arrow = High to Low, bars lengthening with an up arrow = Low to High.
+const PRICE_SORT_BUTTONS: { key: SortKey; label: string; icon: string }[] = [
+  { key: 'price-desc', label: 'Price: High to Low', icon: SORT_PRICE_DESC },
+  { key: 'price-asc', label: 'Price: Low to High', icon: SORT_PRICE_ASC },
+];
+
+const SEARCH_MIN = 2;
+const SEARCH_MAX = 8;
+const SEARCH_DEBOUNCE_MS = 300;
+
+// Pattern 10: Number Selection / Reservation Step - 8-digit search box + Free/Reserved
+// toggle, matching MSISDNs shown as selectable priced tiles; selecting triggers
+// immediate reservation with a confirmation token (SCR-024/048/082/104/157/191).
+// Anything below the Star band (QAR 0 - 1,499) is free of charge whatever its catalogue price; QAR 1,500 and above is a Star Number.
+const chargeFor = (priceQar: number) => (priceQar >= FREE_NUMBER_PRICE_CEILING_QAR ? priceQar : 0);
+
+export function MsisdnPicker({ refreshKey = 0, selected, onSelect, onDeselect, waiverQar, planMrcQar, starEntitlementQar: starEntitlementProp, portalMode = false, reservedHere = [], onUnreserve, customerIdNumber, profile }: MsisdnPickerProps) {
+  const entitlementQar = profile?.planEntitlement === false ? undefined : starEntitlementProp ?? (planMrcQar !== undefined ? roundedEntitlementQar(planMrcQar * STAR_NUMBER_ENTITLEMENT_MULTIPLIER) : undefined);
+  // Star tab filter: only numbers priced within the customer's entitlement (no extra charge).
+  const [withinEntitlementOnly, setWithinEntitlementOnly] = useState(false);
+  // Star tab price-range filter: none selected = "All".
+  const [numbers, setNumbers] = useState<MsisdnRecord[]>([]);
+  const [numbersLoaded, setNumbersLoaded] = useState(false);
+  const [tab, setTab] = useState<NumberTab>(portalMode ? 'Star' : 'Free');
+  // Portal: the selection belongs to the tab it was made on, so switching tabs clears it. Otherwise a number chosen on one tab would keep
+  // the portal's Reserve Number button enabled while no card on the tab in view is selected.
+  const previousTab = useRef(tab);
+  useEffect(() => {
+    if (previousTab.current === tab) return;
+    previousTab.current = tab;
+    if (portalMode && selected) onDeselect?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  // Choosing a number only selects it; in the portal it is reserved once a customer has been identified (see NumberManagementPortal).
+  const choose = onSelect;
+  const activePersonaId = useAppSelector((s) => s.persona.activePersonaId);
+  const isRetailSales = activePersonaId === RETAIL_SALES_PERSONA_ID;
+  // The group the signed-in agent belongs to: the Blocked Numbers tab answers only for numbers this group blocked.
+  const viewerGroup = getPersona(activePersonaId)?.name;
+  // The tabs this role may see, when the journey restricts them (Mobile Prepaid: Mass Market sees Free numbers only).
+  const allowedTabs = profile?.tabsFor?.(activePersonaId);
+  const tabAllowed = (t: NumberTab) => !allowedTabs || allowedTabs.length === 0 || allowedTabs.includes(t);
+  const [starTiers, setStarTiers] = useState<{ valueRangeMin: number; valueRangeMax: number; lockInDurationMonths: number }[]>([]);
+  // Open search (letters and numbers, 2-8 characters): `searchInput` is what is typed; `search` is the trimmed text the
+  // list is actually filtered by, applied ~300 ms after typing stops and only once it has at least 2 characters.
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  // How the box matches (the dropdown before it): Any is what the box always did.
+  const [searchMode, setSearchMode] = useState<SearchMode>(DEFAULT_SEARCH_MODE);
+  // Price only: the two boxes (Min Price, Max Price) the list is held between, both ends included.
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  // XXYY only: list every number that has a repeating-pair pattern, with no pattern typed (the search box is disabled meanwhile).
+  const [allPatterns, setAllPatterns] = useState(false);
+  const showingAllPatterns = searchMode === 'xxyy' && allPatterns;
+  const [sort, setSort] = useState<SortKey>('price-desc');
+  const [sortChosen, setSortChosen] = useState<{ Star: boolean; Free: boolean }>({ Star: false, Free: false });
+  // Free's own sort state, separate from Star's `sort` above - see
+  // FREE_SORT_OPTIONS. Kept apart rather than sharing one variable so each
+  // tab's control always shows a value that is actually one of ITS options;
+  // a shared variable defaulting to 'price-desc' would render Free's menu on
+  // a value absent from its own list the moment the agent opened it without
+  // having touched Star's first.
+  const [freeSort, setFreeSort] = useState<'number-asc' | 'number-desc'>('number-asc');
+  const [page, setPage] = useState(0);
+  // Whether the manual-entry FORM is open. Only consulted once a number is
+  // already selected - see the render below - so this starts false with no
+  // effect on the unselected case, where the form is always shown inline.
+
+  useEffect(() => {
+    listEntities<{ valueRangeMin: number; valueRangeMax: number; lockInDurationMonths: number }>('star-number-tiers').then(setStarTiers);
+  }, []);
+
+  // The inventory is read on open and again each time Refresh is pressed (every tab shows the same list, re-filtered).
+  useEffect(() => {
+    let cancelled = false;
+    // A number the system gave a Multi-SIM is not offered again as a primary number.
+    Promise.all([listEntities<MsisdnRecord>('numbers'), listEntities<{ secondaryMsisdn?: string }>('multi-sim-lines').catch(() => [])]).then(([all, multiSim]) => {
+      if (cancelled) return;
+      const givenToMultiSim = new Set(multiSim.map((l) => l.secondaryMsisdn).filter(Boolean));
+      const n = all.filter((x) => !givenToMultiSim.has(x.msisdn));
+      setNumbers(n);
+      setNumbersLoaded(true);
+      setPage(0);
+      if (refreshKey > 0) store.dispatch(notificationActions.pushToast('success', 'Number list refreshed', { key: 'msisdn-refreshed' }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
+
+  // Auto-open Reserved on load if this customer already has one, else the
+  // Free default stands (2026-09-28 request). Guarded to fire only once: it
+  // runs the first time `numbers` arrives from the mock data engine and must
+  // not re-fire on every later change to that list - reserving a NEW number
+  // later in this same session (choose below) must not yank the agent
+  // back to a tab they have since navigated away from.
+  const hasAutoSelectedTab = useRef(false);
+  // A reservation belongs to the CUSTOMER it was made for, not to the agent who made it: the journey lists the holds placed for the ID in front of
+  // the agent (newest first, at most MAX_RESERVATIONS_PER_AGENT per customer), whoever placed them. With no customer identified there are none.
+  const heldForCustomer = numbers
+    .filter((n) => n.status === 'Reserved' && Boolean(customerIdNumber) && n.reservedForQid === customerIdNumber)
+    .sort((a, b) => String(b.reservedAt ?? '').localeCompare(String(a.reservedAt ?? '')))
+    .slice(0, MAX_RESERVATIONS_PER_AGENT);
+  const heldReservations = heldForCustomer.length;
+  useEffect(() => {
+    if (hasAutoSelectedTab.current || !numbersLoaded || portalMode) return;
+    hasAutoSelectedTab.current = true;
+    // Reserved when the customer has reservations, otherwise Star for Retail Sales (never leaving the agent to switch tabs by hand);
+    // everyone else keeps the Free default.
+    if (heldReservations > 0 && tabAllowed('Reserved')) setTab('Reserved');
+    else if (isRetailSales && tabAllowed('Star')) setTab('Star');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numbersLoaded, heldReservations, isRetailSales, portalMode]);
+
+  // The Reserved tab is always shown: first when the customer has reservations, last (with its empty state) when not. Before the numbers have
+  // loaded no tab is shown for Retail Sales, so the strip never flashes a tab that then moves.
+  const visibleTabs = (portalMode
+    ? PORTAL_TAB_ORDER
+    : isRetailSales && !numbersLoaded
+    ? []
+    : heldReservations > 0
+    ? TAB_ORDER
+    : PORTAL_TAB_ORDER
+  ).filter(tabAllowed);
+
+  // Category (Free vs Star/premium) and status (AVAILABLE/Reserved/BLOCKED)
+  // are independent axes: the tab filters on CATEGORY, the availability check
+  // on STATUS.
+  //
+  // Only AVAILABLE numbers are listed as of 2026-09-25. Reserved and BLOCKED
+  // ones used to render greyed and unclickable, which filled the grid with
+  // rows the agent could not act on - and with 18 free numbers now seeded,
+  // dead cards push the selectable ones further from the top.
+  //
+  // They are NOT forgotten: choose below still rejects a Reserved or
+  // BLOCKED number typed into Manual MSISDN Entry by name, so the inventory
+  // is still enforced where an agent could otherwise ask for one.
+  // The Reserved tab is THIS AGENT'S holds, not everyone's (2026-09-28). It
+  // used to list all five reservations in the dataset, including four held by
+  // other agents that this one cannot use - a list where most rows were
+  // unusable and nothing on screen said why.
+  // The portal's Reserved tab lists what was reserved in this session, not the holds the agent already had.
+  const myReserved = portalMode ? numbers.filter((n) => reservedHere.includes(n.msisdn)) : heldForCustomer;
+  // Blocked: nothing is listed by default. Only when the agent searches (a number or part of one, starts / ends with, contains, a price range, a pattern) do the numbers their OWN
+  // group blocked that match appear; another group's blocked numbers never do. A listed number is one this agent is authorised to sell, so it can be selected.
+  const blockedSearching = Boolean(search) || (searchMode === 'price' && Boolean(priceMin || priceMax)) || showingAllPatterns;
+  const inTab =
+    tab === 'Blocked'
+      ? blockedSearching
+        ? blockedForViewer(numbers, viewerGroup)
+        : []
+      : tab === 'Reserved'
+      ? myReserved
+      : numbers.filter(
+          (n) =>
+            n.status === 'AVAILABLE'
+              && (tab === 'Free' ? n.priceQAR < FREE_NUMBER_PRICE_CEILING_QAR : n.priceQAR >= FREE_NUMBER_PRICE_CEILING_QAR)
+        );
+
+  // When reserved numbers are held, the most recently reserved one is chosen for the agent as the
+  // picker opens (on the Reserved tab, which is where it opens). Once, on load. The one exception is a
+  // selection that is already one of the held numbers - that is kept - so picking a different reserved
+  // number and coming back never flips it. A selection that is NOT a held number (an earlier Star or
+  // Free pick left in the draft) is replaced: the agent can still choose any number afterwards.
+  const hasDefaultedReserved = useRef(false);
+  useEffect(() => {
+    if (hasDefaultedReserved.current || !numbersLoaded || portalMode) return;
+    const latest = [...myReserved].sort((a, b) => String(b.reservedAt ?? '').localeCompare(String(a.reservedAt ?? '')))[0];
+    if (!latest) return;
+    hasDefaultedReserved.current = true;
+    if (selected && myReserved.some((n) => n.msisdn === selected)) return;
+    onSelect(latest.msisdn, chargeFor(latest.priceQAR));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numbersLoaded, myReserved.length]);
+
+  // Star and Free both get a sort control (Free joined 2026-09-30, number-
+  // only - see FREE_SORT_OPTIONS). Reserved still gets none: an agent holds
+  // at most MAX_RESERVATIONS_PER_AGENT numbers, so there is nothing there
+  // worth ranking - see the SortKey doc comment above.
+  // Free numbers have no sort control: they are all free, so there is nothing worth ranking (listed by number).
+  const showSort = (tab === 'Star' || tab === 'Blocked') && profile?.sorting !== false;
+
+  // Without a control on screen, the order must not depend on whatever the
+  // agent last chose on Star or Free.
+  const effectiveSort: SortKey = tab === 'Star' || tab === 'Blocked' ? sort : tab === 'Free' ? freeSort : 'number-asc';
+
+  const trimmedInput = searchInput.trim();
+  // Text the mode does not accept (letters for XXYY / Starts With / Ends With, a non-pair for XXYY) is an error and is not searched.
+  const searchProblem = showingAllPatterns ? undefined : searchError(trimmedInput, searchMode);
+  const wantedSearch = !showingAllPatterns && trimmedInput.length >= SEARCH_MIN && !searchProblem ? trimmedInput : '';
+  const searchPending = wantedSearch !== search;
+  useEffect(() => {
+    if (!searchPending) return;
+    const t = window.setTimeout(() => {
+      setSearch(wantedSearch);
+      setPage(0);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(t);
+  }, [searchPending, wantedSearch]);
+
+  // Everything except the price range, so each range can show how many numbers it would leave.
+  // (No search on Reserved - an agent holds at most two numbers - and the box is hidden there, so a leftover query
+  // from another tab must not hide a held number.)
+  const passesOtherFilters = (n: MsisdnRecord) => {
+      if (tab === 'Reserved') return true;
+      // Matches the stored E.164 OR the displayed local form, so typing the 8 digits on screen finds the row.
+      if (tab === 'Star' && withinEntitlementOnly && entitlementQar !== undefined && n.priceQAR > entitlementQar) return false;
+      if (showingAllPatterns) return hasRepeatingPairPattern(n.msisdn);
+      if (searchMode === 'price') return matchesPriceRange(n.priceQAR, priceMin, priceMax);
+      return matchesNumberSearch(n, search, searchMode);
+  };
+  const filtered = inTab
+    .filter(passesOtherFilters)
+    // Reserved: most recently reserved first. Free and Star keep their chosen sort.
+    .sort(tab === 'Reserved' ? (a, b) => String(b.reservedAt ?? '').localeCompare(String(a.reservedAt ?? '')) : SORTERS[effectiveSort]);
+
+  const pageSize = tab === 'Free' ? FREE_PAGE_SIZE : PAGE_SIZE;
+  // Clamped rather than reset: deleting a search term can shrink the list under the current page, and snapping to page 1 would lose the agent's
+  // place every time they edited the box. (The page maths is the Pagination capability's.)
+  const pw = pageWindow(filtered.length, pageSize, page + 1);
+  const safePage = pw.page - 1;
+  const paged = filtered.slice(pw.from === 0 ? 0 : pw.from - 1, pw.to);
+
+  // One row: the "search by" dropdown, the search box, and (XXYY only) the all-patterns checkbox; it wraps below the box on a narrow toolbar.
+  const searchNode = (
+    <div className="wrap-top gap-x-4 gap-y-2">
+    <div className="row-start gap-2 pick-group">
+      <div className="shrink-0 w-36">
+        <Select
+          aria-label="Search by"
+          options={SEARCH_MODE_OPTIONS}
+          value={searchMode}
+          onChange={(e) => {
+            setSearchMode(e.target.value as SearchMode);
+            setAllPatterns(false);
+            setPriceMin('');
+            setPriceMax('');
+            setPage(0);
+          }}
+        />
+      </div>
+      {searchMode === 'price' ? (
+        // Price: two compact boxes instead of the search box - Min Price, a dash, Max Price.
+        <div className="space-y-1">
+          <div className="row gap-2">
+            {([['Min Price', priceMin, setPriceMin], ['Max Price', priceMax, setPriceMax]] as const).map(([label, val, set], i) => (
+              <Fragment key={label}>
+                {i === 1 && <span aria-hidden="true" className="text-fg-2">-</span>}
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  aria-label={label}
+                  placeholder={label}
+                  value={val}
+                  maxLength={9}
+                  onChange={(e) => {
+                    set(e.target.value.replace(/[^0-9,]/g, ''));
+                    setPage(0);
+                  }}
+                  className="field-box field-text field-focus field-hover field-narrow-center border-[var(--field-border)] bg-bg"
+                />
+              </Fragment>
+            ))}
+          </div>
+          {priceBound(priceMin) !== undefined && priceBound(priceMax) !== undefined && priceBound(priceMin)! > priceBound(priceMax)! && (
+            <p role="alert" className="text-danger text-[length:var(--fs-caption)]">
+              Min Price is higher than Max Price.
+            </p>
+          )}
+        </div>
+      ) : (
+      <div className="flex-1 min-w-0 space-y-1">
+      <SearchField
+        aria-label="Search numbers"
+        placeholder={searchMode === 'any' ? 'Search by number or tier (2-8 characters)' : searchMode === 'xxyy' ? 'Enter repeating pairs, e.g. 3344 (2-8 digits)' : 'Enter up to 8 digits'}
+        value={searchInput}
+        maxLength={SEARCH_MAX}
+        disabled={showingAllPatterns}
+        aria-describedby="msisdn-search-hint"
+        onChange={(e) => setSearchInput(e.target.value)}
+        onClear={() => {
+          setSearchInput('');
+          setSearch('');
+          setPage(0);
+        }}
+      />
+      <p
+        id="msisdn-search-hint"
+        role={searchProblem ? 'alert' : 'status'}
+        className={`empty:hidden text-[length:var(--fs-caption)] ${searchProblem ? 'text-danger' : 'text-muted'}`}
+      >
+        {searchProblem
+          ? searchProblem
+          : trimmedInput.length > 0 && trimmedInput.length < SEARCH_MIN
+            ? `Enter at least ${SEARCH_MIN} characters`
+            : searchPending
+              ? 'Searching\u2026'
+              : ''}
+      </p>
+      </div>
+      )}
+    </div>
+    {searchMode === 'xxyy' && (
+      <label className="field-choice-label">
+        <Checkbox
+          checked={allPatterns}
+          onCheckedChange={(checked) => {
+            setAllPatterns((checked === true));
+            setPage(0);
+          }}
+        />
+        Show Me All Available Patterns
+      </label>
+    )}
+    </div>
+  );
+  // The dropdown reads "Sort by" until the agent picks an order (the default order still applies meanwhile).
+  const priceSort = tab === 'Star' || tab === 'Blocked';
+  const sortPlaceholder = !sortChosen[priceSort ? 'Star' : 'Free'];
+  const sortNode = (
+        <div className={`row gap-2 ${!priceSort ? 'w-full [&>div]:w-full' : 'justify-end'}`}>
+          {priceSort ? (
+            // Price sort as ONE toggle: it shows the order the list is in (High to Low until the agent changes it) and a click flips to the other. The tooltip is the header's (Tooltip, bottom).
+            (() => {
+              const current = PRICE_SORT_BUTTONS.find((b) => b.key === (sort === 'price-asc' ? 'price-asc' : 'price-desc')) ?? PRICE_SORT_BUTTONS[0];
+              const next = PRICE_SORT_BUTTONS.find((b) => b.key !== current.key)!;
+              return (
+                <Tooltip content={current.label} placement="bottom">
+                  <IconButton
+                    icon={current.icon}
+                    label={`${current.label}. Switch to ${next.label}`}
+                    onClick={() => {
+                      setSortChosen((c) => ({ ...c, Star: true }));
+                      setSort(next.key);
+                    }}
+                    className="field-square border border-[var(--field-border)] bg-bg"
+                  />
+                </Tooltip>
+              );
+            })()
+          ) : (
+            <Select
+              aria-label="Sort numbers"
+              options={FREE_SORT_OPTIONS}
+              placeholder="Sort by"
+              value={sortPlaceholder ? '' : freeSort}
+              onChange={(e) => {
+                setSortChosen((c) => ({ ...c, Free: true }));
+                setFreeSort(e.target.value as 'number-asc' | 'number-desc');
+              }}
+            />
+          )}
+        </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      {/* BR-115 entitlement, stated once up front under the step title rather than only on each card that
+          exceeds it - the agent should know the cap before scanning individual prices. */}
+      {entitlementQar !== undefined && (
+        <p className="caption-muted">
+            Your selected plan includes a Star Number worth up to <strong className="text-accent font-bold text-[length:var(--fs-body)]">{`QAR\u00a0${entitlementQar.toLocaleString('en-US')}`}</strong> at no extra charge.
+            If you choose a higher-value number, you only pay the difference.
+        </p>
+      )}
+      {/* The tabs switch which list is shown, so they are the underline tab strip (navigation / content tabs), not the pill filter switch. */}
+      <TabStrip
+        items={visibleTabs.map((t) => ({ key: t, label: TAB_LABELS[t] }))}
+        active={tab}
+        onChange={(t) => {
+          setTab(t);
+          // Back to the first page: a tab switch is a new list, and landing on page 3 of it would look like missing inventory.
+          setPage(0);
+        }}
+      />
+      <>
+      {/* One row: the "search by" dropdown, the search box and the sort. Hidden on Reserved (2026-09-28): a customer can hold at most
+          MAX_RESERVATIONS_PER_AGENT numbers, so there is nothing to search. Star and Free both sort (Free's menu is number-only,
+          FREE_SORT_OPTIONS: a price sort would rank Free rows by a figure the customer never pays); Reserved has none. Tier chips and
+          the TIER filter were removed on 2026-09-27 per the annotated walkthrough. */}
+      {tab !== 'Reserved' && (
+        <div className="row-start">
+          <div className="min-w-0 flex-1">{searchNode}</div>
+          {showSort && <div className="shrink-0">{sortNode}</div>}
+        </div>
+      )}
+      {/* Star tab: "Show within my entitlement" filter, with the other Star-tab filters. */}
+      {tab === 'Star' && entitlementQar !== undefined && (
+        <label className="flex w-fit choice-label">
+          <Checkbox
+            checked={withinEntitlementOnly}
+            onCheckedChange={(checked) => {
+              setWithinEntitlementOnly((checked === true));
+              setPage(0);
+            }}
+          />
+          Show within my entitlement
+        </label>
+      )}
+      {/* Active filters (an entitlement limit, a typed search, the all-patterns list), each removable, with one Clear filters. */}
+      {tab === 'Star' && (withinEntitlementOnly || search || showingAllPatterns) && (
+        <div className="cluster gap-2">
+          <span className="caption-secondary">Active Filters</span>
+          {showingAllPatterns && (
+            <span className="chip text-fg">
+              All Patterns
+              <Button variant="ghost" size="icon"
+                type="button"
+                aria-label="Remove filter All Patterns"
+                onClick={() => { setAllPatterns(false); setPage(0); }}
+                className="text-fg-2 hover:text-fg size-auto"
+              >
+                <Icon path={CLEAR_ICON} className="size-3.5 " />
+              </Button>
+            </span>
+          )}
+          <Button variant="tertiary" size="sm" onClick={() => { setWithinEntitlementOnly(false); setSearch(''); setSearchInput(''); setSearchMode(DEFAULT_SEARCH_MODE); setAllPatterns(false); setPriceMin(''); setPriceMax(''); setPage(0); }}>
+            Clear filters
+          </Button>
+        </div>
+      )}
+      {/* Capped and scrollable as of 2026-09-25, when the Free inventory went
+          from 2 numbers to 18. Seven rows of cards pushed Continue below the
+          fold on every visit; the search box above narrows the list for an
+          agent who knows what they want, and this keeps the step navigable for
+          one who is browsing. */}
+      {/* TWO COLUMNS on Free and Star, ONE on Reserved.
+          
+          Every card keeps the number-left / price-right row adopted on
+          2026-09-26; only how many sit side by side differs. Free and Star are
+          browsable inventories where two columns halve the scrolling, and at
+          this width a number and its price still sit comfortably on one line.
+          Reserved stays full width for the reason it always has: it is a short
+          list, so a second column would leave a card stranded beside an empty
+          half-row, and its rows carry an extra fact - who holds the number -
+          that reads better across a full width than wrapped into half of one.
+          
+          Capped at 22rem and scrollable either way, with the search above it
+          for an agent who already knows the number they want. */}
+      <div
+        className={`grid gap-4 ${
+          // Free and Star numbers are compact cards (2026-10-04 designs). Star cards are at least 19rem wide so the price and the
+          // lock-in period fit side by side without clipping (they were 15.5rem and cut "QAR 35,000" short). Reserved carries more lines per card (who holds it, when) and keeps two.
+          // Columns follow the width of the panel the picker sits in (auto-fill), not the window: the wizard's step card is
+          // 746px narrower than the window, so a viewport breakpoint squeezed the cards at 1024.
+          // The wide template applies whenever ANY card on the page is a Star card: a Reserved list mixing Free and Star numbers used to take the
+          // narrow one, which squeezed its Star cards until the number, price and lock-in overflowed.
+          tab === 'Star' || tab === 'Blocked' || (tab === 'Reserved' && paged.some((n) => n.priceQAR >= FREE_NUMBER_PRICE_CEILING_QAR))
+            ? 'grid-cols-[repeat(auto-fill,minmax(min(100%,19rem),1fr))]'
+            : tab === 'Free'
+              ? 'grid-cols-[repeat(auto-fill,minmax(min(100%,11rem),1fr))]'
+              : 'grid-cols-[repeat(auto-fill,minmax(min(100%,9.5rem),1fr))]'
+        }`}
+      >
+        {paged.map((n) => {
+          const isSelected = selected === n.msisdn;
+          // No disabled state: everything listed is selectable. An AVAILABLE
+          // number can be taken, and a Reserved one is a held number the
+          // agent is deliberately looking at in order to use it.
+          //
+          // No status badge on the Free/Star tabs either - the filter makes it
+          // constant there, so it could only print the same word. On the
+          // Reserved tab it says who holds the number, which is the one thing
+          // that distinguishes those rows from each other.
+          // Click anywhere on the card to select it; click again to unselect.
+          const toggle = () => (isSelected && onDeselect ? onDeselect() : choose(n.msisdn, chargeFor(n.priceQAR)));
+          const isStar = n.priceQAR >= FREE_NUMBER_PRICE_CEILING_QAR;
+          // Portal Reserved tab: release the number. stopPropagation keeps the click from selecting the card.
+          const unreserve =
+            portalMode && tab === 'Reserved' && onUnreserve ? (
+              <div className="relative">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUnreserve(n.msisdn);
+                  }}
+                >
+                  Unreserve
+                </Button>
+              </div>
+            ) : null;
+          // Upfront charge is what is actually billed today: for a Star number
+          // only the amount above the plan's entitlement (BR-115); anything
+          // below the Star band is billed at its catalogue price.
+          const upfrontFull =
+            isStar && planMrcQar !== undefined ? starNumberOverageQar(planMrcQar, n.priceQAR, entitlementQar) : chargeFor(n.priceQAR);
+          // The selected number's charge is what is still payable after the agent's additional discount (clamped to the charge, as Checkout does).
+          const upfront = isSelected && waiverQar !== undefined ? chargeAfterWaiverQar(upfrontFull, waiverQar) : upfrontFull;
+          // Shown where the charge is known: a journey with a plan, or one that prices the number on its own (Mobile Prepaid: the whole price is due).
+          const showsUpfront = (planMrcQar !== undefined || profile?.planEntitlement === false) && upfrontFull > 0;
+          const lockIn = isStar && profile?.lockIn !== false
+            ? starTiers.find((t) => n.priceQAR >= t.valueRangeMin && n.priceQAR <= t.valueRangeMax)?.lockInDurationMonths
+            : undefined;
+          const tag = isStar ? (
+            // The price of a Star number, amber to set it apart from free and charged ones.
+            <Badge variant="tag-amber">{formatQar(n.priceQAR)}</Badge>
+          ) : null; // A free number carries no pill: it is simply the number.
+          if (tab === 'Blocked') {
+            // Blocked-number card: the Star-number card's layout - the number, then the facts (Type, Price, Lock-In and the Amount to Pay for a Star number) and who blocked it - with the
+            // block's reason across two columns. Only the viewer's own group's blocked numbers are listed (blockedForViewer), so every card here is one this agent is authorised
+            // to sell: it is selected like any other number (click, again to unselect).
+            const money = (v: number) => formatQar(v, { nbsp: true });
+            return (
+              <div
+                key={n.msisdn}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
+                aria-label={`Blocked number ${toLocalMsisdn(n.msisdn)}`}
+                onClick={toggle}
+                onKeyDown={(e) => {
+                  if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    toggle();
+                  }
+                }}
+                className={`option-card isolate gap-3 pad-card-lg ${isSelected ? CARD_SELECTED : CARD_IDLE}`}
+              >
+                {isSelected && <SelectedCardTexture />}
+                {isSelected && <SelectedTick />}
+                <p className="title title-xl leading-tight pr-10">{toLocalMsisdn(n.msisdn)}</p>
+                <div className="attribute-grid">
+                  <StarStat label="Type" value={isStar ? 'Star Number' : 'Free Number'} />
+                  {isStar && <StarStat label="Price" value={money(n.priceQAR)} />}
+                  {lockIn !== undefined && <StarStat label="Lock-In Period" value={`${lockIn}\u00a0months`} />}
+                  {showsUpfront && <StarStat label="Amount to Pay" value={money(upfront)} alert />}
+                  <StarStat label="Blocked By" value={n.blockedByTeam ?? 'Not recorded'} />
+                  <div className="col-span-2">
+                    <StarStat label="Blocked Reason" value={n.blockedReason ?? 'Not recorded'} />
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          if (tab === 'Star' || (tab === 'Reserved' && isStar)) {
+            // Star-number card (2026-10-04 design): the number and a state mark on top, then a 2x2 grid of
+            // icon-tile facts - Price, Lock-in, Amount to pay (only when there is one).
+            // Non-breaking spaces keep "QAR 8,750" and "24 months" together: a long value wraps between words, never inside one.
+            const money = (v: number) => formatQar(v, { nbsp: true });
+            const facts = [
+              { icon: STAT_ICONS.wallet, label: 'Price', value: money(n.priceQAR), alert: false },
+              ...(lockIn !== undefined ? [{ icon: STAT_ICONS.lock, label: 'Lock-In Period', value: `${lockIn}\u00a0months`, alert: false }] : []),
+              ...(showsUpfront
+                ? [{ icon: STAT_ICONS.tag, label: 'Amount to Pay', value: money(upfront), alert: true }]
+                : []),
+            ];
+            return (
+              <div
+                key={n.msisdn}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
+                onClick={toggle}
+                onKeyDown={(e) => {
+                  if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    toggle();
+                  }
+                }}
+                className={`option-card isolate gap-3 pad-card-lg ${
+                  isSelected ? CARD_SELECTED : CARD_IDLE
+                }`}
+              >
+                {isSelected && <SelectedCardTexture />}
+                {/* The state mark: the shared corner tick when selected (also exposed as aria-pressed). */}
+                {isSelected && <SelectedTick />}
+                <p className="title title-xl leading-tight pr-10">{toLocalMsisdn(n.msisdn)}</p>
+                {/* The facts sit side by side while the card has room for two and stack when it does not (a narrow panel, a phone), never overflow. */}
+                <div className="attribute-grid">
+                  {facts.map((f) => (
+                    <StarStat key={f.label} label={f.label} value={f.value} alert={f.alert} plainValue={f.label === 'Lock-in period'} />
+                  ))}
+                </div>
+                {unreserve}
+              </div>
+            );
+          }
+          // Compact card: the number on the left and its price on the right of one row (the price wraps
+          // below, never truncating either, when the card is too narrow for both), then its charge lines.
+          return (
+            <div
+              key={n.msisdn}
+              role="button"
+              tabIndex={0}
+              aria-pressed={isSelected}
+              onClick={toggle}
+              onKeyDown={(e) => {
+                if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  toggle();
+                }
+              }}
+              className={`option-card isolate gap-1.5 pad-row ${
+                isSelected ? CARD_SELECTED : CARD_IDLE
+              }`}
+            >
+              {isSelected && <SelectedCardTexture />}
+              {/* Selected is shown by more than the fill: a red border and ring (CARD_SELECTED) and a tick
+                  badge. Nothing marks an unselected card. The state is exposed to assistive tech through
+                  aria-pressed on the card. */}
+              {isSelected && <SelectedTick />}
+              {/* On the selected surface the green FREE pill text is darkened (#1f6b2c, about 6:1) to keep 4.5:1. */}
+              {/* A Free number is just the number, so it is centred in its card; every other number (Star, Reserved) keeps the number left with its tag right. */}
+              <div className={`relative split gap-y-1 ${tab === 'Free' ? 'split-centered' : ''} ${isSelected ? '[&_.text-success]:text-[var(--tint-green-fg)]' : ''}`}>
+                <p className="price-figure">{toLocalMsisdn(n.msisdn)}</p>
+                {tag}
+              </div>
+              {tab === 'Reserved' && n.reservedAt && (
+                <p className="caption-secondary">
+                  Reserved {formatDateTime(n.reservedAt)}
+                </p>
+              )}
+              {isStar ? (
+                <>
+                  {showsUpfront && (
+                    <p className="font-semibold text-accent text-[length:var(--fs-caption)]">Amount to pay: {formatQar(upfront)}</p>
+                  )}
+                  {planMrcQar !== undefined && entitlementQar !== undefined && (
+                    <p className="caption-secondary">Plan entitlement: up to {formatQar(entitlementQar)}</p>
+                  )}
+                  {lockIn !== undefined && <p className="caption-secondary">Lock-in period: {lockIn} months</p>}
+                </>
+              ) : null}
+              {unreserve}
+            </div>
+          );
+        })}
+        {filtered.length === 0 && (
+          <EmptyState
+            className="col-span-full"
+            compact
+            title={tab === 'Reserved' ? 'No Reserved Numbers' : undefined}
+            message={
+              tab === 'Reserved'
+              ? portalMode
+                ? 'No numbers reserved yet. Numbers you reserve here appear in this tab.'
+                : 'No numbers have been reserved for this customer.'
+              : showingAllPatterns
+                  ? 'No available numbers have an XXYY pattern.'
+                  : search
+                  ? `No ${tab === 'Blocked' ? 'blocked' : 'available'} numbers match \u201c${search}\u201d.`
+                  : tab === 'Blocked'
+                    ? 'Search by number, tier or price to find the numbers your group has blocked.'
+                    : 'No available numbers in this category.'
+            }
+          />
+        )}
+      </div>
+      {/* Paged by the Pagination capability (previous, numbered pages, next, under a "Showing a-b of N" count): every journey, the portal and the
+          Capability Library page the numbers the same way. Hidden entirely on a single page so a one-page list carries no dead controls. */}
+      <Pagination page={safePage + 1} total={filtered.length} pageSize={pageSize} onPage={(p) => setPage(p - 1)} />
+      </>
+    </div>
+  );
+}

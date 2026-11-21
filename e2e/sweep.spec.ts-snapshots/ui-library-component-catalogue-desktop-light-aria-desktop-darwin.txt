@@ -1,0 +1,233 @@
+- main:
+  - heading "Administration" [level=1]
+  - text: Operational role directory, feature-grant matrix, and backoffice notification tools.
+  - tablist "Sections":
+    - tab "Capability Library"
+    - tab "UI Components Library" [selected]
+    - tab "Bell Notifications"
+    - tab "Bulk Notes"
+    - tab "Roles & Access"
+  - heading "UI Components Library" [level=2]
+  - paragraph: Every distinct UI component in use across the application, rendered live from the real component and shown once with its applicable variants and states.
+  - complementary "Component groups":
+    - paragraph: 14 groups
+    - list:
+      - listitem:
+        - button "Buttons"
+      - listitem:
+        - button "Form Controls"
+      - listitem:
+        - button "Cards"
+      - listitem:
+        - button "Tabs"
+      - listitem:
+        - button "Modals & Drawers"
+      - listitem:
+        - button "Alerts & Notifications"
+      - listitem:
+        - button "Tags & Badges"
+      - listitem:
+        - button "Tables"
+      - listitem:
+        - button "Navigation"
+      - listitem:
+        - button "Pagination"
+      - listitem:
+        - button "Tooltips"
+      - listitem:
+        - button "Empty States & Loading"
+      - listitem:
+        - button "Other"
+      - listitem:
+        - button "Component Catalogue" [pressed]
+  - region "Component Catalogue":
+    - heading "Component Catalogue" [level=3]
+    - paragraph: "Every component in the application with where it is shown: live above, inside a capability, or listed here with its source."
+    - paragraph: 524 components - 42 live specimen, 106 capability library, 376 catalogue only. Showing 524.
+    - text: Search Components
+    - textbox "Search Components"
+    - text: Layer
+    - combobox "Layer": All Layers
+    - button "Open list":
+      - img
+    - text: Shown In
+    - combobox "Shown In": Everywhere
+    - button "Open list":
+      - img
+    - table:
+      - rowgroup:
+        - row "Component Layer Category Shown In Source Files Using It":
+          - columnheader "Component":
+            - button "Component":
+              - text: Component
+              - img
+          - columnheader "Layer":
+            - button "Layer":
+              - text: Layer
+              - img
+          - columnheader "Category":
+            - button "Category":
+              - text: Category
+              - img
+          - columnheader "Shown In":
+            - button "Shown In":
+              - text: Shown In
+              - img
+          - columnheader "Source":
+            - button "Source":
+              - text: Source
+              - img
+          - columnheader "Files Using It":
+            - button "Files Using It":
+              - text: Files Using It
+              - img
+      - rowgroup:
+        - row "AlertsRisksSection Workspace Alerts, notifications, badges and tags Catalogue Only workspace/customer360/sections/AlertsRisksSection.tsx 2":
+          - cell "AlertsRisksSection"
+          - cell "Workspace"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "workspace/customer360/sections/AlertsRisksSection.tsx":
+            - link "workspace/customer360/sections/AlertsRisksSection.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/workspace/customer360/sections/AlertsRisksSection.tsx
+          - cell "2"
+        - row "Badge Primitive Alerts, notifications, badges and tags Live Specimen components/primitives/Badge.tsx 73":
+          - cell "Badge"
+          - cell "Primitive"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Live Specimen"
+          - cell "components/primitives/Badge.tsx":
+            - link "components/primitives/Badge.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/components/primitives/Badge.tsx
+          - cell "73"
+        - row "Banner Workspace Alerts, notifications, badges and tags Catalogue Only workspace/customer360/queryFlow/QueryFlowCard.tsx 0":
+          - cell "Banner"
+          - cell "Workspace"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "workspace/customer360/queryFlow/QueryFlowCard.tsx":
+            - link "workspace/customer360/queryFlow/QueryFlowCard.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/workspace/customer360/queryFlow/QueryFlowCard.tsx
+          - cell "0"
+        - row "BellNotificationBanner Workspace Alerts, notifications, badges and tags Catalogue Only workspace/customer360/BellNotificationBanner.tsx 1":
+          - cell "BellNotificationBanner"
+          - cell "Workspace"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "workspace/customer360/BellNotificationBanner.tsx":
+            - link "workspace/customer360/BellNotificationBanner.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/workspace/customer360/BellNotificationBanner.tsx
+          - cell "1"
+        - row "BellNotificationsSection Workspace Alerts, notifications, badges and tags Catalogue Only workspace/administration/BellNotificationsSection.tsx 1":
+          - cell "BellNotificationsSection"
+          - cell "Workspace"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "workspace/administration/BellNotificationsSection.tsx":
+            - link "workspace/administration/BellNotificationsSection.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/workspace/administration/BellNotificationsSection.tsx
+          - cell "1"
+        - row "C360AlertsRisks Workspace Alerts, notifications, badges and tags Catalogue Only workspace/customer360/sections/C360AlertsRisks.tsx 1":
+          - cell "C360AlertsRisks"
+          - cell "Workspace"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "workspace/customer360/sections/C360AlertsRisks.tsx":
+            - link "workspace/customer360/sections/C360AlertsRisks.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/workspace/customer360/sections/C360AlertsRisks.tsx
+          - cell "1"
+        - row "ConnectionTypeTag Primitive Alerts, notifications, badges and tags Live Specimen components/primitives/ConnectionTypeTag.tsx 6":
+          - cell "ConnectionTypeTag"
+          - cell "Primitive"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Live Specimen"
+          - cell "components/primitives/ConnectionTypeTag.tsx":
+            - link "components/primitives/ConnectionTypeTag.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/components/primitives/ConnectionTypeTag.tsx
+          - cell "6"
+        - row "CountryMarker Primitive Alerts, notifications, badges and tags Live Specimen components/primitives/CountryMarker.tsx 2":
+          - cell "CountryMarker"
+          - cell "Primitive"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Live Specimen"
+          - cell "components/primitives/CountryMarker.tsx":
+            - link "components/primitives/CountryMarker.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/components/primitives/CountryMarker.tsx
+          - cell "2"
+        - 'row "CustomerStatusBanner Capability Alerts, notifications, badges and tags Capability Library: Customer Qualification capabilities/CustomerQualification/JourneyBanners.tsx 1"':
+          - cell "CustomerStatusBanner"
+          - cell "Capability"
+          - cell "Alerts, notifications, badges and tags"
+          - 'cell "Capability Library: Customer Qualification"'
+          - cell "capabilities/CustomerQualification/JourneyBanners.tsx":
+            - link "capabilities/CustomerQualification/JourneyBanners.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/capabilities/CustomerQualification/JourneyBanners.tsx
+          - cell "1"
+        - row "FamilyPackageNotice Pattern Alerts, notifications, badges and tags Catalogue Only components/patterns/FamilyPackageNotice.tsx 1":
+          - cell "FamilyPackageNotice"
+          - cell "Pattern"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "components/patterns/FamilyPackageNotice.tsx":
+            - link "components/patterns/FamilyPackageNotice.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/components/patterns/FamilyPackageNotice.tsx
+          - cell "1"
+        - row "HeaderContextChips App shell Alerts, notifications, badges and tags Catalogue Only navigation/HeaderContextChips.tsx 1":
+          - cell "HeaderContextChips"
+          - cell "App shell"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "navigation/HeaderContextChips.tsx":
+            - link "navigation/HeaderContextChips.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/navigation/HeaderContextChips.tsx
+          - cell "1"
+        - 'row "IdLookupStatus Pattern Alerts, notifications, badges and tags Capability Library: Customer Verification components/patterns/IdLookupStatus.tsx 1"':
+          - cell "IdLookupStatus"
+          - cell "Pattern"
+          - cell "Alerts, notifications, badges and tags"
+          - 'cell "Capability Library: Customer Verification"'
+          - cell "components/patterns/IdLookupStatus.tsx":
+            - link "components/patterns/IdLookupStatus.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/components/patterns/IdLookupStatus.tsx
+          - cell "1"
+        - row "IdTypeApprovalNotice Journey / module Alerts, notifications, badges and tags Catalogue Only modules/new-connection/steps/IdTypeApprovalNotice.tsx 1":
+          - cell "IdTypeApprovalNotice"
+          - cell "Journey / module"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "modules/new-connection/steps/IdTypeApprovalNotice.tsx":
+            - link "modules/new-connection/steps/IdTypeApprovalNotice.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/modules/new-connection/steps/IdTypeApprovalNotice.tsx
+          - cell "1"
+        - row "JourneyCustomerBadge Capability Alerts, notifications, badges and tags Catalogue Only capabilities/JourneyCustomerLock/JourneyCustomerBadge.tsx 2":
+          - cell "JourneyCustomerBadge"
+          - cell "Capability"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "capabilities/JourneyCustomerLock/JourneyCustomerBadge.tsx":
+            - link "capabilities/JourneyCustomerLock/JourneyCustomerBadge.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/capabilities/JourneyCustomerLock/JourneyCustomerBadge.tsx
+          - cell "2"
+        - row "LevelBadge Workspace Alerts, notifications, badges and tags Catalogue Only workspace/customer360/sections/AccountHierarchySection.tsx 0":
+          - cell "LevelBadge"
+          - cell "Workspace"
+          - cell "Alerts, notifications, badges and tags"
+          - cell "Catalogue Only"
+          - cell "workspace/customer360/sections/AccountHierarchySection.tsx":
+            - link "workspace/customer360/sections/AccountHierarchySection.tsx":
+              - /url: vscode://file//Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn/src/workspace/customer360/sections/AccountHierarchySection.tsx
+          - cell "0"
+    - text: Page 1 of 35
+    - navigation "Pagination":
+      - button "Previous page" [disabled]:
+        - img
+        - text: Previous
+      - button "Page 1": "1"
+      - button "Page 2": "2"
+      - button "Page 3": "3"
+      - button "Page 33": "33"
+      - button "Page 34": "34"
+      - button "Page 35": "35"
+      - button "Next page":
+        - text: Next
+        - img

@@ -1,0 +1,32 @@
+- main:
+  - heading "Ticket Approval Queue" [level=1]
+  - text: Trouble tickets awaiting an approval decision.
+  - table:
+    - rowgroup:
+      - 'row "Ticket # Customer Category Priority Status Actions"':
+        - 'columnheader "Ticket #"':
+          - 'button "Ticket #"':
+            - text: "Ticket #"
+            - img
+        - columnheader "Customer":
+          - button "Customer":
+            - text: Customer
+            - img
+        - columnheader "Category":
+          - button "Category":
+            - text: Category
+            - img
+        - columnheader "Priority":
+          - button "Priority":
+            - text: Priority
+            - img
+        - columnheader "Status":
+          - button "Status":
+            - text: Status
+            - img
+        - columnheader "Actions"
+    - rowgroup:
+      - row:
+        - cell:
+          - status:
+            - paragraph: No tickets awaiting approval.

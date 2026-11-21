@@ -1,0 +1,62 @@
+import { useEffect, useState } from 'react';
+import { Button, Badge } from 'dxp-ui';
+import { duplicateIn } from './prepaidCartModel';
+import type { PrepaidLine, PricingExtra, PricingProduct } from './prepaidCartModel';
+import { listEntities } from '../../services/entityOps';
+
+// The "Add another subscription?" decision of the Mobile Prepaid process flow (#8.1): the order's subscriptions so far,
+// and the choice to add one more (Yes: the plan, number and SIM steps start again) or to go on to checkout (No: the
+// iteration ends - the footer's Continue).
+export function PrepaidCartStep({ lines, onAddAnother }: { lines: PrepaidLine[]; onAddAnother: () => void }) {
+  const [products, setProducts] = useState<PricingProduct[]>([]);
+  const [extras, setExtras] = useState<PricingExtra[]>([]);
+  useEffect(() => {
+    listEntities<PricingProduct>('products').then(setProducts);
+    listEntities<PricingExtra>('addons-discounts').then(setExtras);
+  }, []);
+  const duplicate = duplicateIn(lines);
+
+  return (
+    <div className="space-y-4">
+      {lines.length === 0 ? (
+        <p role="status" className="muted-body">
+          Choose the pack, number and SIM first; the subscription then appears here.
+        </p>
+      ) : (
+        <ul className="space-y-3" aria-label="Subscriptions on this order">
+          {lines.map((line, i) => {
+            const plan = products.find((p) => p.productId === line.productId);
+            const names = [...(line.discountId ? [line.discountId] : []), ...line.addonIds].map((id) => extras.find((e) => e.addonDiscountId === id)?.name ?? id);
+            return (
+              <li key={`${line.msisdn}-${i}`} className="card card-surface p-4 split">
+                <div className="min-w-0">
+                  <p className="text-fg font-semibold">
+                    Subscription {i + 1}: {plan?.name ?? line.productId}
+                  </p>
+                  {/* The number, the SIM and the add-ons, each its own item with room between them (not one run of text). */}
+                  <p className="cluster caption-secondary mt-1 gap-x-6">
+                    <span>{line.msisdn}</span>
+                    <span>{line.prePaired ? 'Pre-Paired SIM' : line.simType.simType === 'eSIM' ? 'eSIM' : `SIM ${line.simType.simSerial}`}</span>
+                    {names.length > 0 && <span>{names.join(', ')}</span>}
+                  </p>
+                </div>
+                {line.prePaired && <Badge variant="accent">Pre-Paired SIM</Badge>}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {duplicate && (
+        <p role="alert" className="text-danger text-[length:var(--fs-body)]">
+          The {duplicate.kind} {duplicate.value} is on more than one subscription. Go back and choose a different {duplicate.kind}.
+        </p>
+      )}
+      <div className="cluster">
+        <Button variant="secondary" onClick={onAddAnother} disabled={lines.length === 0 || Boolean(duplicate)}>
+          Add Another Subscription
+        </Button>
+        <span className="caption-muted">Or continue to checkout once the order has every subscription.</span>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,45 @@
+- main:
+  - paragraph: Doha Retail · Live operations
+  - paragraph: Saturday, 07/11/2026
+  - heading "Good afternoon, Imran." [level=1]
+  - definition: "-"
+  - term: Customers in Queue
+  - definition: "0"
+  - term: Customers Served
+  - definition: 6 min
+  - term: Average Wait Time
+  - img
+  - textbox "Search a customer":
+    - /placeholder: Search a customer by mobile, QID, account number…
+  - text: Press /
+  - heading "My Tasks" [level=2]
+  - link "2 due today 5 Open tasks":
+    - /url: /tasks?filter=open
+  - link "0 In progress tasks":
+    - /url: /tasks?filter=in-progress
+  - link "1 Pending payments":
+    - /url: /tasks?filter=payments
+  - link "Needs attention 1 Priority tasks":
+    - /url: /tasks?filter=priority
+  - link "Ready to resume 1 Draft orders":
+    - /url: /tasks?filter=draft-orders
+  - text: Open Tickets Across all queues
+  - img
+  - text: 6 Orders pending approval awaiting a manager
+  - img
+  - text: 20 Total Leads created this session
+  - img
+  - text: 15 SIM Swaps Pending awaiting approval
+  - img
+  - text: 1 Customers on File in the mock directory
+  - img
+  - text: 106 Bulk Jobs Processed incl. Pre-to-Post migrations
+  - img
+  - text: "1"
+  - button "New Connection"
+  - button "New Postpaid Connection"
+  - button "New Fixed Line"
+  - button "Start a Lead"
+  - button "Create Ticket"
+  - heading "Recently viewed customers" [level=3]
+  - paragraph: Customers you look up will show up here for quick return access.

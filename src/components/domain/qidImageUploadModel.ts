@@ -1,0 +1,313 @@
+import type { IdVariant } from './ScannedIdPreview';
+import type { SpecimenIdentity } from './scannedIdModel';
+
+/**
+ * A completed capture (both sides, scan or upload) that is clear enough to read is accepted as it lands - no confirmation step. An unclear
+ * one is not: the agent rescans, and the rescan replaces it.
+ */
+
+/**
+ * A completed capture (both sides, scan or upload) that is clear enough to read is accepted as it lands - no confirmation step. An unclear
+ * one is not: the agent rescans, and the rescan replaces it.
+ */
+export const isScanAccepted = (v: Pick<QidImageUploadValue, 'frontScanned' | 'backScanned' | 'clear'> | undefined): boolean =>
+  Boolean(v?.frontScanned && v.backScanned && v.clear !== false);
+
+/**
+ * Whether the capture holds what the document needs. A Passport needs its front (the photo page, which carries everything read from it); its back is optional,
+ * scanned only if the agent wants it kept. Every other document needs both sides.
+ */
+export const scanSidesDone = (documentType: string | undefined, v: Pick<QidImageUploadValue, 'frontScanned' | 'backScanned'> | undefined): boolean =>
+  documentType === 'Passport' ? Boolean(v?.frontScanned) : Boolean(v?.frontScanned && v?.backScanned);
+
+export interface QidImageUploadValue {
+  frontScanned?: boolean;
+  backScanned?: boolean;
+  /**
+   * Data URL of a real capture, when there is one. Nothing sets this today -
+   * there is no scanner and no file input - but the preview honours it, so a
+   * real capture path only has to write here.
+   */
+  /**
+   * Data URL of a real capture, when there is one. Nothing sets this today -
+   * there is no scanner and no file input - but the preview honours it, so a
+   * real capture path only has to write here.
+   */
+  frontImage?: string;
+  backImage?: string;
+  /** How the document came in: absent / 'scan' for the reader, 'upload' for files uploaded in its place. */
+  /** How the document came in: absent / 'scan' for the reader, 'upload' for files uploaded in its place. */
+  source?: 'scan' | 'upload';
+  /** Upload only: one file shows both sides (a single image or PDF), so it stands for the front and the back. */
+  /** Upload only: one file shows both sides (a single image or PDF), so it stands for the front and the back. */
+  combined?: boolean;
+  /** Upload only: the name of the file each side came from, for the attachment and the card. */
+  /** Upload only: the name of the file each side came from, for the attachment and the card. */
+  frontFile?: string;
+  backFile?: string;
+  /** Upload only: the front/back assignment of a pair is settled (by the file names, or by the agent's swap). */
+  /** Upload only: the front/back assignment of a pair is settled (by the file names, or by the agent's swap). */
+  sidesSet?: boolean;
+  /** Upload only, when several files may be uploaded (`multipleUploads`): every file taken so far, in the order uploaded. */
+  uploads?: { name: string; image?: string }[];
+  /** A scan only: the identity printed on the card as the reader captured it (an upload reads nothing). Dates are DD/MM/YYYY. */
+  /** A scan only: the identity printed on the card as the reader captured it (an upload reads nothing). Dates are DD/MM/YYYY. */
+  captured?: { name?: string; dob?: string; nationality?: string };
+  /**
+   * Whether the completed scan is sharp enough to read. Set by this
+   * component, not the caller: true unless `blurFirstScan` is on AND this
+   * was the first pass over the reader. See ScannedIdPreview.clear for what
+   * it drives visually.
+   */
+  /**
+   * Whether the completed scan is sharp enough to read. Set by this
+   * component, not the caller: true unless `blurFirstScan` is on AND this
+   * was the first pass over the reader. See ScannedIdPreview.clear for what
+   * it drives visually.
+   */
+  clear?: boolean;
+  /** Typed-details entry only (Contact, after "Retake scan (5)"): the documents the agent uploaded, by name - any number, no front / back. They stand for the identity document on the order. */
+  documents?: { name: string }[];
+}
+
+export interface QidImageUploadProps {
+  /** Whose document the drawn capture shows - see ScannedIdPreview.identity. */
+  /** Whose document the drawn capture shows - see ScannedIdPreview.identity. */
+  identity?: SpecimenIdentity;
+  /** Layout of the drawn capture - see ScannedIdPreview.variant (the B2B2C / Retired / MADA office ID cards). */
+  /** Layout of the drawn capture - see ScannedIdPreview.variant (the B2B2C / Retired / MADA office ID cards). */
+  variant?: IdVariant;
+  /** A clear scan needs no confirmation: it is accepted and saved as soon as it completes; an unclear one is rescanned. */
+  /** A clear scan needs no confirmation: it is accepted and saved as soon as it completes; an unclear one is rescanned. */
+  value: QidImageUploadValue;
+  onChange: (value: QidImageUploadValue) => void;
+  /**
+   * Called once per pass over the reader - an Initiate AND every Retake, both
+   * of which drive the reader - when the pass COMPLETES, before any value is
+   * written. One charge per physical pass either way, but adjudicating at the
+   * end means a consumer's "budget spent" state, and any fallback it gates on
+   * that, arrives with the failure rather than while the card is still
+   * visibly reading.
+   *
+   * Return false to fail the pass: no capture is written, the card lands back
+   * on the insert prompt once the pass ends, and the caller can render `error`
+   * and open whatever fallback it owns.
+   *
+   * Optional, defaulting to always succeeding, because only IdLookupStep has
+   * an attempt budget and a manual-entry fallback. The Verification Gate, SIM
+   * Swap and Passport-to-QID all just need the scan to land.
+   */
+  /**
+   * Called once per pass over the reader - an Initiate AND every Retake, both
+   * of which drive the reader - when the pass COMPLETES, before any value is
+   * written. One charge per physical pass either way, but adjudicating at the
+   * end means a consumer's "budget spent" state, and any fallback it gates on
+   * that, arrives with the failure rather than while the card is still
+   * visibly reading.
+   *
+   * Return false to fail the pass: no capture is written, the card lands back
+   * on the insert prompt once the pass ends, and the caller can render `error`
+   * and open whatever fallback it owns.
+   *
+   * Optional, defaulting to always succeeding, because only IdLookupStep has
+   * an attempt budget and a manual-entry fallback. The Verification Gate, SIM
+   * Swap and Passport-to-QID all just need the scan to land.
+   */
+  onScan?: () => boolean;
+  /**
+   * A retake finished. `shownCount` is the number the Retake button showed when it was clicked ("Retake scan (4)" -> 4; the first retake of a side
+   * showed none -> 0) and `printed` what the card carries (name, date of birth, nationality). Lets the lookup act on a particular retake.
+   */
+  /**
+   * A retake finished. `shownCount` is the number the Retake button showed when it was clicked ("Retake scan (4)" -> 4; the first retake of a side
+   * showed none -> 0) and `printed` what the card carries (name, date of birth, nationality). Lets the lookup act on a particular retake.
+   */
+  onRetakeDone?: (shownCount: number, printed: { name?: string; dob?: string; nationality?: string }) => void;
+  /** Rendered inside the insert zone, after a failed scan. */
+  /** A string, or a list of lines (an array renders as bullet points). */
+  /** Rendered inside the insert zone, after a failed scan. */
+  /** A string, or a list of lines (an array renders as bullet points). */
+  error?: string | string[];
+  /**
+   * Whether the reader can still be driven. Default true.
+   *
+   * Pass false once the consumer's attempt budget is spent: the insert zone
+   * keeps the prompt and the `error`, but drops the Initiate button. A scan
+   * that can never succeed should not be offered - left live it spun for
+   * 900ms and returned to the same prompt, which reads as a broken button
+   * rather than as a reader that has given up, and the agent can sit there
+   * pressing it. The same reason Retake is absent before the first capture.
+   */
+  /**
+   * Whether the reader can still be driven. Default true.
+   *
+   * Pass false once the consumer's attempt budget is spent: the insert zone
+   * keeps the prompt and the `error`, but drops the Initiate button. A scan
+   * that can never succeed should not be offered - left live it spun for
+   * 900ms and returned to the same prompt, which reads as a broken button
+   * rather than as a reader that has given up, and the agent can sit there
+   * pressing it. The same reason Retake is absent before the first capture.
+   */
+  canScan?: boolean;
+  /**
+   * Passport on a web device: the consumer's "Initiate scan" - pressed once both sides are scanned, it reads the passport and validates it against
+   * MOI. Given, the Passport card shows the button in its header (and no Upload on web); absent, the card offers no validation trigger of its own.
+   */
+  /**
+   * Passport on a web device: the consumer's "Initiate scan" - pressed once both sides are scanned, it reads the passport and validates it against
+   * MOI. Given, the Passport card shows the button in its header (and no Upload on web); absent, the card offers no validation trigger of its own.
+   */
+  onVerify?: () => void;
+  /** The validation started by onVerify is under way. */
+  /** The validation started by onVerify is under way. */
+  verifying?: boolean;
+  /** onVerify cannot be pressed yet (a typed Passport needs its number and expiry first), beyond both sides being scanned. */
+  verifyDisabled?: boolean;
+  /** MOI has already validated this capture. */
+  /** MOI has already validated this capture. */
+  verified?: boolean;
+  /** Offer both "Initiate scan" and "Upload document" on every device. Default: the device decides (web scans, tablet uploads). */
+  /** Offer both "Initiate scan" and "Upload document" on every device. Default: the device decides (web scans, tablet uploads). */
+  bothCaptureActions?: boolean;
+  /** Upload document takes any number of files, all at once or one after another; each is listed by name with a Delete (the document is then one set, not a front and a back). */
+  multipleUploads?: boolean;
+  /** The reader stays offered on a tablet too (upload joins it there). Default: web scans, tablet uploads. */
+  /** The reader stays offered on a tablet too (upload joins it there). Default: web scans, tablet uploads. */
+  readerEverywhere?: boolean;
+  /**
+   * Which document is in the reader. Defaults to 'QID', which is what the
+   * three journeys other than IdLookupStep capture.
+   *
+   * Drives the face captions and, in ScannedIdPreview, whether the back face
+   * carries a barcode - only the Qatar ID does.
+   */
+  /**
+   * Which document is in the reader. Defaults to 'QID', which is what the
+   * three journeys other than IdLookupStep capture.
+   *
+   * Drives the face captions and, in ScannedIdPreview, whether the back face
+   * carries a barcode - only the Qatar ID does.
+   */
+  documentType?: string;
+  /**
+   * DEMO ONLY (2026-09-28, requested as such). Document types offered as text
+   * links under the Initiate button; clicking one names the card and runs the
+   * scan.
+   *
+   * This deliberately re-opens a door closed on 2026-09-25, when a
+   * "Simulate scan failure" button and a "Scan attempts: n / 4" counter were
+   * removed from this card for exposing the simulation. Those were debug
+   * leftovers; these are an explicit demo affordance, labelled as such on
+   * screen so nobody mistakes them for production. Omit both props and the
+   * card renders exactly as before.
+   */
+  /**
+   * DEMO ONLY (2026-09-28, requested as such). Document types offered as text
+   * links under the Initiate button; clicking one names the card and runs the
+   * scan.
+   *
+   * This deliberately re-opens a door closed on 2026-09-25, when a
+   * "Simulate scan failure" button and a "Scan attempts: n / 4" counter were
+   * removed from this card for exposing the simulation. Those were debug
+   * leftovers; these are an explicit demo affordance, labelled as such on
+   * screen so nobody mistakes them for production. Omit both props and the
+   * card renders exactly as before.
+   */
+  demoTypes?: { value: string; label: string }[];
+  onDemoScan?: (type: string) => void;
+  /**
+   * DEMO ONLY (2026-09-28, requested as such). When on, the FIRST pass over
+   * the reader always comes back blurred - unreadable, forcing a Retake -
+   * and every pass after that is clear. Defaults to false/undefined, which
+   * reproduces the exact prior behaviour (every pass clear) for
+   * VerificationGate, SIM Swap and Passport-to-QID, none of which this was
+   * requested for and none of which have an OCR-extraction step for a blur
+   * to plausibly block.
+   *
+   * Scoped in IdLookupStep to `autoDetectIdType` - the scan-first flow this
+   * was asked for - rather than passed unconditionally to every IdLookupStep
+   * caller, for the same reason: the eight selector-led journeys have no
+   * "Document detected" auto-extraction either, so a forced blur-then-retake
+   * there would be a new hurdle with nothing behind it to demonstrate.
+   */
+  /**
+   * DEMO ONLY (2026-09-28, requested as such). When on, the FIRST pass over
+   * the reader always comes back blurred - unreadable, forcing a Retake -
+   * and every pass after that is clear. Defaults to false/undefined, which
+   * reproduces the exact prior behaviour (every pass clear) for
+   * VerificationGate, SIM Swap and Passport-to-QID, none of which this was
+   * requested for and none of which have an OCR-extraction step for a blur
+   * to plausibly block.
+   *
+   * Scoped in IdLookupStep to `autoDetectIdType` - the scan-first flow this
+   * was asked for - rather than passed unconditionally to every IdLookupStep
+   * caller, for the same reason: the eight selector-led journeys have no
+   * "Document detected" auto-extraction either, so a forced blur-then-retake
+   * there would be a new hurdle with nothing behind it to demonstrate.
+   */
+  blurFirstScan?: boolean;
+  /** Omit the "Image unclear" line under a blurred capture - for a flow where the agent spots the bad read themselves. */
+  /** Omit the "Image unclear" line under a blurred capture - for a flow where the agent spots the bad read themselves. */
+  hideUnclearNotice?: boolean;
+}
+
+// FLD (Passport to QID journey, UJ-076): "scan/upload QID Front & Back" required
+// before Continue - no real file I/O in a front-end-only app, so scanning is
+// simulated, matching the mandatory-gating shape evidenced elsewhere
+// (Pattern 12).
+//
+// ONE SCANNING OPERATION, not two. The reader takes the card once and reads
+// both faces, so this is a single card with a single action and a single
+// Retake - superseding the 2026-09-25 build where front and back were separate
+// cards with their own Initiate and Retake buttons. That shape implied the
+// agent feeds the card through twice and, worse, allowed a half-scanned state
+// that every consumer had to treat as invalid anyway.
+//
+// The VALUE CONTRACT is deliberately unchanged: a scan still writes
+// frontScanned AND backScanned, and all four consumers still gate on both.
+// That is what let this be restructured without touching VerificationGate,
+// NewSimSwapWizard or PassportToQidWizard - they each require both flags, and
+// both flags now flip together.
+//
+// Two blocks: capture area, action. No header of its own.
+//
+// The card carried a "Qatar ID" title and, briefly, a "WAITING..." /
+// "CAPTURED" state pill beside it. Both are gone, for the same reason: the
+// caller already labels this section ("Scan Qatar ID" in IdLookupStep), the
+// capture area IS the state - an insert prompt or two photographs - and the
+// MOI badge that sat here for one revision now lives on the number field's
+// label row. A header with nothing left to say is just an indent.
+//
+// - Capture area: a dashed insert zone before the scan, both faces after it.
+//   Dashed, not solid, because the border is around an EMPTY target rather
+//   than around content - the same distinction the rest of the re-skin draws
+//   with its 1px solid borders.
+// - Action: Initiate before, Retake after. RETAKE DRIVES THE READER ITSELF as
+//   of 2026-09-26 - one press rescans, where it used to clear the card back to
+//   the insert prompt and wait for a second press on Initiate. The card in
+//   this journey never leaves the reader between reads, so sending the agent
+//   back to "Insert card and initiate scan" asked them to re-seat a document
+//   that was already seated, and cost two presses for one physical action.
+//   Retake also carries the number of completed retakes, so the agent can see
+//   how many reads this document has taken without counting them.
+//
+// Departures from the 2026-09-25 reference image, which showed the two-card
+// shape. The first two are direct instructions, the rest are so the card obeys
+// this app's tokens rather than restating the asset's literal values:
+//
+// - One card and one Retake, per above.
+// - Retake is ABSENT before the first capture, where the asset greys it out.
+//   A control that cannot act yet is noise in a step the agent reads top to
+//   bottom, and "retake" is meaningless when nothing has been taken.
+// - The primary action is --accent, not the asset's near-black. Primary
+//   actions are brand red everywhere in this app, and a charcoal fill has no
+//   dark-mode value (--charcoal-panel is #21232b against a #1b1d23 zone -
+//   effectively invisible). Position, weight and fill-vs-outline all match.
+// - The prompt sits at --fg-2, not the asset's light grey. --muted on
+//   --surface-subtle is 4.33:1, just under SC 1.4.3's 4.5:1 at this size.
+//   --fg-2 is 6.37:1 and still reads as secondary beside the --fg title.
+
+// How long the simulated reader takes. In the same 200-600ms family as
+// mockDataEngine's artificial latency, at the top of it because this stands in
+// for a physical pass over a card rather than a data read.
+export const SCAN_DURATION_MS = 900;

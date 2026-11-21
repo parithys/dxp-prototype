@@ -1,0 +1,192 @@
+[
+  {
+    "taskId": "TASK-70001",
+    "taskName": "Verify customer ID mismatch",
+    "taskDescription": "Customer-reported ID document does not match the on-file MOI record - needs manual review.",
+    "taskType": "General",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": null,
+    "createdAt": "2026-09-08T09:12:00+03:00"
+  },
+  {
+    "taskId": "TASK-70002",
+    "taskName": "Escalated billing dispute",
+    "taskDescription": "Customer disputes a large one-off charge on their latest bill - flagged for priority handling.",
+    "taskType": "General",
+    "taskStatus": "Open",
+    "priorityFlag": true,
+    "assignedAgentId": null,
+    "createdAt": "2026-09-09T14:05:00+03:00"
+  },
+  {
+    "taskId": "TASK-70003",
+    "taskName": "Follow up on pending payment",
+    "taskDescription": "Payment authorization is pending settlement confirmation for CUST-1002.",
+    "taskType": "Payment",
+    "taskStatus": "Assigned",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1101",
+    "createdAt": "2026-09-07T11:30:00+03:00"
+  },
+  {
+    "taskId": "TASK-70004",
+    "taskName": "Update customer contact details",
+    "taskDescription": "Customer requested an alternate phone number update on file.",
+    "taskType": "General",
+    "taskStatus": "In Progress",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1101",
+    "createdAt": "2026-09-06T10:00:00+03:00"
+  },
+  {
+    "taskId": "TASK-70005",
+    "taskName": "Urgent payment verification",
+    "taskDescription": "High-value payment for CUST-1001 needs urgent manual verification before order can proceed.",
+    "taskType": "Payment",
+    "taskStatus": "In Progress",
+    "priorityFlag": true,
+    "assignedAgentId": "USR-1102",
+    "createdAt": "2026-09-09T08:45:00+03:00"
+  },
+  {
+    "taskId": "TASK-70006",
+    "taskName": "New Customer – GigaHome Upgrade",
+    "taskDescription": "Draft order started but not submitted; customer plan upgrade awaiting completion.",
+    "taskType": "Draft Order",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": null,
+    "createdAt": "2026-09-08T16:20:00+03:00",
+    "_relatedOrderNote": "Deliberately NOT linked to a draft order. This task describes a GigaHome upgrade, and no fixed-line draft order is seeded - inventing a postpaid one to make the row clickable would have it resume a journey the task is not about. It stays a task-detail row, which is the honest behaviour for a draft whose order is not in this app."
+  },
+  {
+    "taskId": "TASK-70007",
+    "taskName": "Ahmed Abdulla Hassan Al-Sulaiti – Postpaid Activation",
+    "taskDescription": "Draft order must be submitted before the current promotion window closes.",
+    "taskType": "Draft Order",
+    "taskStatus": "Assigned",
+    "priorityFlag": true,
+    "assignedAgentId": "USR-1101",
+    "createdAt": "2026-09-09T09:00:00+03:00",
+    "relatedOrderId": "ORD-90020"
+  },
+  {
+    "taskId": "TASK-70008",
+    "taskName": "Resolved: address update",
+    "taskDescription": "Customer's billing address was corrected and confirmed.",
+    "taskType": "General",
+    "taskStatus": "Closed",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1102",
+    "createdAt": "2026-09-02T13:15:00+03:00"
+  },
+  {
+    "taskId": "TASK-70009",
+    "taskName": "Payment retry needed",
+    "taskDescription": "Initial payment attempt failed for CUST-1003 - needs a retry or alternate method.",
+    "taskType": "Payment",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": null,
+    "createdAt": "2026-09-09T17:40:00+03:00"
+  },
+  {
+    "taskId": "TASK-70010",
+    "taskName": "Fatima Saud Hamad Al-Kuwari – Postpaid Activation",
+    "taskDescription": "Draft order line items need a second review before submission.",
+    "taskType": "Draft Order",
+    "taskStatus": "In Progress",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1101",
+    "createdAt": "2026-09-05T12:00:00+03:00",
+    "relatedOrderId": "ORD-90021"
+  },
+  {
+    "_note": "Demo seed (2026-10-22) - belongs to a protected-segment customer (Safwa / Safwa+ / Royal): shown only to a role holding that segment's grant; every other role sees these lists without it.",
+    "taskId": "TASK-70101",
+    "taskName": "Hessa Jassim Al-Thani – Follow up on activation",
+    "taskDescription": "Follow up with the customer on the pending activation.",
+    "taskType": "General",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": null,
+    "createdAt": "2026-10-20T11:00:00+03:00",
+    "relatedOrderId": "ORD-93101"
+  },
+  {
+    "taskId": "TASK-70030",
+    "taskName": "Maryem Rashid Hamad Jassim Al-Kuwari – Postpaid Activation",
+    "taskDescription": "Draft order saved but not submitted.",
+    "taskType": "Draft Order",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1101",
+    "createdAt": "2026-11-02T10:15:00+03:00",
+    "updatedAt": "2026-11-02T10:40:00+03:00",
+    "relatedOrderId": "ORD-90030",
+    "draftComment": "Customer comparing two plans; will come back."
+  },
+  {
+    "taskId": "TASK-70031",
+    "taskName": "Maryem Rashid Hamad Jassim Al-Kuwari – Postpaid Activation",
+    "taskDescription": "Draft order saved but not submitted.",
+    "taskType": "Draft Order",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1101",
+    "createdAt": "2026-11-04T14:05:00+03:00",
+    "updatedAt": "2026-11-05T09:20:00+03:00",
+    "relatedOrderId": "ORD-90031",
+    "draftComment": "Waiting on the customer's choice of number."
+  },
+  {
+    "taskId": "TASK-70032",
+    "taskName": "Dana Khalid Al-Thani – Postpaid Activation",
+    "taskDescription": "Draft order saved but not submitted.",
+    "taskType": "Draft Order",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1103",
+    "createdAt": "2026-11-03T11:00:00+03:00",
+    "updatedAt": "2026-11-03T11:25:00+03:00",
+    "relatedOrderId": "ORD-90032"
+  },
+  {
+    "taskId": "TASK-70033",
+    "taskName": "Jassim Rashid Nasser Al-Marri – Postpaid Activation",
+    "taskDescription": "Draft order saved but not submitted.",
+    "taskType": "Draft Order",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1101",
+    "createdAt": "2026-11-01T16:30:00+03:00",
+    "updatedAt": "2026-11-01T16:50:00+03:00",
+    "relatedOrderId": "ORD-90033",
+    "draftComment": "Asked for a family plan quote."
+  },
+  {
+    "taskId": "TASK-70034",
+    "taskName": "Jassim Rashid Nasser Al-Marri – Postpaid Activation",
+    "taskDescription": "Draft order saved but not submitted.",
+    "taskType": "Draft Order",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1103",
+    "createdAt": "2026-11-05T09:00:00+03:00",
+    "updatedAt": "2026-11-05T09:30:00+03:00",
+    "relatedOrderId": "ORD-90034"
+  },
+  {
+    "taskId": "TASK-70035",
+    "taskName": "Jassim Rashid Nasser Al-Marri – Postpaid Activation",
+    "taskDescription": "Draft order saved but not submitted.",
+    "taskType": "Draft Order",
+    "taskStatus": "Open",
+    "priorityFlag": false,
+    "assignedAgentId": "USR-1102",
+    "createdAt": "2026-11-06T13:10:00+03:00",
+    "updatedAt": "2026-11-06T13:45:00+03:00",
+    "relatedOrderId": "ORD-90035"
+  }
+]

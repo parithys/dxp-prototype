@@ -1,0 +1,347 @@
+import { Button, Icon } from 'dxp-ui';
+import { useMemo, useState } from 'react';
+import { Link, useLocation } from '../../../lib/router';
+import { isUnpaidInvoice, unpaidInvoiceTotal } from '../../../engines/billingBalance';
+import { PayOutstandingDialog } from './PayOutstandingDialog';
+import { computeBillingSummary, withinBillHistoryWindow, type Customer360Data } from '../../../engines/customer360Engine';
+import type { CustomerService } from '../../../engines/customerServicesEngine';
+import { GridTable, IconTile, KpiGrid, KpiTile, Panel, Pill, StatusPill, TabPage, type GridCol } from './C360Kit';
+import { IC, fmtDate, qar } from './c360KitModel';
+import { Dv } from '../demoValues';
+import { str } from '../../../lib/values';
+import { formatDate } from '../../../lib/format';
+
+type Rec = Record<string, unknown>;
+const DASH = '-';
+const PAGE = 5;
+
+/** "2026-07" -> "01 Jul 2026 - 31 Jul 2026". */
+function periodRange(period: unknown): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(String(period ?? ''));
+  if (!m) return str(period) ?? DASH;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const first = new Date(y, mo - 1, 1);
+  const last = new Date(y, mo, 0);
+  const f = (d: Date) => formatDate(d);
+  return `${f(first)} – ${f(last)}`;
+}
+
+function billStatusLabel(status: unknown): string {
+  const s = String(status ?? '').toLowerCase();
+  if (s === 'billed') return 'Unpaid';
+  if (!s) return DASH;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function daysUntil(iso: unknown): number | undefined {
+  const t = new Date(String(iso ?? '')).getTime();
+  if (Number.isNaN(t)) return undefined;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((t - today.getTime()) / 86_400_000);
+}
+
+// An issued invoice - billed, overdue or paid. An overdue invoice is in the history too: it is what the Outstanding Amount is made of.
+const isBillRow = (b: Rec) => b.status === 'billed' || b.status === 'overdue' || b.status === 'paid';
+
+function Chevron() {
+  return (
+    <Button variant="ghost" size="icon" type="button" disabled aria-label="Open" className="icon-button-inert">
+      <Icon path={IC.chevRight} className="size-4 " />
+    </Button>
+  );
+}
+
+/** Red link-styled action that has no destination yet - rendered inert. */
+function InertLink({ children }: { children: string }) {
+  return (
+    <span aria-disabled="true" title="Not available yet" className="link-disabled">
+      {children} &rarr;
+    </span>
+  );
+}
+
+export function C360BillingPayments({ data, goToTab, onSettled }: { data: Customer360Data; services: CustomerService[]; goToTab?: (key: string) => void; onSettled?: (paidBillIds: string[], payment: Rec) => void }) {
+  const location = useLocation();
+  const [profileId, setProfileId] = useState('all');
+  const [showAllBills, setShowAllBills] = useState(false);
+  // What the open payment dialog settles: every profile's unpaid invoices ('all', from the Total Outstanding tile) or those in view ('view', from Add Payment).
+  const [paying, setPaying] = useState<'all' | 'view' | false>(false);
+
+  const profiles = data.billingProfiles as Rec[];
+  const selected = profiles.find((p) => p.billingProfileId === profileId);
+  const forProfile = (r: Rec) => !selected || r.billingProfileId === selected.billingProfileId;
+
+  const summary = computeBillingSummary(data);
+  const bills = useMemo(
+    () => (data.bills as Rec[]).filter(forProfile).sort((a, b) => String(b.billPeriod ?? '').localeCompare(String(a.billPeriod ?? ''))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data.bills, profileId],
+  );
+  const billed = bills.filter((b) => withinBillHistoryWindow(b.billPeriod) && isBillRow(b));
+  const latestBill = selected ? billed[0] : summary.latestBill;
+  // A profile's own invoices (payments are not recorded per profile, so none is netted against it).
+  const outstandingOf = (list: Rec[]) => unpaidInvoiceTotal(list);
+  const outstanding = selected ? outstandingOf(bills) : summary.outstanding;
+  const lastPayment = summary.previousPayment;
+  const unbilled = latestBill?.currentChargesQAR;
+  const dueIn = daysUntil(latestBill?.dueDate);
+
+  const historyBills = bills.filter(isBillRow);
+  const unbilledRows = bills.filter((b) => b.status === 'unbilled' || b.type === 'hotBill');
+  const payments = [...(data.payments as Rec[])].sort((a, b) => String(b.capturedAt ?? '').localeCompare(String(a.capturedAt ?? '')));
+
+  const stageProfile = selected ?? profiles[0];
+  const ptpStatus = str(stageProfile?.promiseToPayStatus);
+  const ptpEligible = stageProfile ? (outstanding > 0 && (ptpStatus ?? 'None') === 'None' ? 'Yes' : 'No') : undefined;
+  const ebill = str(stageProfile?.billMedium);
+
+  const billCols: GridCol<Rec>[] = [
+    { key: '#', header: '#', render: (_r, i) => i + 1 },
+    { key: 'billId', header: 'Bill Number', render: (r) => str(r.billId) ?? DASH },
+    { key: 'period', header: 'Bill Period', render: (r) => periodRange(r.billPeriod) },
+    { key: 'billDate', header: 'Bill Date', render: (r) => <Dv k="billDate" row={{ period: str(r.billPeriod) }} /> },
+    { key: 'amt', header: 'Amount (QAR)', render: (r) => str(r.totalAmount) ?? DASH },
+    { key: 'status', header: 'Status', render: (r) => (r.status ? <StatusPill status={billStatusLabel(r.status)} /> : DASH) },
+    { key: 'act', header: 'Actions', className: 'text-center', render: () => <Chevron /> },
+  ];
+
+  const paymentCols: GridCol<Rec>[] = [
+    { key: '#', header: '#', render: (_r, i) => i + 1 },
+    { key: 'id', header: 'Payment ID', render: (r) => str(r.paymentId) ?? DASH },
+    { key: 'date', header: 'Date', render: (r) => fmtDate(r.capturedAt) ?? DASH },
+    { key: 'method', header: 'Method', render: (r) => str(r.paymentMethod) ?? DASH },
+    { key: 'channel', header: 'Channel', render: (r) => str(r.captureChannel) ?? DASH },
+    { key: 'amt', header: 'Amount (QAR)', render: (r) => str(r.amountQar) ?? DASH },
+    { key: 'status', header: 'Status', render: (r) => (str(r.status) ? <StatusPill status={String(r.status)} /> : DASH) },
+  ];
+
+  const unbilledCols: GridCol<Rec>[] = [
+    { key: '#', header: '#', render: (_r, i) => i + 1 },
+    { key: 'period', header: 'Bill Period', render: (r) => periodRange(r.billPeriod) },
+    { key: 'mrc', header: 'MRC (QAR)', render: (r) => str(r.mrc) ?? DASH },
+    { key: 'vas', header: 'VAS (QAR)', render: (r) => str(r.vas) ?? DASH },
+    { key: 'vat', header: 'VAT (QAR)', render: (r) => str(r.vat) ?? DASH },
+    { key: 'cur', header: 'Current Charges (QAR)', render: (r) => str(r.currentChargesQAR) ?? DASH },
+  ];
+
+  // Prepaid recharge history only applies to a prepaid profile (or to the all-profiles view when the customer holds one).
+  const accountOf = (pr?: Rec) => data.accounts.find((a) => a.accountId === pr?.accountId);
+  const showsRecharge = selected ? /prepaid/i.test(String(accountOf(selected)?.accountType ?? '')) : profiles.some((pr) => /prepaid/i.test(String(accountOf(pr)?.accountType ?? '')));
+
+  const shownBills = showAllBills ? historyBills : historyBills.slice(0, PAGE);
+
+  return (
+    <TabPage
+      icon={IC.wallet}
+      tone="blue"
+      title="Billing & Payments"
+      subtitle="View billing profile, bills, payments, outstanding balance and recharge information"
+    >
+      {paying && (
+        <PayOutstandingDialog
+          customerId={String(data.customer.customerId)}
+          customerName={selected && paying === 'view' ? (str(selected.name) ?? String(selected.billingProfileId)) : str(data.customer.name)}
+          invoices={(data.bills as Rec[]).filter(paying === 'all' ? () => true : forProfile).filter(isUnpaidInvoice).map((b) => ({ billId: String(b.billId), totalAmount: Number(b.totalAmount) || 0 }))}
+          amountQar={paying === 'all' ? summary.outstanding : outstanding}
+          onSettled={onSettled}
+          onClose={() => setPaying(false)}
+        />
+      )}
+      <KpiGrid>
+        <KpiTile
+          icon={IC.alert}
+          tone="red"
+          label="Total Outstanding"
+          value={<span className="text-accent">{qar(summary.outstanding)}</span>}
+          // Always the aggregate of all billing profiles, whichever profile is selected below. Pay Now settles all of it.
+          caption={
+            summary.outstanding > 0 ? (
+            <Button size="sm" onClick={() => setPaying('all')}>
+              Pay Now
+            </Button>
+            ) : undefined
+          }
+        />
+        <KpiTile
+          icon={IC.calendar}
+          tone="blue"
+          label="Due Date"
+          value={fmtDate(latestBill?.dueDate) ?? DASH}
+          caption={
+            dueIn !== undefined && outstanding > 0 ? (
+              <span className="text-accent">({dueIn >= 0 ? `${dueIn} day${dueIn === 1 ? '' : 's'}` : `${-dueIn} day${dueIn === -1 ? '' : 's'} overdue`})</span>
+            ) : undefined
+          }
+        />
+        <KpiTile
+          icon={IC.file}
+          tone="blue"
+          label="Latest Bill"
+          value={qar(latestBill?.totalAmount) ?? DASH}
+          caption={latestBill ? `Bill Period: ${periodRange(latestBill.billPeriod)}` : undefined}
+        />
+        <KpiTile
+          icon={IC.card}
+          tone="amber"
+          label="Last Payment"
+          value={qar(lastPayment?.amountQar) ?? DASH}
+          caption={lastPayment ? [fmtDate(lastPayment.capturedAt), str(lastPayment.captureChannel) && `via ${String(lastPayment.captureChannel)}`].filter(Boolean).join(' ') : undefined}
+        />
+        <KpiTile icon={IC.bars} tone="red" label="Unbilled Usage" value={qar(unbilled) ?? DASH} />
+      </KpiGrid>
+
+      <div className="fields @4xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-start">
+        {/* Left: the billing profiles; picking one scopes the whole page to it (the same master / detail shape as Products & Services). */}
+        <Panel icon={IC.bars} title={`Billing Profiles (${profiles.length})`}>
+          <ul className="space-y-2">
+            {[{ id: 'all', title: 'All Billing Profiles', sub: `${profiles.length} profiles`, out: summary.outstanding, status: undefined as string | undefined }, ...profiles.map((r) => ({
+              id: String(r.billingProfileId),
+              title: str(r.name) ?? DASH,
+              sub: str(r.billingProfileId) ?? DASH,
+              out: outstandingOf((data.bills as Rec[]).filter((b) => b.billingProfileId === r.billingProfileId)),
+              status: str(r.collectionStatus),
+            }))].map((row) => (
+              <li key={row.id}>
+                <button
+                  type="button"
+                  aria-pressed={profileId === row.id}
+                  onClick={() => setProfileId(row.id)}
+                  className={`w-full text-left card-option p-3 ${
+                    profileId === row.id ? 'list-card-selected' : 'list-card-idle'
+                  }`}
+                >
+                  <span className="block value-text break-words">{row.title}</span>
+                  <span className="mt-0.5 split-nowrap gap-2 text-[length:var(--fs-caption)]">
+                    <span className="text-fg-2 break-all">{row.sub}</span>
+                    <span className={`font-semibold shrink-0 ${row.out > 0 ? 'text-accent' : 'text-fg'}`}>{qar(row.out)}</span>
+                  </span>
+                  {row.status && (
+                    <span className="mt-2 block">
+                      <StatusPill status={row.status} />
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+
+        {/* Right: everything for the chosen profile. */}
+        <aside className="card p-4 space-y-4 min-w-0">
+          <div className="cluster">
+            <IconTile icon={IC.wallet} tone="red" />
+            <span className="title title-lg break-words min-w-0">{selected ? (str(selected.name) ?? DASH) : 'All billing profiles'}</span>
+            {selected && str(selected.collectionStatus) && <StatusPill status={String(selected.collectionStatus)} />}
+            <span className="ml-auto">
+              {/* Add Payment is enabled whenever there is an outstanding amount to pay: for a selected billing profile it pays that profile's own invoices, for All Billing Profiles every unpaid invoice. */}
+              <Button
+                size="sm"
+                disabled={outstanding <= 0}
+                title={outstanding <= 0 ? (selected ? 'This billing profile has nothing outstanding' : 'There is nothing outstanding to pay') : undefined}
+                onClick={() => setPaying('view')}
+              >
+                {outstanding > 0 ? `Pay ${qar(outstanding)}` : 'Add Payment'}
+              </Button>
+            </span>
+          </div>
+
+          <div className="fields @lg:grid-cols-2 items-stretch">
+            <Panel
+              icon={IC.settings}
+              title="Bill Settings"
+              // Manage opens the billing account page, where its Bill Type (and language, contact, address) are edited; with several profiles in view, one must be chosen first.
+              action={
+                stageProfile && (selected || profiles.length === 1) ? (
+                  <Link to={`/billing-account/${String(stageProfile.billingProfileId)}`} state={location.state} className="link font-medium">
+                    Manage &rarr;
+                  </Link>
+                ) : (
+                  <InertLink>Manage</InertLink>
+                )
+              }
+            >
+              <dl>
+                {[
+                  { label: 'Bill Email', value: str(stageProfile?.billingContactEmail) ?? DASH },
+                  { label: 'Bill Type', value: str(stageProfile?.billType) ?? DASH },
+                  { label: 'Billing Mode', value: str(stageProfile?.billingType) ?? DASH },
+                  { label: 'Bill Cycle', value: str(stageProfile?.billingCycle) ?? DASH },
+                  { label: 'eBill / Paperless', value: ebill ? <Pill tone={/email|ebill|e-bill|paperless/i.test(ebill) ? 'green' : 'grey'}>{/email|ebill|e-bill|paperless/i.test(ebill) ? 'Enabled' : 'Disabled'}</Pill> : DASH },
+                ].map((r) => (
+                  <div key={r.label} className="data-row">
+                    <dt className="text-fg">{r.label}</dt>
+                    <dd className="value-end min-w-0">{r.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Panel>
+
+            <Panel
+              icon={IC.shield}
+              title="Dunning & Barring"
+              action={goToTab ? <Button variant="tertiary" size="sm" className="whitespace-nowrap" onClick={() => goToTab('alerts-risks')}>View Details &rarr;</Button> : undefined}
+            >
+              <dl>
+                {[
+                  { label: 'Current Dunning Stage', value: str(stageProfile?.collectionStage) ? <Pill tone="amber">{String(stageProfile?.collectionStage)}</Pill> : DASH },
+                  { label: 'Amount Required to Avoid Barring', value: <Dv k="amountAvoidBarring" /> },
+                  { label: 'OG Barring Date', value: <Dv k="ogBarringDate" /> },
+                  { label: 'IC Barring Date', value: <Dv k="icBarringDate" /> },
+                  { label: 'Eligible for PTP', value: ptpEligible ? <Pill tone={ptpEligible === 'Yes' ? 'green' : 'grey'}>{ptpEligible}</Pill> : DASH },
+                ].map((r) => (
+                  <div key={r.label} className="data-row">
+                    <dt className="text-fg">{r.label}</dt>
+                    <dd className="value-end min-w-0">{r.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Panel>
+          </div>
+
+          <Panel icon={IC.card} title="Payment Methods" action={<InertLink>Manage</InertLink>}>
+            {str(stageProfile?.paymentMethod) ? (
+              <div className="row py-1">
+                <span className="icon-box bg-surface transition-none">
+                  <Icon path={IC.card} className="size-5 " />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="value-text break-words">{String(stageProfile?.paymentMethod)}</div>
+                  <div className="caption-secondary">Auto-pay: {str(stageProfile?.autoPayStatus) ?? DASH}</div>
+                </div>
+              </div>
+            ) : (
+              <p className="muted-body py-2">No payment method on file.</p>
+            )}
+          </Panel>
+
+          <Panel icon={IC.file} title={`Bill History (${historyBills.length})`} flush>
+            <GridTable cols={billCols} rows={shownBills} rowKey={(r) => String(r.billId)} empty="No bills on file." />
+            {historyBills.length > PAGE && (
+              <div className="pad-row">
+                <Button variant="tertiary" size="sm" onClick={() => setShowAllBills((v) => !v)}>
+                  {showAllBills ? 'Show fewer bills' : 'View All Bills'} &rarr;
+                </Button>
+              </div>
+            )}
+          </Panel>
+
+          <Panel icon={IC.card} title={`Payment History (${payments.length})`} flush>
+            <GridTable cols={paymentCols} rows={payments} rowKey={(r) => String(r.paymentId)} empty="No payments on file." />
+          </Panel>
+
+          <Panel icon={IC.bars} title={`Unbilled Usage (${unbilledRows.length})`} flush>
+            <GridTable cols={unbilledCols} rows={unbilledRows} rowKey={(r) => String(r.billId)} empty="No unbilled usage on file." />
+          </Panel>
+
+          {showsRecharge && (
+            <Panel icon={IC.refresh} title="Recharge History (Prepaid)">
+              <p className="empty-note py-2">No prepaid recharge history on file.</p>
+            </Panel>
+          )}
+        </aside>
+      </div>
+    </TabPage>
+  );
+}

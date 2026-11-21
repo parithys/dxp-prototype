@@ -1,0 +1,324 @@
+import { useState } from 'react';
+import { Button, Badge, Card } from 'dxp-ui';
+import { SYNTHETIC_CLASS } from '../../data/synthetic/syntheticMarker';
+import { formatQarAny } from '../../lib/format';
+
+export interface WinCashPaymentValue {
+  paid?: boolean;
+  /** How the amount was taken: through WinCash, or as physical cash the agent received directly from the customer. */
+  method?: 'WinCash' | 'Cash' | 'Zero value' | 'eWallet';
+  /** Paid from the eWallet: the amount deducted, and the (simulated) hand-over of the order's details to the eTop-up platform for commission handling. */
+  eWalletDeductedQar?: number;
+  eTopUpReference?: string;
+  /** The receipt: the WinCash reference, or the zero-value receipt number when nothing was due. */
+  reference?: string;
+  /** Nothing was due, so no payment was taken and a zero-value receipt was issued (MNP BR-MNP-011). */
+  zeroValue?: boolean;
+  declined?: boolean;
+  /** WinCash reported a technical error (not a decline): nothing was taken, and the agent can retry. */
+  errored?: boolean;
+  /** Agent has left DXP for the external WinCash terminal - the cash drawer
+   * cannot be reached from inside DXP (2026-09-28 request). */
+  handoffStarted?: boolean;
+  /** DXP's own session lapsed while the agent was away at the WinCash
+   * terminal (2026-09-28 request). Demo-triggered the same way "Simulate
+   * decline" below stands in for a real POS decline: there is no session-
+   * timeout mechanism anywhere in this app (authStore is persistence-only,
+   * per its own note) to hook a real detector into. */
+  sessionExpired?: boolean;
+}
+
+interface WinCashPaymentStepProps {
+  amountDueQAR: number;
+  value: WinCashPaymentValue;
+  onChange: (value: WinCashPaymentValue) => void;
+  /**
+   * Offers "Proceed without WinCash" beside "Continue in WinCash": the agent took physical cash from the customer
+   * directly, so no WinCash confirmation is waited for. The step records the payment as received in cash (and the
+   * caller moves on); omit it where taking cash this way is not offered.
+   */
+  onProceedWithout?: () => void;
+  /**
+   * When nothing is due, issue a zero-value receipt instead of handing off to WinCash for QAR 0 (MNP BR-MNP-011: "If no amount is due,
+   * the system shall generate a zero-value receipt"). Off by default: the other journeys keep their existing behaviour.
+   */
+  zeroValueReceipt?: boolean;
+  /**
+   * Shows the "eWallet Balance" the role holds just above the payment actions (a role mapped to an eWallet) and, when it covers the amount due, offers "Pay with eWallet" beside
+   * WinCash, deducting it on confirmation. When it does not cover the amount, that way is not offered and a message says so. Omitted: WinCash only.
+   */
+  eWallet?: { balanceQar: number; onPay: (amountQar: number) => boolean };
+  /** The first-attempt actions (Continue / Retry in WinCash, Pay with eWallet, Proceed Without WinCash) are not drawn here: the journey's floating button bar carries them (`WinCashPaymentActions`). */
+  actionsInFooter?: boolean;
+}
+
+// Gate 3 of the reference activation flow - WinCash/POS + inventory sync,
+// evidenced as WinCash stock check/reservation + signature pad + WinCash
+// payment (business-workshop-day5-session-2-postpaid-service, UJ-042).
+// FLD-634/635 (Reason dropdown for FREE-type sales, Generate CAF button
+// triggering "Validating Order, please wait...") - CAF generation is a prior
+// wizard step now (Checkout -> CAF -> Payment, matching the reference order).
+//
+// Handoff / Return / Session Expired added 2026-09-28: WinCash is an
+// EXTERNAL system running the cash drawer, which this app was never able to
+// reach - the step used to simulate the whole transaction in-app as if DXP
+// itself were the POS. It now says so instead: "Continue in WinCash" hands
+// the agent off, and the two Return buttons stand in for the agent coming
+// back having actually run the transaction on that other terminal (there is
+// no real integration to poll, so the agent reports the outcome the same way
+// "Simulate decline" already stood in for one). "Simulate session expiry"
+// is the same convention applied to the one new failure mode a real handoff
+// introduces: DXP timing the agent out while they were away.
+//
+// The reference's exception table also has a Cancel path, which used to be
+// served by the wizard's Abandon Order control. That control was removed
+// from THIS component's reach on 2026-09-26 and reinstated app-wide on
+// 2026-09-27 (see GuidedActivationWizard's own history) - it is deliberately
+// absent again as of 2026-09-28, not by omission this time but by
+// NewPostpaidWizard's `hideAbandonFrom="payment"`, matching the explicit
+// "keep Cancel available after CAF signing and until payment starts" - i.e.
+// no further than here, once WinCash may already hold the transaction.
+/** The WinCash / eWallet payment transitions, shared by the body (the hand-off panel) and the floating button bar (the first-attempt actions). */
+function useWinCashPayment({ amountDueQAR, value, onChange, eWallet }: Pick<WinCashPaymentStepProps, 'amountDueQAR' | 'value' | 'onChange' | 'eWallet'>) {
+  const [processing, setProcessing] = useState(false);
+
+  const beginHandoff = () => {
+    onChange({ ...value, handoffStarted: true, declined: false, errored: false, sessionExpired: false });
+  };
+
+  const returnFromWinCash = async (outcome: 'success' | 'decline' | 'error') => {
+    setProcessing(true);
+    await new Promise((r) => setTimeout(r, 500));
+    setProcessing(false);
+    if (outcome === 'decline') {
+      onChange({ paid: false, declined: true, errored: false, handoffStarted: false, sessionExpired: false });
+      return;
+    }
+    if (outcome === 'error') {
+      onChange({ paid: false, declined: false, errored: true, handoffStarted: false, sessionExpired: false });
+      return;
+    }
+    onChange({
+      paid: true,
+      declined: false,
+      handoffStarted: false,
+      sessionExpired: false,
+      reference: `WC-${Date.now().toString().slice(-8)}`,
+      method: 'WinCash',
+    });
+  };
+
+  const simulateSessionExpiry = () => {
+    onChange({ ...value, sessionExpired: true, handoffStarted: false });
+  };
+
+  // Both recovery paths are genuine choices, not a dead end (2026-09-28
+  // "show a clear recovery/error state") - the agent knows whether the
+  // WinCash screen showed a completed transaction before DXP timed out, even
+  // though DXP itself cannot know that.
+  const resumeAfterSessionExpiry = (completedInWinCash: boolean) => {
+    if (completedInWinCash) {
+      onChange({
+        paid: true,
+        declined: false,
+        sessionExpired: false,
+        handoffStarted: false,
+        reference: `WC-${Date.now().toString().slice(-8)}`,
+      });
+      return;
+    }
+    onChange({ paid: false, declined: false, sessionExpired: false, handoffStarted: false });
+  };
+
+  const payFromEWallet = async () => {
+    if (!eWallet) return;
+    setProcessing(true);
+    await new Promise((r) => setTimeout(r, 500));
+    setProcessing(false);
+    // The deduction is refused when the balance cannot cover it (it may have changed since the page rendered): nothing is taken and the order stays unpaid.
+    if (!eWallet.onPay(amountDueQAR)) return;
+    onChange({
+      paid: true,
+      declined: false,
+      handoffStarted: false,
+      sessionExpired: false,
+      method: 'eWallet',
+      reference: `EW-${Date.now().toString().slice(-8)}`,
+      eWalletDeductedQar: amountDueQAR,
+      // Simulated: the order's details are passed to the eTop-up platform for commission handling. No integration exists; this records that it would have been sent.
+      eTopUpReference: `ETU-${Date.now().toString().slice(-8)}`,
+    });
+  };
+
+  return { processing, beginHandoff, returnFromWinCash, simulateSessionExpiry, resumeAfterSessionExpiry, payFromEWallet };
+}
+
+/**
+ * The first-attempt payment actions, for the floating button bar: Proceed Without WinCash, Pay with eWallet when the balance covers the amount, and the primary
+ * Continue in WinCash (Retry in WinCash after a decline or error) last, at the right. Nothing while the hand-off panel, a session expiry or a paid state is on the page: those are the body's.
+ */
+export function WinCashPaymentActions({ amountDueQAR, value, onChange, onProceedWithout, eWallet }: Pick<WinCashPaymentStepProps, 'amountDueQAR' | 'value' | 'onChange' | 'onProceedWithout' | 'eWallet'>) {
+  const { processing, beginHandoff, returnFromWinCash, payFromEWallet } = useWinCashPayment({ amountDueQAR, value, onChange, eWallet });
+  if (value.paid || value.sessionExpired || value.handoffStarted) return null;
+  return (
+    <div className="row">
+      {onProceedWithout && (
+        <Button variant="secondary" onClick={onProceedWithout}>
+          Proceed Without WinCash
+        </Button>
+      )}
+      {eWallet && eWallet.balanceQar >= amountDueQAR && (
+        <Button variant="secondary" onClick={() => void payFromEWallet()} disabled={processing}>
+          {processing ? 'Deducting from eWallet…' : 'Pay with eWallet'}
+        </Button>
+      )}
+      {/* First attempt: Continue in WinCash takes the payment as completed and the journey goes straight on (the order is submitted). Only a retry after a decline or error opens the WinCash hand-off panel. */}
+      <Button onClick={value.declined || value.errored ? beginHandoff : () => void returnFromWinCash('success')} disabled={processing}>
+        {processing ? 'Returning to DXP…' : value.declined || value.errored ? 'Retry in WinCash' : 'Continue in WinCash'}
+      </Button>
+    </div>
+  );
+}
+
+/** The role's eWallet balance: reference information, shown as plain text just under the Payment card (no container) because it is not part of taking the payment. */
+export function WinCashEWalletBalance({ balanceQar }: { balanceQar: number }) {
+  return (
+    <div>
+      <p className="body-text">
+        eWallet Balance: <span className="font-medium">{formatQarAny(balanceQar)}</span>
+      </p>
+      <p className="caption-secondary">(applicable to Prepaid and Postpaid)</p>
+    </div>
+  );
+}
+
+export function WinCashPaymentStep({ amountDueQAR, value, onChange, onProceedWithout, zeroValueReceipt, eWallet, actionsInFooter = false }: WinCashPaymentStepProps) {
+  const { processing, returnFromWinCash, simulateSessionExpiry, resumeAfterSessionExpiry } = useWinCashPayment({ amountDueQAR, value, onChange, eWallet });
+
+  if (zeroValueReceipt && amountDueQAR === 0) {
+    return (
+      <div className="space-y-4">
+        <Card className="p-4 card-surface">
+          <div className="flex justify-between text-fg">
+            <span>Amount Due</span>
+            <span className="font-medium">QAR 0</span>
+          </div>
+          <p className="caption-secondary mt-1">Nothing is due today, so no payment is taken. A zero-value receipt is issued.</p>
+        </Card>
+        {value.paid && value.zeroValue ? (
+          <div className="row gap-2">
+            <Badge variant="success">Zero-Value Receipt Issued</Badge>
+            <span className="caption-muted">Receipt: {value.reference}</span>
+          </div>
+        ) : (
+          <Button onClick={() => onChange({ paid: true, method: 'Zero value', zeroValue: true, reference: `RCPT-0-${Date.now().toString().slice(-8)}` })}>
+            Generate zero-value receipt
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-4 card-surface">
+        <div className="flex justify-between text-fg">
+          <span>{value.method === 'eWallet' ? 'Amount Paid (eWallet)' : eWallet ? 'Amount Due' : 'Amount Due (WinCash)'}</span>
+          <span className="font-medium">{formatQarAny(amountDueQAR)}</span>
+        </div>
+        {value.paid && value.method === 'eWallet' && (
+          <p className="caption-secondary mt-1">
+            {formatQarAny(value.eWalletDeductedQar ?? amountDueQAR)} deducted from the eWallet. The order's details were passed to the eTop-up platform for commission handling (eTop-up ref {value.eTopUpReference}; simulated).
+          </p>
+        )}
+      </Card>
+
+      {value.paid ? (
+        <div className="row gap-2">
+          <Badge variant="success">Paid</Badge>
+          <span className="caption-muted">{value.reference ? `Reference: ${value.reference}` : value.method ? `Paid by ${value.method}` : null}</span>
+        </div>
+      ) : value.sessionExpired ? (
+        <div className="notice-danger-edge p-4 space-y-3">
+          <Badge variant="danger">Session Expired</Badge>
+          <p className="text-[length:var(--fs-caption)] text-fg">
+            Your DXP session timed out while you were completing this payment in WinCash. If the payment
+            actually went through there, confirm it below to record it and continue - otherwise, try again.
+          </p>
+          <div className="wrap-loose">
+            <Button onClick={() => resumeAfterSessionExpiry(true)}>
+              Payment completed in WinCash - resume
+            </Button>
+            <Button variant="secondary" onClick={() => resumeAfterSessionExpiry(false)}>
+              It didn't complete - try again
+            </Button>
+          </div>
+        </div>
+      ) : value.handoffStarted ? (
+        <div className="notice-accent p-4 space-y-3">
+          <Badge variant="filled-neutral">Continue in WinCash</Badge>
+          <p className="text-[length:var(--fs-caption)] text-fg">
+            DXP cannot access the cash drawer directly - complete this payment on the WinCash terminal, then
+            come back here.
+          </p>
+          <div className="wrap-loose">
+            <Button onClick={() => void returnFromWinCash('success')} disabled={processing}>
+              {processing ? 'Returning to DXP…' : 'Payment completed in WinCash'}
+            </Button>
+            <Button variant="secondary" onClick={() => void returnFromWinCash('decline')} disabled={processing}>
+              Payment declined in WinCash
+            </Button>
+            <Button variant="secondary" onClick={() => void returnFromWinCash('error')} disabled={processing}>
+              Error occurred, Retry in WinCash
+            </Button>
+          </div>
+          <button
+            type="button"
+            onClick={simulateSessionExpiry}
+            disabled={processing}
+            className={`caption-muted hover:text-danger transition-colors ${SYNTHETIC_CLASS}`}
+          >
+            Simulate Session Expiry (Demo)
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {value.declined && (
+            <div className="notice-danger-edge p-3 space-y-1">
+              <div className="row gap-2">
+                <Badge variant="danger">Payment Declined</Badge>
+              </div>
+              <p className="text-[length:var(--fs-caption)] text-fg">
+                WinCash declined the authorization. Retry the same amount, or take payment by another method.
+              </p>
+            </div>
+          )}
+          {value.errored && (
+            <div className="notice-danger-edge p-3 space-y-1">
+              <div className="row gap-2">
+                <Badge variant="danger">WinCash Error</Badge>
+              </div>
+              <p className="text-[length:var(--fs-caption)] text-fg">
+                WinCash reported an error and no payment was taken. Retry the same amount in WinCash.
+              </p>
+            </div>
+          )}
+          {/* The balance itself is shown apart from this card (`WinCashEWalletBalance`, under it). When the balance covers the amount the agent may pay from it; when it does not, the order cannot be paid that way. */}
+          {eWallet && (
+            <div className="space-y-2">
+              {eWallet.balanceQar < amountDueQAR && (
+                <div role="alert" className="notice-danger-edge p-3 space-y-1">
+                  <Badge variant="danger">Insufficient eWallet Balance</Badge>
+                  <p className="text-[length:var(--fs-caption)] text-fg">
+                    The eWallet holds {formatQarAny(eWallet.balanceQar)} but {formatQarAny(amountDueQAR)} is due, so it cannot pay this order. Top up the eWallet, or pay with WinCash.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          {!actionsInFooter && <WinCashPaymentActions amountDueQAR={amountDueQAR} value={value} onChange={onChange} onProceedWithout={onProceedWithout} eWallet={eWallet} />}
+        </div>
+      )}
+    </div>
+  );
+}
