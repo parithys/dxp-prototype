@@ -4,6 +4,7 @@ name: CI
 # The design-system library is NOT part of this repository: it is installed as a package (`npm run lib:install`, see scripts/install-library.mjs).
 # Where the package comes from:
 #   - the repository variable DXP_UI_SOURCE (a tarball URL, e.g. a library release asset, or an npm spec such as npm:@vfq/dxp-ui@0.2.0), else
+#   - the library repository's latest CI tarball (variable DXP_UI_REPO + secret DXP_UI_TOKEN), else
 #   - the registry: the package and version in package.json -> dxpUi.
 # A manual run can override it (workflow_dispatch input), and the library's release workflow can trigger a run (repository_dispatch: dxp-ui-released).
 
@@ -48,6 +49,16 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Before the library is published: take the tarball its own CI packed (the artifact `dxp-ui-tarball` of the latest run in the library repository).
+      # Set the repository variable DXP_UI_REPO (owner/name of the library repository) and the secret DXP_UI_TOKEN (a token with read access to its Actions artifacts).
+      - name: Fetch the library tarball from the library repository's CI
+        if: ${{ env.DXP_UI_SOURCE == '' && vars.DXP_UI_REPO != '' }}
+        run: |
+          gh run download -R "${{ vars.DXP_UI_REPO }}" -n dxp-ui-tarball -D .dxp-ui
+          echo "DXP_UI_SOURCE=$(ls "$PWD"/.dxp-ui/*.tgz | head -n 1)" >> "$GITHUB_ENV"
+        env:
+          GH_TOKEN: ${{ secrets.DXP_UI_TOKEN }}
 
       # The packaged library, under the alias the app imports (dxp-ui). It is installed with --no-save, so it must follow `npm ci`.
       - name: Install the design-system library package
