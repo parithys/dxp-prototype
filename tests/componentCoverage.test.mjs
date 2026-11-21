@@ -1,6 +1,7 @@
 // Every component in UI_Component_Inventory_Reference.xlsx must be covered by the Capability Library or the UI Components Library
 // (its live specimens or its Component Catalogue). The catalogue is generated from the same scan as the workbook, so these checks keep
 // the two in sync, keep Primitive-layer components live, and stop a specimen from claiming a component it does not render.
+import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
@@ -14,7 +15,9 @@ const live = new Set([...coverageSrc.matchAll(/'([A-Z][A-Za-z0-9]+)'/g)].map((m)
 const hosts = Object.fromEntries([...coverageSrc.matchAll(/LIVE_SPECIMENS\.(\w+) = '(\w+)'/g)].map((m) => [m[1], m[2]]));
 const liveNames = new Set([...live, ...Object.keys(hosts)]);
 
-test('the catalogue lists every component of the inventory workbook (same names, in the same count)', () => {
+// The workbook is a generated artefact that is not committed (*.xlsx is git-ignored): the check runs wherever it has been generated (python3 reference/scripts/build_ui_component_inventory.py).
+const WORKBOOK = new URL('../reference/outputs/UI_Component_Inventory_Reference.xlsx', import.meta.url);
+test('the catalogue lists every component of the inventory workbook (same names, in the same count)', { skip: !fs.existsSync(WORKBOOK) && 'the generated inventory workbook is not present (it is not committed)' }, () => {
   const py = `
 import openpyxl, json
 wb = openpyxl.load_workbook('reference/outputs/UI_Component_Inventory_Reference.xlsx', read_only=True)
