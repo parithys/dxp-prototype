@@ -1,4 +1,4 @@
-import { IconButton, SHIELD, TRASH, Button, Modal } from 'dxp-ui';
+import { IconButton, TRASH, Button, Drawer } from 'dxp-ui';
 import { useState } from 'react';
 import { DocumentCaptureActions, UPLOAD_RULES, uploadFileProblem, type AdditionalDocument } from '../DocumentUpload';
 import { forgetDocumentFile, readFileAsDataUrl, rememberDocumentFile } from '../../lib/documentFileStore';
@@ -58,11 +58,10 @@ export function ExceptionRequestModal({
     onClose();
   };
   return (
-    <Modal
+    <Drawer
       open={open}
       onClose={close}
       title="Exception Request"
-      icon={SHIELD}
       footer={
         <>
           <Button variant="secondary" onClick={close}>
@@ -103,6 +102,6 @@ export function ExceptionRequestModal({
           </p>
         )}
       </div>
-    </Modal>
+    </Drawer>
   );
 }

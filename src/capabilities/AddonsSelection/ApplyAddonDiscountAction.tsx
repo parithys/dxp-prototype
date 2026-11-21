@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PERCENT, Button, Modal } from 'dxp-ui';
+import { Button, Drawer } from 'dxp-ui';
 import { DiscountCard } from '../../components/patterns/DiscountCard';
 import { discountsForAddon, type AddonDiscount, type AppliedAddonDiscounts } from '../../engines/addonDiscounts';
 import type { CategorisedAddon } from '../../engines/addonCategories';
@@ -46,11 +46,10 @@ export function ApplyAddonDiscountAction({ selectedIds, applied, onApply }: { se
       >
         Apply Discount
       </Button>
-      <Modal
+      <Drawer
         open={open}
         onClose={() => setOpen(false)}
         title="Apply Discount"
-        icon={PERCENT}
         footer={
           <>
             <Button variant="secondary" onClick={() => setOpen(false)}>
@@ -92,7 +91,7 @@ export function ApplyAddonDiscountAction({ selectedIds, applied, onApply }: { se
             </section>
           ))}
         </div>
-      </Modal>
+      </Drawer>
     </>
   );
 }
