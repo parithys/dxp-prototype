@@ -102,8 +102,9 @@ test.describe('icon-only controls (Button ghost + icon): named, in the tab order
 
   test('every converted icon button in the app declares an accessible name (the Button type requires it)', async () => {
     const fs = await import('node:fs');
-    const src = fs.readFileSync('src/components/ui/button.tsx', 'utf8');
-    expect(src).toMatch(/\{ "aria-label": string \} \| \{ "aria-labelledby": string \}/);
+    // Button lives in the dxp-ui package; read the declaration it ships.
+    const src = fs.readFileSync('node_modules/dxp-ui/dist/components/ui/button.d.ts', 'utf8');
+    expect(src).toMatch(/size: IconSize;\s*\} & \(\{\s*"aria-label": string;\s*\} \| \{\s*"aria-labelledby": string;\s*\}\)/);
   });
 });
 
