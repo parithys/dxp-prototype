@@ -118,9 +118,10 @@ const ICONS = {
 
 export const NAV_MANIFEST: readonly NavItem[] = [
   { key: 'dashboard', label: 'Dashboard', to: '/', end: true, icon: ICONS.dashboard, implemented: true },
-  // New Connections is common to every product, so it is one destination (a hub of cards, each naming its product) rather than a
-  // section inside each line. Mobile Services and Fibre & Home Services keep the rest of their journeys.
-  { key: 'new-connections', label: 'New Connections', to: '/new-connections', icon: ICONS.newConnection, implemented: true },
+  // New Connections is common to every product, so it is one destination rather than a section inside each line: the common Contact page, where the customer is verified once for
+  // every New Connection journey (Mobile, Prepaid, MNP, Home / Fibre) and the agent then chooses on Recommended Offers. A role without the postpaid wizard grant keeps the hub of cards
+  // (/new-connections), see resolveNavFor. Mobile Services and Fibre & Home Services keep the rest of their journeys.
+  { key: 'new-connections', label: 'New Connections', to: '/start-connection', icon: ICONS.newConnection, implemented: true },
   // Mobile and Fibre & Home are the two primary product lines. They replaced a
   // single "Products" parent whose children were just the two line names - that
   // extra level added a click without adding information. Each line now owns its
@@ -257,9 +258,10 @@ export function resolveActiveNavPath(pathname: string, fromNavKey?: NavKey | str
     return from ?? '/customer-search';
   }
 
-  // The New Connection wizard (/mobile/start-connection, /fibre-home/start-connection/existing/:id, ...) is the journey the
+  // The New Connection wizard (/start-connection, /fibre-home/start-connection/existing/:id, ...) is the journey the
   // New Connections destination leads to, so that is what stays lit while the agent works through it.
-  if (/^\/[^/]+\/start-connection(\/|$)/.test(pathname)) return '/new-connections';
+  if (/^\/start-connection(\/|$)/.test(pathname)) return '/start-connection';
+  if (/^\/[^/]+\/start-connection(\/|$)/.test(pathname) || pathname === '/new-connections') return '/new-connections';
 
   // The line-change journeys of Plans & Numbers keep that menu entry lit while the agent works through them.
   if (/^\/mobile\/(change-postpaid-plan|change-prepaid-pack|add-addon)(\/|$)/.test(pathname)) return '/mobile/plans-numbers';

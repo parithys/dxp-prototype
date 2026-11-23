@@ -53,7 +53,7 @@ export function useJourneyStartResume(wizardId: string, steps: WizardStep[]) {
   const navigate = useNavigate();
   const freshenedFor = useRef<string | null>(null);
   useEffect(() => {
-    const nav = location.state as { startFresh?: boolean; resumeOrderId?: string; startValues?: Record<string, unknown> } | null;
+    const nav = location.state as { startFresh?: boolean; resumeOrderId?: string; startValues?: Record<string, unknown>; startProgressTo?: number } | null;
     if (!nav?.startFresh && !nav?.resumeOrderId) return;
     if (freshenedFor.current === location.key) return;
     freshenedFor.current = location.key;
@@ -104,7 +104,8 @@ export function useJourneyStartResume(wizardId: string, steps: WizardStep[]) {
     const launchCustomerId = (location.state as { launch?: { customerId?: string } } | null)?.launch?.customerId;
     if (launchCustomerId) patchDraft(wizardId, { set: { [LAUNCH_CUSTOMER_KEY]: launchCustomerId } });
     // An entry point that opens this journey in a particular mode (a card for a variation of it) names the draft values to start with.
-    if (nav.startValues) patchDraft(wizardId, { set: nav.startValues });
+    // With `startProgressTo`, the journey also opens at that step (an entry point that already did the pages before it: the customer identified, the address given).
+    if (nav.startValues) patchDraft(wizardId, { set: nav.startValues, ...(nav.startProgressTo !== undefined ? { progressTo: nav.startProgressTo } : {}) });
     consume();
   }, [
     location.key,

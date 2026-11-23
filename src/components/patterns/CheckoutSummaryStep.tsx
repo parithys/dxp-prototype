@@ -1,4 +1,5 @@
 import type { NumberWaiver } from '../../engines/numberWaiver';
+import type { HomeIptvSelection } from '../../engines/homeIptv';
 import type { EligibilityResult } from '../domain/eligibilityTypes';
 import type { SimTypeValue } from '../domain/SimTypeStep';
 import type { CheckoutTotals, TncLegalFacts } from './checkoutSummaryModel';
@@ -10,6 +11,8 @@ import { useCheckoutSummary } from './useCheckoutSummary';
 import type { AddonBillingFrequency } from '../../engines/addonCategories';
 
 interface CheckoutSummaryStepProps {
+  /** A home order's IPTV choice (see engines/homeIptv.ts). */
+  iptv?: HomeIptvSelection;
   /** The Waive Off chosen on Number Selection; Checkout shows the waived amount and the revised upfront charge. */
   numberWaiver?: NumberWaiver;
   customerName: string | undefined;
@@ -34,6 +37,8 @@ interface CheckoutSummaryStepProps {
   discountId: string | undefined;
   addonIds: string[];
   addonBilling?: Record<string, AddonBillingFrequency>;
+  /** A Speed Booster's fixed term (months) by add-on id. */
+  addonTerms?: Record<string, number>;
   /** The add-on discounts applied on the Addons page (add-on product id -> discount id). */
   addonDiscounts?: Record<string, string>;
   msisdn: string | undefined;
@@ -101,6 +106,7 @@ export function CheckoutSummaryStep({
   discountId,
   addonIds,
   addonBilling,
+  addonTerms,
   addonDiscounts,
   msisdn,
   numberPriceQar,
@@ -116,6 +122,7 @@ export function CheckoutSummaryStep({
   onLegalFactsComputed,
   familyRows,
   planRentalIncluded,
+  iptv,
   layout = 'default',
 }: CheckoutSummaryStepProps) {
   const derived = useCheckoutSummary({
@@ -124,6 +131,7 @@ export function CheckoutSummaryStep({
     discountId,
     addonIds,
     addonBilling,
+    addonTerms,
     addonDiscounts,
     msisdn,
     numberPriceQar,
@@ -136,6 +144,7 @@ export function CheckoutSummaryStep({
     onLegalFactsComputed,
     extraRows: familyRows,
     planRentalIncluded,
+    iptv,
   });
 
   if (layout === 'detailed') {

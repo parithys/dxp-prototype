@@ -1,4 +1,4 @@
-// Customer Verification (the CustomerIdentification capability) against its source of truth, the New Connection Contact step (/mobile/start-connection):
+// Customer Verification (the CustomerIdentification capability) against its source of truth, the New Connection Contact step (/start-connection):
 // the Capability Library preview must mount the capability exactly as that journey does, and the journey's rules for who it identifies must hold.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';

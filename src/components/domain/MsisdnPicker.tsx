@@ -161,7 +161,9 @@ export function MsisdnPicker({ refreshKey = 0, selected, onSelect, onDeselect, w
   useEffect(() => {
     let cancelled = false;
     // A number the system gave a Multi-SIM is not offered again as a primary number.
-    Promise.all([listEntities<MsisdnRecord>('numbers'), listEntities<{ secondaryMsisdn?: string }>('multi-sim-lines').catch(() => [])]).then(([all, multiSim]) => {
+    // The Fixed Line Number pool is its own inventory; a Multi-SIM number only ever comes from the mobile numbers.
+    const fixedPool = profile?.pool === 'fixed-line-numbers';
+    Promise.all([listEntities<MsisdnRecord>(fixedPool ? 'fixed-line-numbers' : 'numbers'), fixedPool ? Promise.resolve([]) : listEntities<{ secondaryMsisdn?: string }>('multi-sim-lines').catch(() => [])]).then(([all, multiSim]) => {
       if (cancelled) return;
       const givenToMultiSim = new Set(multiSim.map((l) => l.secondaryMsisdn).filter(Boolean));
       const n = all.filter((x) => !givenToMultiSim.has(x.msisdn));
@@ -173,7 +175,7 @@ export function MsisdnPicker({ refreshKey = 0, selected, onSelect, onDeselect, w
     return () => {
       cancelled = true;
     };
-  }, [refreshKey]);
+  }, [refreshKey, profile?.pool]);
 
   // Auto-open Reserved on load if this customer already has one, else the
   // Free default stands (2026-09-28 request). Guarded to fire only once: it
@@ -251,7 +253,7 @@ export function MsisdnPicker({ refreshKey = 0, selected, onSelect, onDeselect, w
   // Free pick left in the draft) is replaced: the agent can still choose any number afterwards.
   const hasDefaultedReserved = useRef(false);
   useEffect(() => {
-    if (hasDefaultedReserved.current || !numbersLoaded || portalMode) return;
+    if (hasDefaultedReserved.current || !numbersLoaded || portalMode || profile?.selectHeld === false) return;
     const latest = [...myReserved].sort((a, b) => String(b.reservedAt ?? '').localeCompare(String(a.reservedAt ?? '')))[0];
     if (!latest) return;
     hasDefaultedReserved.current = true;

@@ -1,5 +1,5 @@
 {
-  "root": "/Users/parithimalsaravanan/claude-projects/vodafone-dxp-shadcn",
+  "root": "/Users/parithimalsaravanan/claude-projects/dxp-split/prototype",
   "capabilities": {
     "customer-identification": {
       "areas": [
@@ -320,6 +320,7 @@
     },
     "cross-sell-offers": {
       "areas": [
+        "modules/check-rfs",
         "modules/fixed-line-fibre",
         "modules/fwa-5g-home",
         "modules/mnp-fnp-porting",

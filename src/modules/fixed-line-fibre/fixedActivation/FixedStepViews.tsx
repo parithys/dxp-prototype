@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { GuidedContactValue } from '../../../components/patterns/guidedContactModel';
 import type { EligibilityResult } from '../../../components/domain/eligibilityTypes';
-import { CARD_SELECTED, SelectedTick } from '../../../capabilities';
-import { Icon, CHECK, FIBER, FWA_INDOOR, FWA_OUTDOOR, INSTALLATION_WIFI } from 'dxp-ui';
+import { CARD_SELECTED, NumberSelection, SelectedTick } from '../../../capabilities';
+import { autoAllocatedFreeNumber, type MsisdnSource } from '../../../capabilities/NumberSelection/prepaidNumberAllocation';
+import { toLocalMsisdn, type MsisdnRecord } from '../../../components/domain/msisdnPickerModel';
+import { listEntities } from '../../../services/entityOps';
+import { BARCODE_ICON, Button, Icon, Input, CHECK, FIBER, FWA_INDOOR, FWA_OUTDOOR, INSTALLATION_WIFI } from 'dxp-ui';
 import { ServiceAddress } from '../../../capabilities';
 import type { ZsbAddressValue } from '../../../components/patterns/ZsbAddressStep';
 import { resolveFibreServiceability } from '../../../engines/fibreServiceability';
-import { FIXED_SERVICE_TYPES, allocateFixedLineNumber, devicesFor, type FixedDevice, type FixedInstallationValue, type FixedServiceType } from './fixedActivationModel';
+import { FIXED_NUMBER_PICKER, FIXED_SERVICE_TYPES, checkIndoorUnitSerial, devicesFor, indoorUnitsInStock, normaliseIndoorUnitSerial, type FixedDevice, type IndoorUnitDetails, type FixedInstallationValue, type FixedServiceType } from './fixedActivationModel';
 
 type Values = Record<string, unknown>;
 
@@ -139,35 +142,150 @@ export function InstallationAddressStep({ values, setValue }: { values: Values; 
   );
 }
 
-// Number & Devices: the fixed line number is allocated by the system; devices follow from the service type.
+// SIM Selection (5G Home / FWA), under the SIM: the Indoor Unit's serial number, typed or scanned and checked against the device inventory; once accepted, the device's details are read back (required).
+export function IndoorUnitSerial({ values, setValue }: { values: Values; setValue: (f: string, v: unknown) => void }) {
+  const serial = (values.indoorUnitSerial as string | undefined) ?? '';
+  const unit = values.indoorUnit as IndoorUnitDetails | undefined;
+  const [error, setError] = useState<string | undefined>();
+  const [scanning, setScanning] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const scanIntent = useRef(false);
+  const check = async (text: string) => {
+    setChecking(true);
+    const result = checkIndoorUnitSerial(text, await listEntities<IndoorUnitDetails>('cpe-devices'));
+    setChecking(false);
+    setValue('indoorUnit', result.ok ? result.details : undefined);
+    setError(result.ok ? undefined : result.error);
+  };
+  // The barcode scan trigger sits inside the field, as on the SIM serial. Simulated (no scanner hardware here): the reader's output - an Indoor Unit from stock - lands in the field after a moment.
+  const scan = async () => {
+    setScanning(true);
+    const stock = indoorUnitsInStock(await listEntities<IndoorUnitDetails>('cpe-devices'));
+    await new Promise((r) => window.setTimeout(r, 600));
+    const pick = stock[Math.floor(Math.random() * stock.length)];
+    setScanning(false);
+    scanIntent.current = false;
+    if (!pick) {
+      setError('No Indoor Unit is in stock to scan.');
+      return;
+    }
+    setValue('indoorUnitSerial', pick.serialNumber);
+    await check(pick.serialNumber);
+  };
+  const shown = unit && normaliseIndoorUnitSerial(serial) === unit.serialNumber.toUpperCase() ? unit : undefined;
+  const rows: [string, string | undefined][] = shown
+    ? [
+        ['Indoor Unit Serial Number', shown.serialNumber],
+        ['Device Brand', shown.brand],
+        ['Model Number', shown.modelNumber],
+        ['Device Type', 'Indoor Unit'],
+        ['MAC Address', shown.macAddress],
+        ['Firmware Version', shown.firmwareVersion],
+        ['Stock Status', shown.stockStatus],
+      ]
+    : [];
+  return (
+    <section aria-label="Indoor Unit" className="max-w-xl space-y-3">
+      <h3 className="title title-sm font-semibold">Indoor Unit</h3>
+      <Input
+        label="Indoor Unit Serial Number"
+        required
+        placeholder="Enter the Indoor Unit serial number, or use the barcode scanner"
+        value={serial}
+        onChange={(e) => {
+          setValue('indoorUnitSerial', e.target.value.toUpperCase());
+          setValue('indoorUnit', undefined);
+          setError(undefined);
+        }}
+        onBlur={(e) => {
+          if (scanIntent.current) return;
+          if (e.target.value) void check(e.target.value);
+        }}
+        error={error}
+        trailingAddon={
+          <Button variant="ghost" size="icon" type="button" onPointerDown={() => { scanIntent.current = true; }} onClick={() => void scan()} disabled={scanning || checking} aria-label="Scan Indoor Unit barcode" title={scanning ? 'Scanning…' : 'Scan Indoor Unit barcode'} className="icon-button-inline icon-button-quiet size-auto -mr-1.5">
+            <Icon path={BARCODE_ICON} className="size-4 " />
+          </Button>
+        }
+      />
+      {scanning && <span className="caption-muted">Scanning…</span>}
+      {checking && !scanning && <span className="caption-muted">Checking inventory…</span>}
+      {shown && (
+        <dl className="notice-success notice-body-sm">
+          {rows.flatMap(([label, value]) =>
+            value
+              ? [
+                  <div key={label} className="flex justify-between gap-3">
+                    <dt className="text-fg">{label}</dt>
+                    <dd className="text-fg font-medium">{value}</dd>
+                  </div>,
+                ]
+              : []
+          )}
+        </dl>
+      )}
+    </section>
+  );
+}
+
+// Number & Devices: a Fixed Line Number is allocated from the Free pool when the page opens and shown as the order's number; the agent may keep it or, if the customer wants a different one, open
+// Number Selection (the same capability as Mobile Postpaid, over the Fixed Line Number pool and without Star numbers) to search and choose another. The devices that follow from the service type are
+// recorded on the order (not listed on this page).
 export function NumberDevicesStep({ values, setValue }: { values: Values; setValue: (f: string, v: unknown) => void }) {
   const serviceType = (values.installation as FixedInstallationValue | undefined)?.serviceType;
   const devices = values.devices as FixedDevice[] | undefined;
   const msisdn = values.msisdn as string | undefined;
+  const source = values.msisdnSource as MsisdnSource | undefined;
+  const [choosing, setChoosing] = useState(false);
+  const [poolEmpty, setPoolEmpty] = useState(false);
   useEffect(() => {
-    if (!msisdn) setValue('msisdn', allocateFixedLineNumber());
     if (!devices) setValue('devices', devicesFor(serviceType, serviceType === 'fiber'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const customerIdNumber = (values.contact as { idNumber?: string } | undefined)?.idNumber;
+  // The first available Free number is allocated whenever the order has none (on opening, or after the agent clears a chosen number).
+  useEffect(() => {
+    if (msisdn) return;
+    let live = true;
+    void listEntities<MsisdnRecord>('fixed-line-numbers').then((all) => {
+      const n = live ? autoAllocatedFreeNumber(all) : undefined;
+      if (n) {
+        setValue('msisdn', n.msisdn);
+        setValue('msisdnSource', 'auto');
+        setPoolEmpty(false);
+      } else if (live) setPoolEmpty(true);
+    });
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [msisdn]);
   return (
     <div className="space-y-6">
-      <section>
-        <h3 className="title title-lg font-semibold mb-2">Fixed Line Number</h3>
-        <p className="text-secondary mb-2">Allocated automatically for this order.</p>
-        <p className="title title-xl">{msisdn ?? '…'}</p>
-      </section>
-      <section>
-        <h3 className="title title-lg font-semibold mb-2">Devices</h3>
-        <ul className="divide-y divide-border-soft card-outline">
-          {(devices ?? []).map((d) => (
-            <li key={d.serial} className="summary-line">
-              <span className="text-fg">{d.name}</span>
-              <span className="text-fg-2">{d.serial}</span>
-            </li>
-          ))}
-        </ul>
+      <section className="space-y-3">
+        <div className="split">
+          <div>
+            <h3 className="title title-lg font-semibold mb-2">{source === 'selected' ? 'Selected Fixed Line Number' : 'Allocated Fixed Line Number'}</h3>
+            <p className="title title-xl">{msisdn ? toLocalMsisdn(msisdn) : poolEmpty ? '-' : '…'}</p>
+            {poolEmpty && !msisdn && <p className="caption-secondary" role="status">No Free Fixed Line Number is available to allocate. Choose one below.</p>}
+          </div>
+          <Button variant="secondary" onClick={() => setChoosing((v) => !v)}>
+            {choosing ? 'Keep This Number' : 'Choose Another Number'}
+          </Button>
+        </div>
+        {(choosing || (poolEmpty && !msisdn)) && (
+          <NumberSelection
+            value={msisdn}
+            profile={FIXED_NUMBER_PICKER}
+            customerIdNumber={customerIdNumber}
+            onChange={(next) => {
+              // Choosing the selected number again clears it, and the Free pool allocates the next one.
+              setValue('msisdn', next);
+              setValue('msisdnSource', next ? 'selected' : undefined);
+            }}
+          />
+        )}
       </section>
     </div>
   );
 }
-

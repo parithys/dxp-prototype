@@ -2,6 +2,9 @@ import { PLAN_SELECTION_LABEL } from '../../data/stepLabels';
 import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { PlanSelection } from './PlanSelection';
 import { PrepaidPackActions } from './PrepaidPackActions';
+import { AddDiscountAction } from './AddDiscountAction';
+import { CustomiseAddonsAction } from './CustomiseAddonsAction';
+import { specialTypeOf } from './specialDiscount';
 import { loadMandatoryAddonIds } from '../AddonsSelection/usePackHasAddons';
 import { planSummary } from './summary';
 
@@ -83,7 +86,38 @@ export function fixedPlanSelectionStep(): WizardStep {
     key: 'plan',
     label: PLAN_SELECTION_LABEL,
     summary: planSummary,
-    render: ({ values, setValue }) => <PlanSelection kind="fixed" values={values} setValue={setValue} />,
+    // The add-ons were chosen for the plan they were chosen on: a different plan (or none) starts the Add-ons page clean.
+    render: ({ values, setValue }) => (
+      <PlanSelection
+        kind="fixed"
+        values={values}
+        specialDiscountType={specialTypeOf(values)}
+        setValue={(field, value) => {
+          setValue(field, value);
+          if (field === 'productId') {
+            setValue('addonIds', []);
+            setValue('iptv', undefined);
+          }
+        }}
+      />
+    ),
     isValid: (values) => Boolean(values.productId) && (values.creditCheckPass === true || values.creditCheckAcknowledged === true),
+    // As on the postpaid plan page: once a Standard Plan is chosen, Customise Add-ons sits just before Continue (an Offers-tab plan is pre-bundled and has none).
+    primaryAction: ({ values, setValue, goNext, defaultButton }) => (
+      <div className="row">
+        <CustomiseAddonsAction productId={values.productId as string | undefined} preBundled={values.selectionSource === 'OFFER'} setCustomise={() => setValue('customiseAddons', true)} goNext={goNext} />
+        {/* Edit Discount, as on the postpaid plan page: the plan's own discounts (Loyalty, Promotional ...), and the Special Discount on Special Offers. An Offers plan is pre-bundled. */}
+        <AddDiscountAction
+          productId={values.productId as string | undefined}
+          tab={values.planTab as string | undefined}
+          discountId={values.discountId as string | undefined}
+          onSelectDiscount={(id) => setValue('discountId', id)}
+          customerBenefits={undefined}
+          specialDiscountType={specialTypeOf(values)}
+          customerBenefit={undefined}
+        />
+        {defaultButton}
+      </div>
+    ),
   };
 }

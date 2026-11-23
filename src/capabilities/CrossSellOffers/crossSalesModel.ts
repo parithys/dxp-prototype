@@ -1,5 +1,5 @@
 import { planFeatureRows, type OfferProduct } from '../../components/primitives/offerCardModel';
-import { continuesHere } from './serviceJourneys';
+import { continuesHere, offerTypeOf } from './serviceJourneys';
 import type { OfferJourneys, ServiceJourney } from './serviceJourneys';
 
 export interface CrossSalesValue {
@@ -89,19 +89,25 @@ export function oneOfEachPlanClass(real: readonly Offer[], standard: readonly Of
 }
 
 /**
- * The offers Recommended Offers shows (a demonstration set), without grouping: New Postpaid's three - one Voice, one Broadband and one Family plan - then one
- * New Fixed Line, one New MNP and one New Prepaid offer: six cards. `lists` holds each offer type's offers (a customer's own first, topped up with the standard ones),
- * by the type's key. A type with no offer contributes none, so fewer than six come back only when the catalogue lacks one.
+ * The offers Recommended Offers shows (a demonstration set), without grouping, always six: New Postpaid's three (one Voice, one Broadband, one Family plan), two New Home offers and one New MNP offer.
+ * Where New Prepaid is one of the types (its own journey's page) the sixth is that pack and New Home gives one. `lists` holds each offer type's offers (a customer's own first, topped up with the
+ * standard ones), by the type's key; a type with no offer contributes none, so fewer than six come back only when the catalogue lacks one.
+ *
+ * The two New Home cards are the home offers `fits` likes first (a Fixed Line offer by default; with Check RFS's result, the ones for the service found), then the rest - never the same offer twice - so
+ * the page keeps its six where there are not two that fit. A standing home card in `fillers` (Fiber Connection) is a candidate too; any other filler tops the set up to six at the end.
  */
-export function demoOfferSet<T extends { serviceJourney?: string }>(lists: Readonly<Record<string, readonly T[]>>, fillers: readonly T[] = []): T[] {
-  const one = (key: string, fits: (o: T) => boolean = () => true) => (lists[key] ?? []).find(fits);
-  const set = [
-    ...(lists['new-postpaid'] ?? []),
-    one('new-home', (o) => o.serviceJourney === 'new-fixed-line'),
-    one('new-mnp'),
-    one('new-prepaid'),
-  ].filter((o): o is T => o !== undefined);
-  // Always six cards: when fewer offers are available the standing cards (Fiber Connection) fill the rest, never repeating one already shown.
+export function demoOfferSet<T extends { serviceJourney?: string; offerName?: string }>(
+  lists: Readonly<Record<string, readonly T[]>>,
+  fillers: readonly T[] = [],
+  fits: (o: T) => boolean = (o) => o.serviceJourney === 'new-fixed-line'
+): T[] {
+  const one = (key: string) => (lists[key] ?? [])[0];
+  const prepaid = one('new-prepaid');
+  const isHome = (o: T) => offerTypeOf(o.serviceJourney as ServiceJourney | undefined) === 'new-home';
+  const candidates = [...(lists['new-home'] ?? []), ...fillers.filter(isHome)].filter((o, i, all) => all.findIndex((x) => x === o || (x.offerName !== undefined && x.offerName === o.offerName)) === i);
+  const home = [...candidates.filter(fits), ...candidates.filter((o) => !fits(o))].slice(0, prepaid ? 1 : 2);
+  const set = [...(lists['new-postpaid'] ?? []), ...home, one('new-mnp'), prepaid].filter((o): o is T => o !== undefined);
+  // Always six: when fewer offers are available the standing cards fill the rest, never repeating one already shown.
   return [...set, ...fillers.filter((f) => !set.includes(f))].slice(0, DEMO_OFFER_COUNT);
 }
 

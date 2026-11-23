@@ -1,5 +1,8 @@
+import { useState } from 'react';
+import { Pagination } from 'dxp-ui';
 import { SPECIAL_DISCOUNT_RATE, specialOfferPlanName, type PostpaidPlan, type PlanGroupKey, type TabKey } from './postpaidPlanModel';
 import { PostpaidPlanCard } from './PostpaidPlanCard';
+import { STANDARD_PLANS_PAGE_SIZE } from './planPaging';
 
 interface PlanGroupPanelProps {
   groupPlans: (key: PlanGroupKey) => PostpaidPlan[];
@@ -26,13 +29,21 @@ export function PlanGroupPanel({
   specialDiscountType,
   discountPct = 0,
 }: PlanGroupPanelProps) {
+  const plans = groupPlans(activeTab as PlanGroupKey);
+  const paged = activeTab === 'for-you';
+  // A different tab, search or filter is a different list: it starts on its first page (the page is kept with the list it was chosen on).
+  const listKey = `${activeTab}|${plans.map((p) => p.productId).join(',')}`;
+  const [paging, setPaging] = useState({ listKey, page: 1 });
+  const page = paging.listKey === listKey ? paging.page : 1;
+  const setPage = (n: number) => setPaging({ listKey, page: n });
+  const shown = paged ? plans.slice((page - 1) * STANDARD_PLANS_PAGE_SIZE, page * STANDARD_PLANS_PAGE_SIZE) : plans;
   return (
     <div className="space-y-3">
-      {groupPlans(activeTab as PlanGroupKey).length === 0 ? (
+      {plans.length === 0 ? (
         <p className="muted-body">No plans match that search or filter.</p>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(max(15rem,calc((100%-2rem)/3)),1fr))] gap-4">
-        {groupPlans(activeTab as PlanGroupKey).map((p) => (
+        {shown.map((p) => (
           <PostpaidPlanCard
             key={p.productId}
             p={p}
@@ -51,6 +62,7 @@ export function PlanGroupPanel({
         ))}
         </div>
       )}
+      {paged && <Pagination page={page} total={plans.length} pageSize={STANDARD_PLANS_PAGE_SIZE} onPage={setPage} />}
     </div>
   );
 }

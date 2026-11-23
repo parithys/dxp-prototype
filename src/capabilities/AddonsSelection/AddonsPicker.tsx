@@ -1,15 +1,16 @@
-import { Badge, Button, EmptyState, Icon, TabStrip, SearchField, OptionToggle, CHEVRON_RIGHT, DATA_ICON, LAYERS_ICON } from 'dxp-ui';
-import { useEffect, useRef, useState } from 'react';
+import { Badge, Button, EmptyState, Icon, TabStrip, SearchField, OptionToggle, Select, CHEVRON_RIGHT, DATA_ICON, LAYERS_ICON } from 'dxp-ui';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import type { IptvStbTerms } from '../../engines/homeIptv';
 import { CARD_IDLE, CARD_SELECTED, SelectedTick, SelectedCardTexture } from '../../components/primitives/offerCardParts';
 import { ADDON_FOCUS_EVENT, addonCardId } from '../../lib/addonFocus';
 import { MULTI_SIM_MAX, multiSimCountOf, multiSimsRequested } from '../../engines/multiSim';
 import { isAddonEligible, type AddonEligibilityContext, type AddonEligibilityRule } from '../../engines/addonEligibility';
-import { ADDON_CATEGORIES, FREQUENTLY_USED_TAB, isFrequentlyUsed, type FrequentlyUsedRule, isFreeAddon, type AddonTab, addonsFor, addonCategoryOf, selectedPerCategory, type AddonPricingModel, type AddonBillingFrequency, type AddonBillingOption, addonPriceDisplay, addonChargeType, isAddonAvailable } from '../../engines/addonCategories';
+import { ADDON_CATEGORIES, FREQUENTLY_USED_TAB, isFrequentlyUsed, type FrequentlyUsedRule, isFreeAddon, addonCategoryOf, selectedPerCategory, type AddonPricingModel, type AddonBillingFrequency, type AddonBillingOption, type AddonTermOption, addonPriceDisplay, addonChargeType, addonWithBillingChoice, isAddonAvailable } from '../../engines/addonCategories';
 import { appliedDiscountFor, discountedAddon, type AddonDiscount, type AppliedAddonDiscounts } from '../../engines/addonDiscounts';
 import { formatAmount } from '../../lib/format';
 import { listEntities } from '../../services/entityOps';
 
-interface AddonProduct {
+export interface AddonProduct {
   productId: string;
   name: string;
   type: string;
@@ -47,12 +48,29 @@ interface AddonProduct {
   /** A mandatory product (prepaid, `isMandatory` on its record): always on the order, selected for the agent, who cannot remove it. */
   /** A mandatory product (prepaid, `isMandatory` on its record): always on the order, selected for the agent, who cannot remove it. */
   mandatory?: boolean;
+  /** A home IPTV bundle's set-top box terms (see engines/homeIptv.ts). */
+  stb?: IptvStbTerms;
+  extraStbPriceQAR?: number;
+  /** A home add-on's lock-in in months, as its record states it (0: none); undefined: not stated, so nothing is shown. */
+  lockInMonths?: number;
+  /** Fixed terms a home Speed Booster can be taken for instead of the lifetime charge. */
+  termOptions?: AddonTermOption[];
+}
+
+/** What a page puts around one tab's add-on lists: before them, after them, or in place of them (the home IPTV tab: its enable switch, its set-top box questions). */
+export interface AddonTabSlot {
+  before?: ReactNode;
+  after?: ReactNode;
+  hideList?: boolean;
 }
 
 interface AddonsPickerProps {
   selectedIds: string[];
   onChange: (ids: string[]) => void;
   selectedBilling?: Record<string, AddonBillingFrequency>;
+  /** Home Speed Booster: the fixed term (months) chosen instead of the lifetime charge, by add-on id. */
+  selectedTerms?: Record<string, number>;
+  onTermChange?: (next: Record<string, number>) => void;
   onBillingChange?: (billing: Record<string, AddonBillingFrequency>) => void;
   /**
    * Set by the Addons page (PostpaidAddonsStep, and so Add Add-On too): the page and its tab bar already name and count this section, so repeating "Add-ons
@@ -84,9 +102,9 @@ interface AddonsPickerProps {
    */
   /**
    * Where the add-ons come from: 'catalogue' (default) the postpaid add-on products, offered by plan eligibility; 'prepaid' the add-ons
-   * the prepaid pack carries (addons-discounts for `eligibilityContext.planId`), priced as a one-off charge.
+   * the prepaid pack carries (addons-discounts for `eligibilityContext.planId`), priced as a one-off charge; 'plan' the same plan-bound records for a home plan, charged monthly.
    */
-  source?: 'catalogue' | 'prepaid';
+  source?: 'catalogue' | 'prepaid' | 'plan';
   /**
    * The dedicated Add-ons page: the category tabs (Local Data, Local Minutes, International, Roaming, Combo, Others) and, under them, the selected
    * category's add-ons in two columns - Paid Addons and Free Addons - each listed top to bottom. Rows layout; postpaid and prepaid add-ons alike (a prepaid
@@ -98,6 +116,10 @@ interface AddonsPickerProps {
    * add-on's category is the one its record states, else Others).
    */
   categorized?: boolean;
+  /** Opt-in own category tabs (the home Add-ons page: IPTV, Mesh, Speed Booster, Voice) in place of the postpaid ones; an add-on sits under the tab its record's `addonCategory` names, and Paid / Free read plainly. Frequently Used is always last. */
+  homeTabs?: readonly string[];
+  /** With homeTabs: what the page adds around a tab's lists. */
+  tabSlot?: (tab: string, addons: AddonProduct[]) => AddonTabSlot | undefined;
   /** The add-on discounts the agent has applied (add-on product id -> discount id): an add-on shows its discounted charge and the discount. Omitted: no add-on discounts on this page. */
   /** The add-on discounts the agent has applied (add-on product id -> discount id): an add-on shows its discounted charge and the discount. Omitted: no add-on discounts on this page. */
   appliedDiscounts?: AppliedAddonDiscounts;
@@ -121,13 +143,16 @@ export interface AddonStatus {
   lines?: string[];
 }
 
-export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBillingChange, hideHeader, eligibilityContext, emptyMessage, layout = 'cards', mandatoryProducts = false, source = 'catalogue', categorized = false, appliedDiscounts, addonStatus, onOpenMultiSim, multiSimWanted }: AddonsPickerProps) {
+export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, selectedTerms = {}, onTermChange, onBillingChange, hideHeader, eligibilityContext, emptyMessage, layout = 'cards', mandatoryProducts = false, source = 'catalogue', categorized = false, homeTabs, tabSlot, appliedDiscounts, addonStatus, onOpenMultiSim, multiSimWanted }: AddonsPickerProps) {
   const [discountRecords, setDiscountRecords] = useState<AddonDiscount[]>([]);
   const wantsDiscounts = appliedDiscounts !== undefined;
   useEffect(() => {
     if (wantsDiscounts) void listEntities<AddonDiscount>('addon-discounts').then(setDiscountRecords);
   }, [wantsDiscounts]);
-  const [category, setCategory] = useState<AddonTab>(ADDON_CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(homeTabs?.[0] ?? ADDON_CATEGORIES[0]);
+  const categoryOf = (a: AddonProduct): string => (homeTabs ? a.addonCategory ?? '' : addonCategoryOf(a));
+  // Until the agent picks a tab themself, the page opens on the first category that has an add-on (a home plan's add-ons sit under Others, not Local Data).
+  const categoryPicked = useRef(false);
   // Search by add-on name, description or price, scoped to the category on show (like the plan search under the plan tabs).
   const [search, setSearch] = useState('');
   const [allAddons, setAllAddons] = useState<AddonProduct[]>([]);
@@ -137,6 +162,12 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
   // eligible for is not in the list at all, so it can be neither seen nor selected.
   const eligibleAddons = eligibilityContext ? allAddons.filter((a) => isAddonEligible(a, eligibilityContext)) : allAddons;
   const addons = eligibleAddons.filter(isAddonAvailable);
+  const firstFilledCategory = (homeTabs ?? ADDON_CATEGORIES).find((c) => addons.some((a) => categoryOf(a) === c));
+  useEffect(() => {
+    if (!categorized || categoryPicked.current || !firstFilledCategory) return;
+    if (!addons.some((a) => categoryOf(a) === category)) setCategory(firstFilledCategory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categorized, firstFilledCategory, category]);
   // Collapsed by default (2026-09-27). Add-ons are optional and most orders
   // take none, so the list was occupying the step for a decision usually
   // answered "no" - but the count in the header means a collapsed section
@@ -148,12 +179,12 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
   useEffect(() => {
     let cancelled = false;
     const load: Promise<AddonProduct[]> =
-      source === 'prepaid'
-        ? listEntities<{ addonDiscountId: string; name: string; addonType: string; price: number; category: string; description?: string; planId?: string; isMandatory?: boolean; addonCategory?: string }>('addons-discounts')
+      source === 'prepaid' || source === 'plan'
+        ? listEntities<{ addonDiscountId: string; name: string; addonType: string; price: number; category: string; description?: string; planId?: string; isMandatory?: boolean; addonCategory?: string; frequentlyUsedFor?: FrequentlyUsedRule; exclusiveGroup?: string; stb?: IptvStbTerms; extraStbPriceQAR?: number; lockInMonths?: number; billingOptions?: AddonBillingOption[]; termOptions?: AddonTermOption[] }>('addons-discounts')
             .then((all) =>
               all
                 .filter((d) => d.category === 'Paid Add-on' && d.planId === eligibilityContext?.planId)
-                .map((d) => ({ productId: d.addonDiscountId, name: d.name, type: d.addonType, mrcQAR: d.price, description: d.description, addonCategory: d.addonCategory, mandatory: mandatoryProducts && d.isMandatory === true }))
+                .map((d) => ({ productId: d.addonDiscountId, name: d.name, type: d.addonType, mrcQAR: d.price, description: d.description, addonCategory: d.addonCategory, mandatory: mandatoryProducts && d.isMandatory === true, ...(homeTabs ? { frequentlyUsedFor: d.frequentlyUsedFor, exclusiveGroup: d.exclusiveGroup, stb: d.stb, extraStbPriceQAR: d.extraStbPriceQAR, lockInMonths: d.lockInMonths, billingOptions: d.billingOptions, termOptions: d.termOptions } : {}) }))
             )
         : listEntities<AddonProduct>('products').then((all) => all.filter((p) => p.type === 'Add-on'));
     load
@@ -166,6 +197,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attempt, source, mandatoryProducts, eligibilityContext?.planId]);
 
   // A selection that stopped being eligible (the plan or customer type changed) is dropped.
@@ -199,7 +231,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
       const productId = (event as CustomEvent<{ productId: string }>).detail?.productId;
       const target = addonsRef.current.find((x) => x.productId === productId);
       if (!target) return;
-      setCategory(addonCategoryOf(target));
+      setCategory(homeTabs ? target.addonCategory ?? category : addonCategoryOf(target));
       setSearch('');
       window.setTimeout(() => {
         const el = document.getElementById(addonCardId(target.productId));
@@ -210,6 +242,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
     };
     window.addEventListener(ADDON_FOCUS_EVENT, onFocus);
     return () => window.removeEventListener(ADDON_FOCUS_EVENT, onFocus);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categorized, layout]);
 
   if (status === 'loading' && emptyMessage) return <p className="caption-muted">Loading add-ons…</p>;
@@ -238,14 +271,19 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
     !q || [a.name, a.description, addonPriceDisplay(a)?.primary, addonPriceDisplay(a)?.secondary, a.priceLabel, String(a.mrcQAR)].some((t) => t?.toLowerCase().includes(q));
   // Frequently Used: the add-ons whose record says they suit this customer's plan and nationality. The tab is always there; with no match it says so.
   const frequent = eligibilityContext ? addons.filter((a) => isFrequentlyUsed(a, eligibilityContext)) : [];
-  const tabs: AddonTab[] = [...ADDON_CATEGORIES, FREQUENTLY_USED_TAB];
-  const activeTab: AddonTab = category;
+  const tabs: string[] = [...(homeTabs ?? ADDON_CATEGORIES), FREQUENTLY_USED_TAB];
+  const activeTab: string = category;
+  const slot = homeTabs && tabSlot ? tabSlot(activeTab, addons) : undefined;
   const inTab = (pricing: 'free' | 'paid') =>
-    activeTab === FREQUENTLY_USED_TAB ? frequent.filter((a) => isFreeAddon(a) === (pricing === 'free')) : addonsFor(addons, activeTab, pricing);
+    activeTab === FREQUENTLY_USED_TAB
+      ? frequent.filter((a) => isFreeAddon(a) === (pricing === 'free'))
+      : addons.filter((a) => categoryOf(a) === activeTab && isFreeAddon(a) === (pricing === 'free'));
   const paid = useTabs ? inTab('paid').filter(matchesSearch) : [];
   const free = useTabs ? inTab('free').filter(matchesSearch) : [];
   const shown = useTabs ? [...paid, ...free] : addons;
-  const perCategory = selectedPerCategory(addons, selectedIds);
+  const perCategory: Record<string, number> = homeTabs
+    ? Object.fromEntries(homeTabs.map((c) => [c, addons.filter((a) => categoryOf(a) === c && selectedIds.includes(a.productId)).length]))
+    : selectedPerCategory(addons, selectedIds);
   // Multi-SIM maximum: an unselected add-on that provides Multi-SIMs is blocked once what is already asked for, plus the one it starts with, would exceed the limit.
   // The add-on's alternatives (its exclusive group) are not counted: choosing it replaces them.
   const multiSimBlocked = (a: AddonProduct) =>
@@ -269,7 +307,11 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
 
   // A selected Multi SIM add-on's card opens its SIM Selection; every other card toggles.
   const press = (a: AddonProduct) => (onOpenMultiSim && selectedIds.includes(a.productId) && multiSimCountOf(a) > 0 ? onOpenMultiSim(a.productId) : toggle(a.productId));
-  const rowCard = (a: AddonProduct) => {
+  const rowCard = (listed: AddonProduct) => {
+    // A fixed term chosen on a Speed Booster prices the add-on at that term (charged once) and names the term.
+    const termMonths = homeTabs && listed.termOptions ? selectedTerms[listed.productId] : undefined;
+    const term = listed.termOptions?.find((t) => t.months === termMonths);
+    const a: AddonProduct = term ? { ...listed, billingOptions: [...(listed.billingOptions ?? []).filter((o) => o.frequency !== 'one-time'), { frequency: 'one-time', priceQAR: term.priceQAR }] } : listed;
     const selected = selectedIds.includes(a.productId);
     // The selector only appears where the host journey records the choice (onBillingChange); elsewhere the catalogue default is what is priced.
     const options = onBillingChange ? (a.billingOptions ?? []) : [];
@@ -312,6 +354,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
                   <p className="title title-md font-semibold leading-snug">{namedByContent ? a.description ?? a.name : a.name}</p>
                   {!namedByContent && a.description && <p className="caption-secondary">{a.description}</p>}
                   {addonChargeType(a, source === 'prepaid' ? 'prepaid' : 'catalogue', billing) && <p className="mt-1 caption-muted">{addonChargeType(a, source === 'prepaid' ? 'prepaid' : 'catalogue', billing)}</p>}
+                  {homeTabs && a.lockInMonths !== undefined && addonWithBillingChoice(a, billing).billingFrequency !== 'one-time' && <p className="caption-muted">{a.lockInMonths > 0 ? `${a.lockInMonths}-month lock-in` : 'No lock-in'}</p>}
                   {selected && addonStatus?.[a.productId] && (
                     <div className="mt-2 stack gap-1 items-start">
                       {/* Complete: just each SIM's line. Not yet: what is still needed, then the SIMs already in. */}
@@ -340,19 +383,43 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
                   ) : a.priceLabel ? null : (
                     <p className="text-fg">
                       <span className="text-[length:var(--fs-caption)]">QAR </span>
-                      <span className="text-[length:var(--fs-h4)] font-bold">{formatAmount(a.mrcQAR)}</span>
-                      <span className="caption-secondary">{source === 'prepaid' ? ' one-off' : ' /mo'}</span>
+                      <span className="text-[length:var(--fs-h4)] font-bold">{formatAmount(homeTabs ? addonWithBillingChoice(priced, billing).mrcQAR : a.mrcQAR)}</span>
+                      <span className="caption-secondary">{source === 'prepaid' || (homeTabs && addonWithBillingChoice(priced, billing).billingFrequency === 'one-time') ? (homeTabs ? ' one-time' : ' one-off') : ' /mo'}</span>
                     </p>
                   )}
                 </div>
                 </div>
-                {options.length > 1 && (
+                {options.length > 1 && homeTabs && listed.termOptions && (
+                  // Home Speed Booster: Lifetime (the ongoing monthly charge), or a fixed term chosen from the list (charged once).
+                  <div className="divider-top p-3 row gap-3">
+                    <OptionToggle
+                      label={`Billing for ${a.name}`}
+                      items={[{ key: 'monthly', label: `Lifetime · QAR ${formatAmount(options.find((o) => o.frequency === 'monthly')?.priceQAR ?? a.mrcQAR)}` }]}
+                      active={billing === 'monthly' ? 'monthly' : undefined}
+                      onChange={() => {
+                        const { [a.productId]: _dropped, ...rest } = selectedTerms;
+                        onTermChange?.(rest);
+                        chooseBilling('monthly');
+                      }}
+                    />
+                    <Select
+                      aria-label={`Fixed term for ${a.name}`}
+                      options={listed.termOptions.map((t) => ({ value: String(t.months), label: `${t.months} ${t.months === 1 ? 'Month' : 'Months'}` }))}
+                      value={term ? String(term.months) : ''}
+                      onChange={(e) => {
+                        onTermChange?.({ ...selectedTerms, [a.productId]: Number(e.target.value) });
+                        chooseBilling('one-time');
+                      }}
+                    />
+                  </div>
+                )}
+                {options.length > 1 && !(homeTabs && listed.termOptions) && (
                   <div className="divider-top p-3">
                     <OptionToggle
                       label={`Billing frequency for ${a.description ?? a.name}`}
                       items={priced.billingOptions!.map((option) => ({
                         key: option.frequency,
-                        label: `${option.frequency === 'weekly' ? 'Weekly' : option.frequency === 'monthly' ? 'Monthly' : 'One-Time'} · QAR ${formatAmount(option.priceQAR)}`,
+                        label: `${option.frequency === 'weekly' ? 'Weekly' : option.frequency === 'monthly' ? (homeTabs ? 'Recurring' : 'Monthly') : 'One-Time'} · QAR ${formatAmount(option.priceQAR)}`,
                       }))}
                       active={billing}
                       onChange={chooseBilling}
@@ -393,22 +460,24 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
             items={tabs.map((c) => ({ key: c, label: c, count: c !== FREQUENTLY_USED_TAB && perCategory[c] > 0 ? perCategory[c] : undefined }))}
             active={activeTab}
             onChange={(c) => {
+              categoryPicked.current = true;
               setCategory(c);
               setSearch('');
             }}
           />
-          <SearchField
+          {slot?.before}
+          {!slot?.hideList && <SearchField
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onClear={() => setSearch('')}
             placeholder={`Search ${activeTab} add-ons by name or price`}
             aria-label={`Search ${activeTab} add-ons`}
-          />
+          />}
         </div>
       )}
       {/* Add-on cards share the plan cards' standard (shared idle / selected states, selected texture, tick).
           Multi-select: each card toggles only itself, so choosing one never clears another. */}
-      {useTabs ? (
+      {useTabs && slot?.hideList ? null : useTabs ? (
         paid.length === 0 && free.length === 0 ? (
           <EmptyState
             icon={LAYERS_ICON}
@@ -431,7 +500,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
           />
         ) : (
         <div className="fields gap-6 md:grid-cols-2">
-          {([['Paid Addons', paid, 'paid'], ['Free Addons', free, 'free']] as const).map(([title, list, kind]) => (
+          {([[homeTabs ? 'Paid' : 'Paid Addons', paid, 'paid'], [homeTabs ? 'Free' : 'Free Addons', free, 'free']] as const).map(([title, list, kind]) => (
             <section key={kind} aria-label={title} className="space-y-4 min-w-0">
               <div className={`row gap-2 label-caps font-semibold ${kind === 'free' ? 'text-[var(--success)]' : 'text-fg-2'}`}>
                 <h4>{title}</h4>
@@ -480,6 +549,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, onBi
         })}
       </div>
       )}
+      {useTabs && slot?.after}
     </div>
   );
 }

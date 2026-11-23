@@ -16,7 +16,7 @@ const SEED_FILES = [
   'home-move-cases', 'identity-documents', 'ims-site-zsb', 'in-platform-balances', 'installation-checklists',
   'installed-assets',
   'inventory-transfers', 'iot-sim-devices', 'iptv-stb-bundles', 'kid-address-records', 'kid-service-points',
-  'leads', 'line-items', 'nas-records', 'mnp-application-forms', 'mnp-portin-orders', 'multi-sim-lines', 'numbers',
+  'fixed-line-numbers', 'leads', 'line-items', 'nas-records', 'mnp-application-forms', 'mnp-portin-orders', 'multi-sim-lines', 'numbers',
   'order-approvals', 'orders', 'osb-notifications', 'park-my-number-plans', 'passport-to-qid-updates',
   'payments', 'port-out-tickets', 'price-exceptions', 'products', 'qtickets', 'recharge-products', 'reject-reasons',
   'rfs-records',

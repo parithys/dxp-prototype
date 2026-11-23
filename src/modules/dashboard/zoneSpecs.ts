@@ -65,12 +65,12 @@ export function customerOpsSpec(
     cards: opts.compact ? allCards.slice(0, 2) : allCards,
     actions: opts.compact
       ? [
-          { label: 'New Connection', path: '/mobile/start-connection' },
+          { label: 'New Connection', path: '/start-connection' },
           { label: 'Create Ticket', path: '/support' },
         ]
       : [
-          { label: 'New Connection', path: '/mobile/start-connection' },
-          { label: 'New Postpaid Connection', path: '/mobile/start-connection' },
+          { label: 'New Connection', path: '/start-connection' },
+          { label: 'New Postpaid Connection', path: '/start-connection' },
           { label: 'New Fixed Line', screenId: 'SCR-043' },
           { label: 'Start a Lead', path: '/sales' },
           { label: 'Create Ticket', path: '/support' },
@@ -116,7 +116,7 @@ export function productWorkSpec(
       ],
       cards: [],
       actions: [
-        { label: 'New Connection', path: '/mobile/start-connection' },
+        { label: 'New Connection', path: '/start-connection' },
         { label: 'Resume a Draft', path: '/tasks?filter=draft-orders' },
       ],
     };

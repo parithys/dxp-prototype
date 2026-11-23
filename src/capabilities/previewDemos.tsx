@@ -46,7 +46,7 @@ import { listEntities } from '../services/entityOps';
 
 export function Identification() {
   const [v, setV] = useState<GuidedContactValue>({});
-  // Exactly as the New Connection journey (/mobile/start-connection) mounts it for a walk-in customer: the same props, from the one function the journey's Contact step
+  // Exactly as the New Connection journey (/start-connection) mounts it for a walk-in customer: the same props, from the one function the journey's Contact step
   // uses, so the contact details, ID types and new-customer handling match. (The journey adds only its customer-lock handler, which a preview has no journey for.)
   // As the journeys use it: the first scan comes back unclear, and Retake gives the clear capture.
   return <CustomerIdentification {...contactIdentificationProps({ flow: 'new' })} value={v} onChange={setV} />;

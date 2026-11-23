@@ -1,5 +1,5 @@
 {
-  "_comment": "Document types for Additional Documents, and when each applies. Edit here - no code change. offerAlways (1-7) lists a type in the Document Type dropdown for everyone, in that order, ahead of the contextual ones. appliesTo dimensions (all given must match; omit one for no restriction; an empty list means never): journeys, personas (role ids), products (postpaid|prepaid|mnp|fixed-line), idTypes, segments (customer segment, matched by prefix: 'Enterprise' matches 'Enterprise (EBU)'), conditions (all must hold). Conditions are computed from the journey draft: number-waiver, minor-applicant, special-discount:mada|b2b2c|retired, actual-user-other, manual-caf, upfront-payment, vat-registration. requiredWhen (conditions) makes the document required, asked for as its own card. basis says where each rule comes from; 'assumed' rules need business confirmation. scanner ('ocr' | 'flatbed'): which desk scanner takes this document on the web (a tablet or phone uses its camera). OCR = one scan, one image; flatbed = Initiate Scan, then Add Page for each further page, and Upload Document combines the pages into one PDF. A type with no scanner is OCR. Set by the business 2026-11-08 for QID, Passport, GCC ID, Employee ID, CAF, Special Needs Card, Supplementary Form and Upfront Payment Receipt; every other type is unspecified and so OCR until the business says otherwise. mandatory: true marks the documents the agent must upload in Additional Documents before Continue; when any type is mandatory the Document Type list offers those types only, whatever the journey, role or customer (as of 2026-11-15: Special Needs Card, Star Number Discount Approval, Upfront Payment Receipt).",
+  "_comment": "Document types for Additional Documents, and when each applies. Edit here - no code change. offerAlways (1-7) lists a type in the Document Type dropdown for everyone, in that order, ahead of the contextual ones. appliesTo dimensions (all given must match; omit one for no restriction; an empty list means never): journeys, personas (role ids), products (postpaid|prepaid|mnp|fixed-line), idTypes, segments (customer segment, matched by prefix: 'Enterprise' matches 'Enterprise (EBU)'), conditions (all must hold). Conditions are computed from the journey draft: number-waiver, kid-in-use, minor-applicant, special-discount:mada|b2b2c|retired, actual-user-other, manual-caf, upfront-payment, vat-registration. requiredWhen (conditions) makes the document required, asked for as its own card. basis says where each rule comes from; 'assumed' rules need business confirmation. scanner ('ocr' | 'flatbed'): which desk scanner takes this document on the web (a tablet or phone uses its camera). OCR = one scan, one image; flatbed = Initiate Scan, then Add Page for each further page, and Upload Document combines the pages into one PDF. A type with no scanner is OCR. Set by the business 2026-11-08 for QID, Passport, GCC ID, Employee ID, CAF, Special Needs Card, Supplementary Form and Upfront Payment Receipt; every other type is unspecified and so OCR until the business says otherwise. mandatory: true marks the documents the agent must upload in Additional Documents before Continue; when any type is mandatory the Document Type list offers those types only, whatever the journey, role or customer (as of 2026-11-15: Special Needs Card, Star Number Discount Approval, Upfront Payment Receipt).",
   "types": [
     {
       "id": "qid",
@@ -362,6 +362,23 @@
       ],
       "reason": "A VAT registration number was entered on the billing account: the VAT document must be attached.",
       "basis": "Business requirement (2026-10-28): a VAT Registration Number makes the VAT document mandatory."
+    },
+    {
+      "id": "tenancy-document",
+      "label": "Tenancy Document",
+      "appliesTo": {
+        "conditions": [
+          "kid-in-use"
+        ],
+        "products": [
+          "fixed-line"
+        ]
+      },
+      "requiredWhen": [
+        "kid-in-use"
+      ],
+      "reason": "The KID already has a service: the Tenancy Document shows the customer may take the premises over, and is collected after the CAF.",
+      "basis": "Business requirement (2026-11-23): a New Home Connection on a KID that is in use (Active or Suspended) needs a Tenancy Document under Additional Documents."
     }
   ]
 }

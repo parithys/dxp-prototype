@@ -40,7 +40,8 @@ test('a Standard customer (none chosen, or the benefit rejected) is offered none
   assert.ok(out.some((d) => d.addonType === 'Loyalty Discount'));
   assert.equal(out.length + all.filter((d) => SPECIAL.has(d.addonType)).length, all.length, 'conservation');
   // The plan step tells Standard apart from "this journey has no such choice".
-  const step = fs.readFileSync('src/capabilities/PlanSelection/postpaidStep.tsx', 'utf8');
+  // (the one definition is shared by the postpaid and the home plan pages)
+  const step = fs.readFileSync('src/capabilities/PlanSelection/specialDiscount.ts', 'utf8');
   assert.match(step, /\(v \? \(v\.type && v\.type !== 'none' && !v\.rejected && isCustomerTypeValid\(v\) \? v\.type : 'none'\) : undefined\)/);
 });
 

@@ -43,8 +43,9 @@ test('Select Offer on an upgrade opens its journey at once for the identified cu
   assert.match(card, /continuesHere\(o\.serviceJourney, journey\)\) \{\s*if \(!selected\) toggle\(\);\s*setAdvanceFor\(o\.offerId\);\s*return;/);
   assert.match(card, /This offer does not name a journey to continue in/);
   const choice = read('src/modules/new-connection/steps/productChoice.ts');
-  assert.match(choice, /export function handOverToJourney[\s\S]*endJourney\(ctx\.wizardId\)[\s\S]*clearDraft\(ctx\.wizardId\)[\s\S]*state: \{ launch: customer \}/);
-  assert.match(read('src/modules/new-connection/steps/ProductSelection.tsx'), /onHandOff=\{\(route, customer\) => handOverToJourney\(ctx, route, customer\)\}/);
+  assert.match(choice, /export function handOverToJourney[\s\S]*endJourney\(ctx\.wizardId\)[\s\S]*clearDraft\(ctx\.wizardId\)[\s\S]*\{ launch: customer \}/);
+  assert.match(read('src/modules/new-connection/steps/ProductSelection.tsx'), /onHandOff=\{\(route, customer, offer\) => \(route === HOME_OFFER_ROUTE && offer \? handOverHomeToRfs\(ctx, values, offer\) : handOverToJourney\(ctx, route, customer\)\)\}/);
+  assert.match(read('src/modules/check-rfs/ServiceAvailability.tsx'), /aria-label=\{`Back to \$\{back\.label\}`\}/, 'a New Home offer opens Check RFS with a Back bar to the Contact page');
   assert.match(read('src/capabilities/CrossSellOffers/step.tsx'), /state: \{ launch: customer \}/);
 });
 

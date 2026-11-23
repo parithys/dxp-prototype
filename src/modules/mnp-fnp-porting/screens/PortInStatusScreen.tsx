@@ -131,7 +131,7 @@ function PortInDetail({ record }: { record: PortInRecord }) {
     // A new draft with a new order reference once submitted; the source order stays Cancelled. The reusable details are filled in,
     // and the journey runs again from Customer Verification so everything is reviewed and re-validated before it is submitted.
     store.dispatch(workflowActions.patchDraft(wizardId, { set: values, progressTo: 0 }));
-    navigate('/mobile/start-connection');
+    navigate('/start-connection');
   };
 
   return (

@@ -185,7 +185,7 @@ for to in NAV:
     mm = re.match(r'^/(mobile|fibre-home)/([a-z-]+)$', to)
     if mm and mm.group(2) != 'new-connection':
         LINE_ROUTES[mm.group(1)].append(to)
-for to in ('/mobile/start-connection',):
+for to in ('/start-connection',):
     NAV.setdefault(to, 'New Connection')
 
 

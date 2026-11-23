@@ -4,6 +4,7 @@ import { planChoiceSummary } from './summary';
 import type { CustomerBenefit } from '../../engines/customerBenefitEngine';
 import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
 import { PlanSelection } from './PlanSelection';
+import { specialTypeOf } from './specialDiscount';
 import { AddDiscountAction } from './AddDiscountAction';
 import { CustomiseAddonsAction } from './CustomiseAddonsAction';
 import { EligibilityChecksList } from '../../components/domain/EligibilityRows';
@@ -69,9 +70,6 @@ export function postpaidPlanStep(ctx: PostpaidPlanContext): WizardStep {
   };
 }
 
-/** A Special Discount counts once validated: its details given and, for Retiree and MADA, the supporting document scanned and accepted. */
-const specialTypeOf = (values: Record<string, unknown>) =>
-  ((v) => (v ? (v.type && v.type !== 'none' && !v.rejected && isCustomerTypeValid(v) ? v.type : 'none') : undefined))(values.customerType as CustomerTypeValue | undefined);
 const benefitOf = (values: Record<string, unknown>) => {
   const v = values.customerType as CustomerTypeValue | undefined;
   return v?.officeAccepted || (isCustomerTypeValid(v) && v?.type === 'b2b2c') ? v?.type : undefined;

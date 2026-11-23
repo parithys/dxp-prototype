@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Button, Icon, STAR, TREND_UP, ICON_CALL, ICON_CARD, ICON_DATA, CHEVRON_RIGHT } from 'dxp-ui';
 import { OfferDetailsDrawer } from './OfferDetailsDrawer';
 import type { OfferProduct } from '../../components/primitives/offerCardModel';
@@ -23,13 +23,15 @@ export function CrossSalesStep({
   onInterestedOffer,
   journey = 'new-postpaid',
   showAllOfferTypes = false,
+  homeRoute,
+  homeFit,
 }: {
   customerId: string | undefined;
   value: CrossSalesValue;
   onChange: (v: CrossSalesValue) => void;
   /** An offer for another journey (an upgrade, say) continues there: the route, and the identified customer when there is one, so that journey opens for them. */
   /** An offer for another journey (an upgrade, say) continues there: the route, and the identified customer when there is one, so that journey opens for them. */
-  onHandOff: (route: string, customer?: { customerId: string }) => void;
+  onHandOff: (route: string, customer?: { customerId: string }, offer?: Offer) => void;
   /** With onInterestedOffer: each card carries its own Select Offer (take this offer and go on) and Interested (raise a lead
    * for it) buttons in place of "Select offer". */
   /** With onInterestedOffer: each card carries its own Select Offer (take this offer and go on) and Interested (raise a lead
@@ -48,8 +50,13 @@ export function CrossSalesStep({
    * (existing customers). Standard offers are selected like any other. Off: only the types the customer has offers for.
    */
   showAllOfferTypes?: boolean;
+  /** Where a New Home offer (fixed line, FWA) leads: choosing one - the card or its Select Offer - opens this route instead of selecting the offer here. */
+  homeRoute?: string;
+  /** The home offers that fit the service Check RFS found: the New Home cards are these first, then the other home offers. */
+  homeFit?: (offer: Offer) => boolean;
 }) {
   const offerTypes = offerTypesFor(journey);
+  const clickable = !onInterestedOffer;
   const [offers, setOffers] = useState<Offer[] | undefined>();
   // The offer whose comprehensive details are open in the side drawer.
   const [detailOffer, setDetailOffer] = useState<Offer | null>(null);
@@ -127,7 +134,7 @@ export function CrossSalesStep({
   // Every offer type's offers: a type with none is left out. Within a type the Recommended card comes first, then the rest from the lowest monthly fee to the highest.
   const sections = offerTypes
     .map((type) => {
-      const real = offers.filter((o) => offerTypeOf(o.serviceJourney) === type.key).sort((a, b) => Number(b.offerId === recommendedId) - Number(a.offerId === recommendedId) || a.monthlyRental - b.monthlyRental);
+      const real = offers.filter((o) => offerTypeOf(o.serviceJourney) === type.key ).sort((a, b) => Number(b.offerId === recommendedId) - Number(a.offerId === recommendedId) || a.monthlyRental - b.monthlyRental);
       // New Postpaid: one Voice, one Broadband and one Family plan, the customer's own offer in its class's place.
       if (showAllOfferTypes && type.key === 'new-postpaid') {
         return { type, items: oneOfEachPlanClass(real, STANDARD_OFFERS[type.key], (o) => o.linkedProductIds.map((id) => products[id]?.planClass).find(isPlanClass)) };
@@ -137,10 +144,10 @@ export function CrossSalesStep({
     })
     .filter(({ items }) => items.length > 0);
   // No grouping: one list of six cards - New Postpaid's three (Voice, Broadband, Family), then one New Fixed Line, one New MNP and one New Prepaid offer.
-  const items = demoOfferSet(Object.fromEntries(sections.map((x) => [x.type.key, x.items])), showAllOfferTypes ? [FIBER_CONNECTION_OFFER] : []);
+  const items = demoOfferSet(Object.fromEntries(sections.map((x) => [x.type.key, x.items])), showAllOfferTypes ? [FIBER_CONNECTION_OFFER] : [], homeFit);
   return (
     <div className="space-y-4">
-      <div role="radiogroup" aria-label="Offers">
+      <div role={clickable ? 'radiogroup' : 'group'} aria-label="Offers">
           <ul className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(max(15rem,calc((100%-2rem)/3)),1fr))]">
         {items.map((o) => {
           const selected = value.decision === 'accepted' && value.offerId === o.offerId;
@@ -160,8 +167,15 @@ export function CrossSalesStep({
           const facts = (plan?.features?.length ? plan.features.map((f, i) => ({ icon: i === 0 ? ICON_DATA : /minute|call/i.test(f) ? ICON_CALL : ICON_CARD, text: f })) : planFeatureRows(plan)).slice(0, 4);
           // The whole card is the control: click (or Enter/Space) selects it,
           // and clicking the selected one again clears it.
+          // With its own Select Offer / Interested buttons a card is not itself a control: only the buttons act, and the card has no hover or focus of a control.
+          const look = selected ? CARD_SELECTED : recommended ? (clickable ? CARD_HIGHLIGHT : 'card-static-highlight') : clickable ? CARD_IDLE : tone ? '' : 'card-static';
+          const goHome = () => {
+            if (homeRoute) onHandOff(homeRoute, customerId ? { customerId } : undefined, o);
+          };
           const toggle = () =>
-            onChange(
+            homeRoute && isHomeJourney(o.serviceJourney)
+              ? goHome()
+              : onChange(
               selected
                 ? {}
                 : { decision: 'accepted', offerId: o.offerId, offerName: o.offerName, journey: o.serviceJourney, linkedProductIds: o.linkedProductIds }
@@ -169,19 +183,21 @@ export function CrossSalesStep({
           return (
             <li
               key={o.offerId}
-              role="radio"
-              aria-checked={selected}
-              tabIndex={0}
-              onClick={toggle}
-              onKeyDown={(e) => {
-                if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault();
-                  toggle();
-                }
-              }}
-              className={`relative card-option p-5 stack cursor-pointer ${
-                selected ? CARD_SELECTED : recommended ? CARD_HIGHLIGHT : CARD_IDLE
-              } ${tone ? `offer-tone-${tone} ${selected || recommended ? '' : 'offer-tone-idle'}` : ''}`}
+              {...(clickable
+                ? {
+                    role: 'radio',
+                    'aria-checked': selected,
+                    tabIndex: 0,
+                    onClick: toggle,
+                    onKeyDown: (e: KeyboardEvent<HTMLLIElement>) => {
+                      if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        toggle();
+                      }
+                    },
+                  }
+                : {})}
+              className={`relative card-option p-5 stack ${clickable ? 'cursor-pointer' : ''} ${look} ${tone ? `offer-tone-${tone} ${selected || recommended ? '' : 'offer-tone-idle'}` : ''}`}
             >
               {selected && <SelectedTick />}
               {/* Top row, as on every plan card: the Recommended flag on the left, the plan-type tag pinned top-right. */}
@@ -263,7 +279,7 @@ export function CrossSalesStep({
                     </Button>
                     <Button
                       size="sm"
-                      disabled={!hasDestination(o.serviceJourney, journey)}
+                      disabled={!(homeRoute && isHomeJourney(o.serviceJourney)) && !hasDestination(o.serviceJourney, journey)}
                       title={
                         hasDestination(o.serviceJourney, journey)
                           ? undefined
@@ -273,6 +289,10 @@ export function CrossSalesStep({
                       }
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (homeRoute && isHomeJourney(o.serviceJourney)) {
+                          goHome();
+                          return;
+                        }
                         // The destination follows the offer: one for a journey this wizard runs (new postpaid, prepaid, home, MNP) is selected and the
                         // wizard goes on; one for another journey (the Prepaid to Postpaid and Postpaid to Postpaid upgrades) opens that journey straight
                         // away, for the customer already identified here.

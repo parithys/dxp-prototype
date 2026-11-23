@@ -26,6 +26,7 @@ import { useAction, useAppSelector } from '../../stores/hooks';
 import { useSubmitGuard } from '../../hooks/useSubmit';
 import { useEntityOps, useEntityRecords, useKindPending } from '../../services/entityHooks';
 import { getEntity, listEntities } from '../../services/entityOps';
+import { RELEASED_INVENTORY, type ExistingConnection } from '../../engines/kidInUse';
 
 // Same document-icon path CafDocumentUpload.tsx/AdditionalDocumentsUpload.tsx
 // already use for their own file rows - reused here for visual consistency
@@ -799,6 +800,13 @@ export function OrderApprovalDetail() {
       // An approved credit limit change takes effect: the customer's limit becomes the one requested.
       const limitChange = nextStatus === 'Complete' ? creditLimitChangeOf(order as unknown as Record<string, unknown>) : undefined;
       if (limitChange) await applyCreditLimitChange({ ...limitChange, by: currentAgentId }, { list: (k) => listEntities(k) as never, updateRecord: updateRecord as never, createRecord: createRecord as never });
+      // An approved order that replaced a connection on a KID that was in use: the existing connection is disconnected and its inventory released across the components that hold it. Only
+      // orders that carry such a connection (New Home Connection on a KID in use) have one.
+      const replaced = (order as unknown as { existingConnection?: ExistingConnection }).existingConnection;
+      if (replaced && replaced.state !== 'Disconnected') {
+        await updateRecord('orders', 'orderId', order.orderId, { existingConnection: { ...replaced, state: 'Disconnected', releasedInventory: [...RELEASED_INVENTORY] } });
+        await logActivity('Existing Connection Disconnected', `Service ${replaced.fln} on ${replaced.kid} (${replaced.pon}) was disconnected on approval; released: ${RELEASED_INVENTORY.join(', ')}.`);
+      }
       await logActivity('Approved', '');
       pushToast(
         'success',

@@ -18,7 +18,7 @@ async function go(page: Page, to: string) {
 
 test('every button defaults to type=button, so none submits a form by accident', async ({ page }, info) => {
   await signIn(page, info.project.name);
-  for (const path of ['/profile', '/customer-search', '/mobile/start-connection']) {
+  for (const path of ['/profile', '/customer-search', '/start-connection']) {
     await go(page, path);
     await page.getByRole('main').waitFor();
     await page.waitForTimeout(600);
@@ -49,7 +49,7 @@ test('customer search: a short query shows the hint, Enter submits the query (th
 
 test('a primary button keeps the red gradient, a secondary the grey border, a tertiary no box', async ({ page }, info) => {
   await signIn(page, info.project.name);
-  await go(page, '/mobile/start-connection');
+  await go(page, '/start-connection');
   await page.getByRole('main').waitFor();
   const style = (sel: string) => page.locator(sel).first().evaluate((el) => {
     const s = getComputedStyle(el);

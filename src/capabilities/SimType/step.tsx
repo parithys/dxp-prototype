@@ -61,6 +61,8 @@ export function simTypeStep(
      * its price and waiver.
      */
     pairingFromScan?: boolean;
+    /** Physical SIM only (5G Home / FWA): no eSIM is offered and the SIM Type defaults to Physical. */
+    physicalOnly?: boolean;
   } = {}
 ): WizardStep {
   // A Customer Representative order has no Secondary Contact: someone else is already acting for the actual customer, so the option is not offered.
@@ -99,6 +101,7 @@ export function simTypeStep(
         device={opts.device}
         prePaired={opts.prePaired?.(values)}
         pairingFromScan={opts.pairingFromScan}
+        physicalOnly={opts.physicalOnly}
         approvalRequired={opts.approvalRequired?.(values)}
         // New Prepaid: Paired / Unpaired is part of the selected SIM's green container.
         extraRows={opts.prepaidActivation ? pairingRows(values.simType as SimTypeValue | undefined) : undefined}

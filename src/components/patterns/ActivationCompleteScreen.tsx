@@ -127,7 +127,7 @@ export interface ActivationCompleteOrder {
  * Start New Fiber (SCR-043): back to New Connection's Recommended Offers for the same counter visit, from where the agent picks the journey (New Home Connection is one of its
  * buttons). A customer the order already belongs to is opened for them (the path navigation/journeyPaths.ts calls existingCustomerPath; components cannot import it); a walk-in starts a fresh New Connection.
  */
-const fibreActivationPath = (customerId: string | undefined) => (customerId ? `/mobile/start-connection/existing/${customerId}` : '/mobile/start-connection');
+const fibreActivationPath = (customerId: string | undefined) => (customerId ? `/start-connection/existing/${customerId}` : '/start-connection');
 /** The agent's Orders page. */
 /** The agent's Orders page. */
 const MY_ORDERS_ROUTE = '/orders';

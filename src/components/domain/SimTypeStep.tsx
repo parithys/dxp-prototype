@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Badge, type DeviceType } from 'dxp-ui';
 import { SimSerialScanner } from './SimSerialScanner';
 import { issueEsimProfile } from './esimProfile';
@@ -49,6 +49,8 @@ interface SimTypeStepProps {
   extraRows?: readonly (readonly [string, string])[];
   /** Whether the serial field takes focus on arrival. Default: the device decides; several SIMs on one page pass false for all but the first. */
   autoFocus?: boolean;
+  /** Physical SIM only (5G Home / FWA): no eSIM is offered, the SIM Type is Physical from the start, and the serial is scanned or typed and checked against inventory. */
+  physicalOnly?: boolean;
   /** Physical SIM and eSIM one below the other (a narrow container such as a drawer) instead of side by side. */
   stacked?: boolean;
 }
@@ -68,8 +70,13 @@ interface SimTypeStepProps {
 // kept deliberately lightweight (no fabricated eSIM provisioning API), and
 // still does NOT auto-advance: selecting eSIM is a choice to review, not a
 // validation result to act on immediately.
-export function SimTypeStep({ value, customerEmail, onChange, device, prePaired, pairingFromScan, approvalRequired = false, excludeSerials, excludeIccids, autoFocus, extraRows, stacked = false }: SimTypeStepProps) {
+export function SimTypeStep({ value, customerEmail, onChange, device, prePaired, pairingFromScan, approvalRequired = false, excludeSerials, excludeIccids, autoFocus, extraRows, stacked = false, physicalOnly = false }: SimTypeStepProps) {
   const [issuing, setIssuing] = useState(false);
+  // Physical only: the SIM Type defaults to Physical before anything is scanned.
+  useEffect(() => {
+    if (physicalOnly && value.simType !== 'Physical') onChange({ ...value, simType: 'Physical' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [physicalOnly, value.simType]);
 
   if (prePaired) {
     return (
@@ -133,6 +140,22 @@ export function SimTypeStep({ value, customerEmail, onChange, device, prePaired,
     setIssuing(false);
     onChange({ ...value, prePaired: undefined, prePairedMsisdn: undefined, simType: 'eSIM', esimIssued: true, esimActivationCode: profile.activationCode, simIccid: profile.iccid, simSerial: undefined, simValid: undefined });
   };
+
+  if (physicalOnly) {
+    return (
+      <div className="max-w-xl space-y-3">
+        <h3 className="title title-sm font-semibold">Physical SIM</h3>
+        <SimSerialScanner
+          value={value.simSerial ?? ''}
+          device={device}
+          excludeSerials={excludeSerials}
+          autoFocus={autoFocus}
+          extraRows={extraRows}
+          onChange={(serial, valid, details) => onChange({ ...value, simType: 'Physical', simSerial: serial, simValid: valid, simIccid: details?.iccid, simStockStatus: details?.stockStatus, simKind: details?.simKind })}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={stacked ? 'stack gap-6' : 'grid grid-cols-[repeat(auto-fill,minmax(max(15rem,calc((100%-1.5rem)/2)),1fr))] gap-6'}>

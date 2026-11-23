@@ -1,6 +1,9 @@
-import { SERVICE_ADDRESS_LABEL } from '../../../data/stepLabels';
-import { addressSummary, billingStep, cafSignatureStep, checkoutSummaryStep, fixedPlanSelectionStep, paymentStep } from '../../../capabilities';
-import { InstallationAddressForm, InstallationAddressStep, NumberDevicesStep } from './FixedStepViews';
+import { HOME_ADDRESS_LABEL, SERVICE_ADDRESS_LABEL } from '../../../data/stepLabels';
+import { simTypeStep, addressSummary, billingStep, cafSignatureStep, checkoutSummaryStep, fixedPlanSelectionStep, homeAddonsStep, paymentStep } from '../../../capabilities';
+import { IndoorUnitSerial, InstallationAddressForm, InstallationAddressStep, NumberDevicesStep } from './FixedStepViews';
+import { isFwaService, isIndoorUnitValid, type IndoorUnitDetails } from './fixedActivationModel';
+import { InstallationAddressView } from './InstallationAddressView';
+import { isInstallationAddressValid } from './installationAddress';
 import type { ZsbAddressValue } from '../../../components/patterns/ZsbAddressStep';
 import { appointmentBookingStep } from '../../../capabilities';
 import type { SummaryField } from '../../../components/patterns/wizard/stepSummary';
@@ -48,7 +51,8 @@ export function fixedAddressStep(): WizardStep {
 export function homeAddressStep(): WizardStep {
   return {
     key: 'address',
-    label: SERVICE_ADDRESS_LABEL,
+    // New Home Connection names it for what it is: where the service is installed.
+    label: HOME_ADDRESS_LABEL,
     summary: addressSummary,
     render: ({ values, setValue }) => <InstallationAddressForm values={values} setValue={setValue} />,
     isValid: (values) => {
@@ -76,6 +80,62 @@ export function fixedNumberStep(): WizardStep {
   };
 }
 
+/** An FWA order's SIM Type and Indoor Unit read back on the Order Summary and the CAF, after the plan (the SIM's serial number is the summary's own row). */
+const fwaOrderRows = (values: Values): { label: string; value: string }[] => {
+  if (!isFwaService(values)) return [];
+  const sim = values.simType as { simType?: string } | undefined;
+  const unit = values.indoorUnit as IndoorUnitDetails | undefined;
+  return [
+    { label: 'SIM Type', value: sim?.simType ?? 'Physical' },
+    { label: 'Indoor Unit Serial Number', value: unit?.serialNumber ?? '-' },
+    ...(unit?.brand || unit?.modelNumber ? [{ label: 'Indoor Unit', value: [unit.brand, unit.modelNumber].filter(Boolean).join(' ') }] : []),
+  ];
+};
+
+// ---- 4b. SIM Selection (5G Home / FWA only) -------------------------------------------------------------------
+// After the allocated Fixed Line Number: a Physical SIM only (scanned or typed, checked against inventory) and the Indoor Unit's serial number. Skipped for Fibre and fixed line.
+export function fwaSimStep(): WizardStep {
+  const base = simTypeStep({ physicalOnly: true });
+  return {
+    ...base,
+    key: 'fwaSim',
+    skip: (values) => !isFwaService(values),
+    summary: [...(base.summary ?? []), { key: 'indoorUnitSerial', label: 'Indoor Unit Serial Number', type: 'text', optional: true, value: (v) => at(v, 'indoorUnit', 'serialNumber') }],
+    render: (ctx) => (
+      <div className="space-y-6">
+        {base.render(ctx)}
+        <IndoorUnitSerial values={ctx.values} setValue={ctx.setValue} />
+      </div>
+    ),
+    // Physical only: a leftover eSIM choice does not satisfy it.
+    isValid: (values) => (values.simType as { simType?: string } | undefined)?.simType === 'Physical' && (base.isValid?.(values) ?? false) && isIndoorUnitValid(values),
+  };
+}
+
+// ---- 4c. Installation Address (after Number Selection for Fibre, after SIM Selection for FWA) ---------------------
+// Populated from the RFS data (or UIM) for the selected KID and read-only; with no KID, captured manually (ZSB read-only, Area derived, Unit / Apartment / Flat mandatory). Only for an order that came
+// from Check RFS: the other entries to the journey ask for the address on their own page, first.
+const homeInstallationSummary: SummaryField[] = [
+  { key: 'zone', label: 'Zone', type: 'text', optional: true, value: (v) => at(v, 'address', 'zone') },
+  { key: 'street', label: 'Street No.', type: 'text', optional: true, value: (v) => at(v, 'address', 'streetNo') },
+  { key: 'building', label: 'Building No.', type: 'text', optional: true, value: (v) => at(v, 'address', 'buildingNo') },
+  { key: 'unit', label: 'Flat / Unit', type: 'text', optional: true, value: (v) => at(v, 'address', 'aptFlatUnit') },
+  { key: 'area', label: 'Area', type: 'text', optional: true, value: (v) => at(v, 'address', 'area') },
+  { key: 'floor', label: 'Floor', type: 'text', optional: true, value: (v) => at(v, 'address', 'floor') },
+  { key: 'city', label: 'City', type: 'text', optional: true, value: (v) => at(v, 'address', 'city') },
+];
+
+export function homeInstallationAddressStep(): WizardStep {
+  return {
+    key: 'installationAddress',
+    label: HOME_ADDRESS_LABEL,
+    summary: homeInstallationSummary,
+    skip: (values) => !values.rfsCheck,
+    render: ({ values, setValue }) => <InstallationAddressView values={values} setValue={setValue} />,
+    isValid: isInstallationAddressValid,
+  };
+}
+
 // ---- 5. Appointment ------------------------------------------------------------------------------------------
 export function fixedAppointmentStep(): WizardStep {
   return { ...appointmentBookingStep(), summary: appointmentSummary };
@@ -94,5 +154,5 @@ export function fixedCafStep(): WizardStep {
  * both 5G Home (FWA) service types.
  */
 export function fixedLineSteps(): WizardStep[] {
-  return [fixedAddressStep(), billingStep({ profileSuffix: 'Fixed Line', journey: 'fixed-line' }), fixedPlanStep(), fixedNumberStep(), checkoutSummaryStep(), fixedCafStep(), paymentStep({ submitOnPaid: true }), fixedAppointmentStep()];
+  return [fixedAddressStep(), billingStep({ profileSuffix: 'Fixed Line', journey: 'fixed-line' }), fixedPlanStep(), homeAddonsStep(), fixedNumberStep(), fwaSimStep(), homeInstallationAddressStep(), checkoutSummaryStep({ familyRows: fwaOrderRows }), fixedCafStep(), paymentStep({ submitOnPaid: true }), fixedAppointmentStep()];
 }

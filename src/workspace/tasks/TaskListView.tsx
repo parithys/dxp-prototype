@@ -2,7 +2,7 @@ import { badgeVariantFor } from '../../lib/statusTone';
 import { useRestrictedCustomers } from '../../hooks/useRestrictedCustomers';
 import { RestrictedRowsNotice } from '../../components/patterns/RestrictedRowsNotice';
 import { useEffect, useState } from 'react';
-import { Button, Modal, DataTable, Badge, Icon, ErrorBanner, STAR, TRASH, WARNING } from 'dxp-ui';
+import { Button, Modal, DataTable, Badge, Icon, ErrorBanner, SearchField, STAR, TRASH, WARNING } from 'dxp-ui';
 import { useSubmitGuard } from '../../hooks/useSubmit';
 import { notificationActions } from '../../stores/notificationSlice';
 import { Link, useNavigate, useSearchParams } from '../../lib/router';
@@ -11,6 +11,7 @@ import { isVisibleToAgent } from '../../engines/agentTaskEngine';
 import { PageHeader } from '../../components/patterns/PageHeader';
 import { formatDateTime } from '../../lib/format';
 import { useAction, useAppSelector } from '../../stores/hooks';
+import { FilterSelect } from '../customer360/sections/C360Kit';
 import { useEntityError, useEntityLoading, useEntityOps, useEntityRecords } from '../../services/entityHooks';
 
 interface AgentTask {
@@ -91,7 +92,8 @@ export function TaskListView() {
   // sending it into a postpaid journey would resume something it is not about). The row and its Task ID link share it.
   const destinationOf = (t: AgentTask): { to: string; state?: { resumeOrderId: string } } => {
     const order = t.relatedOrderId ? draftOrders[t.relatedOrderId] : undefined;
-    return order?.draftResumePath ? { to: order.draftResumePath, state: { resumeOrderId: order.orderId } } : { to: `/tasks/${t.taskId}` };
+    // A draft saved before the common Contact page moved to /start-connection carries the old address (the redirect would drop the resume state): it resumes at the new one.
+    return order?.draftResumePath ? { to: order.draftResumePath.replace(/^\/mobile\/start-connection/, '/start-connection'), state: { resumeOrderId: order.orderId } } : { to: `/tasks/${t.taskId}` };
   };
 
   // The customer a task is about comes from its related order; tasks without one show a dash.
@@ -101,6 +103,15 @@ export function TaskListView() {
     const id = t.relatedOrderId ? orders.find((o) => o.orderId === t.relatedOrderId)?.customerId : undefined;
     return customers.find((c) => c.customerId === id)?.name;
   };
+
+  // The customer shown for a task: its order's customer; failing that the "<customer> - <work>" name (a draft started before the customer was identified reads "New Customer", which is not a customer).
+  const customerOf = (t: AgentTask) => {
+    const named = t.taskName.includes(' – ') ? t.taskName.split(' – ')[0] : undefined;
+    return customerNameOf(t) ?? (named && named !== 'New Customer' ? named : undefined);
+  };
+  // Draft Orders only: the agent narrows the drafts by journey and by a search over the Task ID, the task name and the customer name.
+  const [journeyFilter, setJourneyFilter] = useState('all');
+  const [query, setQuery] = useState('');
 
   // Deleting a Draft Order removes the task and the saved draft order behind it (the same pair Abandon Order discards), so nothing is left to resume.
   const deleteDraft = () =>
@@ -140,13 +151,37 @@ export function TaskListView() {
     return guard.isRestricted(customerId) || guard.mentionsRestricted(t.taskName);
   });
   // Most recently updated first. This is the list's default order; a column header still re-sorts it, and a third click returns here.
-  const filtered = [...guarded].sort((a, b) => Date.parse(lastUpdated(b)) - Date.parse(lastUpdated(a)));
+  const sorted = [...guarded].sort((a, b) => Date.parse(lastUpdated(b)) - Date.parse(lastUpdated(a)));
+  // The Draft Orders list can be narrowed by journey (the options are the journeys the drafts hold; a choice that no longer matches any draft, the last one having been deleted, is All) and
+  // by a search: any word typed must appear in the Task ID, the task name or the customer name.
+  const isDrafts = filter === 'draft-orders';
+  const journeyOptions = [{ value: 'all', label: 'All' }, ...[...new Set(sorted.map(workOf))].sort((a, b) => a.localeCompare(b)).map((v) => ({ value: v, label: v }))];
+  const journey = journeyOptions.some((o) => o.value === journeyFilter) ? journeyFilter : 'all';
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const matchesSearch = (t: AgentTask) => {
+    const text = `${t.taskId} ${workOf(t)} ${customerOf(t) ?? ''}`.toLowerCase();
+    return words.every((w) => text.includes(w));
+  };
+  const filtered = isDrafts ? sorted.filter((t) => (journey === 'all' || workOf(t) === journey) && matchesSearch(t)) : sorted;
 
   return (
     <div className="p-8">
       <PageHeader title={<>{FILTER_LABELS[filter] ?? 'My Tasks'}</>} description={<>{filtered.length} task(s).</>} />
       <ErrorBanner message={loadError} />
       <RestrictedRowsNotice count={hiddenCount} />
+      {isDrafts && (
+        <div className="actions-end gap-3 mb-4">
+          <SearchField
+            aria-label="Search drafts"
+            placeholder="Search by Task #, task name or customer name"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onClear={() => setQuery('')}
+            wrapperClassName="w-96 max-w-full"
+          />
+          <FilterSelect label="Task Type" value={journey} options={journeyOptions} onChange={setJourneyFilter} />
+        </div>
+      )}
       <DataTable<AgentTask>
         columns={[
           {
@@ -180,18 +215,20 @@ export function TaskListView() {
             header: 'Customer Name',
             // From the task's order when it has one; failing that, from the "<customer> – <work>" name (a draft started
             // before the customer was identified reads "New Customer", which is not a customer).
-            render: (t) => {
-              const named = t.taskName.includes(' – ') ? t.taskName.split(' – ')[0] : undefined;
-              return <span>{customerNameOf(t) ?? (named && named !== 'New Customer' ? named : '-')}</span>;
-            },
+            render: (t) => <span>{customerOf(t) ?? '-'}</span>,
             sortValue: (t) => customerNameOf(t) ?? '',
           },
           { key: 'updatedAt', header: 'Last Updated', render: (t) => <span>{formatWhen(lastUpdated(t))}</span>, sortValue: lastUpdated },
-          {
-            key: 'taskStatus',
-            header: 'Status',
-            render: (t) => <Badge variant={badgeVariantFor(t.taskStatus)}>{t.taskStatus}</Badge>,
-          },
+          // Every Draft Order is a draft (saved, not submitted): a status column would say the same on every row. The other task lists keep it.
+          ...(isDrafts
+            ? []
+            : [
+                {
+                  key: 'taskStatus',
+                  header: 'Status',
+                  render: (t: AgentTask) => <Badge variant={badgeVariantFor(t.taskStatus)}>{t.taskStatus}</Badge>,
+                },
+              ]),
           { key: 'comments', header: 'Comments', render: (t) => <span>{t.draftComment?.trim() || '-'}</span>, sortValue: (t) => t.draftComment ?? '' },
           ...(filter === 'draft-orders'
             ? [
@@ -223,7 +260,7 @@ export function TaskListView() {
           const { to, state } = destinationOf(t);
           navigate(to, state ? { state } : undefined);
         }}
-        emptyMessage="No tasks in this category."
+        emptyMessage={isDrafts && sorted.length > 0 ? 'No drafts match the filters.' : 'No tasks in this category.'}
         loading={loading || !guard.ready}
       />
       <Modal

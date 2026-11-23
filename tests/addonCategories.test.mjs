@@ -144,8 +144,10 @@ test('the chosen add-ons are counted per category, across both filters', () => {
 test('the Add-ons page mounts the picker with the category tabs, and under them the selected category in two counted columns: Paid Addons, Free Addons', () => {
   const picker = fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8');
   assert.match(picker, /<TabStrip[\s\S]*tabs\.map/);
-  assert.match(picker, /\[\.\.\.ADDON_CATEGORIES, FREQUENTLY_USED_TAB\]/);
-  assert.match(picker, /addonsFor\(addons, activeTab, pricing\)/);
+  assert.match(picker, /\[\.\.\.\(homeTabs \?\? ADDON_CATEGORIES\), FREQUENTLY_USED_TAB\]/);
+  assert.match(picker, /categoryOf\(a\) === activeTab && isFreeAddon\(a\)/);
+  // The home Add-ons page is opt-in: IPTV, Mesh, Speed Booster, Voice, with Paid and Free under each.
+  assert.match(fs.readFileSync('src/engines/addonCategories.ts', 'utf8'), /HOME_ADDON_TABS = \['IPTV', 'Mesh', 'Speed Booster', 'Voice'\]/);
   assert.match(picker, /inTab\('paid'\)/);
   assert.match(picker, /inTab\('free'\)/);
   assert.ok(picker.indexOf("'Paid Addons'") < picker.indexOf("'Free Addons'"), 'Paid on the left, free on the right');
@@ -368,6 +370,44 @@ test('every condition present must hold; an empty or absent block never matches'
 
 test('the picker always shows the Frequently Used tab, and says so when nothing matches the customer', () => {
   const picker = fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8');
-  assert.match(picker, /const tabs: AddonTab\[\] = \[\.\.\.ADDON_CATEGORIES, FREQUENTLY_USED_TAB\]/);
+  assert.match(picker, /const tabs: string\[\] = \[\.\.\.\(homeTabs \?\? ADDON_CATEGORIES\), FREQUENTLY_USED_TAB\]/);
   assert.match(picker, /No frequently used add-ons for this customer/);
+});
+
+test('every home plan-bound add-on names a home tab (IPTV, Mesh, Speed Booster, Voice) and each tab has Paid and Free ones for the plan', () => {
+  const tabs = ['IPTV', 'Mesh', 'Speed Booster', 'Voice'];
+  const homeAddons = JSON.parse(fs.readFileSync('public/mock-data/addons-discounts.json', 'utf8')).filter((a) => a.category === 'Paid Add-on' && a.addonCategory && tabs.includes(a.addonCategory));
+  const plans = [...new Set(homeAddons.map((a) => a.planId))];
+  assert.ok(plans.length >= 20);
+  for (const planId of plans) for (const tab of tabs) {
+    const of = homeAddons.filter((a) => a.planId === planId && a.addonCategory === tab);
+    assert.ok(of.some((a) => a.price === 0), `${planId} ${tab}: a free add-on`);
+    assert.ok(of.some((a) => a.price > 0), `${planId} ${tab}: a paid add-on`);
+  }
+});
+
+test('every home add-on states its lock-in in months (0: none), free ones have none, and the home page shows it on the card', () => {
+  const tabs = ['IPTV', 'Mesh', 'Speed Booster', 'Voice'];
+  const rows = JSON.parse(fs.readFileSync('public/mock-data/addons-discounts.json', 'utf8')).filter((a) => a.planId && tabs.includes(a.addonCategory));
+  assert.ok(rows.length > 300);
+  // Speed Booster carries no lock-in (none is shown for it).
+  assert.ok(rows.filter((r) => r.addonCategory === 'Speed Booster').every((r) => r.lockInMonths === undefined));
+  for (const r of rows.filter((r) => r.addonCategory !== 'Speed Booster')) {
+    assert.ok(Number.isInteger(r.lockInMonths) && r.lockInMonths >= 0, r.addonDiscountId);
+    if (r.price === 0) assert.equal(r.lockInMonths, 0, `${r.addonDiscountId}: a free add-on has no lock-in`);
+  }
+  assert.ok(rows.some((r) => r.lockInMonths > 0) && rows.some((r) => r.price > 0 && r.lockInMonths === 0));
+  assert.match(fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8'), /homeTabs && a\.lockInMonths !== undefined/);
+});
+
+test('only the home Speed Booster offers fixed terms (1, 2, 3, 6 months) in place of a one-time option; no other add-on carries term options', () => {
+  const rows = JSON.parse(fs.readFileSync('public/mock-data/addons-discounts.json', 'utf8'));
+  const withTerms = rows.filter((r) => r.termOptions);
+  assert.ok(withTerms.length > 10);
+  for (const r of withTerms) {
+    assert.equal(r.addonCategory, 'Speed Booster', r.addonDiscountId);
+    assert.deepEqual(r.termOptions.map((t) => t.months), [1, 2, 3, 6]);
+  }
+  const picker = fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8');
+  assert.match(picker, /homeTabs && listed\.termOptions/);
 });

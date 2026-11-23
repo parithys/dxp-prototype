@@ -71,7 +71,7 @@ test('before a product is chosen the journey is Customer Verification, Address a
 test('every product continues the same wizard: identification, address, billing profile (where the product has one), product selection, then that product\'s own steps', () => {
   assert.deepEqual(activeKeys({ product: 'postpaid' }), ['contact', 'address', 'product', 'plan', 'planExtras', 'number', 'simType', 'billingAccount', 'checkout', 'caf', 'payment'], 'New Postpaid: SIM Selection -> Billing -> Order Summary (the add-ons are reviewed on the Addons page)');
   assert.deepEqual(activeKeys({ product: 'prepaid' }), ['contact', 'product', 'plan', 'planExtras', 'simType', 'number', 'checkout', 'caf', 'payment'], 'New Prepaid has no Address and no Billing, and SIM Selection comes before Number Selection (Mobile Prepaid BRSD)');
-  assert.deepEqual(activeKeys({ product: 'fixed-line' }), ['contact', 'address', 'billingAccount', 'product', 'homeKind', 'installation', 'plan', 'number', 'checkout', 'caf', 'payment', 'appointment']);
+  assert.deepEqual(activeKeys({ product: 'fixed-line' }), ['contact', 'address', 'billingAccount', 'product', 'homeKind', 'installation', 'plan', 'planExtras', 'number', 'checkout', 'caf', 'payment', 'appointment']);
   assert.deepEqual(activeKeys({ product: 'mnp', mnpType: 'postpaid' }), ['contact', 'address', 'billingAccount', 'product', 'mnpType', 'sim', 'plan', 'planExtras', 'donor-details', 'checkout', 'donor-attachment', 'caf', 'payment']);
   assert.deepEqual(activeKeys({ product: 'mnp', mnpType: 'prepaid' }), ['contact', 'address', 'product', 'mnpType', 'sim', 'plan', 'planExtras', 'donor-details', 'checkout', 'donor-attachment', 'caf', 'payment']);
 });
@@ -242,7 +242,7 @@ const homeKeys = (values) => conn.buildConnectionSteps({ ...ctx, journey: 'home'
 
 test('New Home Connection: Identification, Address, Product Selection, then the home steps - and nothing of the mobile products', () => {
   assert.deepEqual(homeKeys({}), ['contact', 'address', 'productSelection']);
-  assert.deepEqual(homeKeys({ product: 'fixed-line', homeProduct: 'fibre' }), ['contact', 'address', 'productSelection', 'billingAccount', 'plan', 'number', 'checkout', 'caf', 'payment', 'appointment']);
+  assert.deepEqual(homeKeys({ product: 'fixed-line', homeProduct: 'fibre' }), ['contact', 'address', 'productSelection', 'billingAccount', 'plan', 'planExtras', 'number', 'checkout', 'caf', 'payment', 'appointment']);
   assert.ok(!homeKeys({ product: 'postpaid' }).includes('simType'), 'a mobile product is not part of the home journey');
   assert.deepEqual(homeKeys({ product: 'postpaid' }), ['contact', 'address', 'productSelection']);
 });

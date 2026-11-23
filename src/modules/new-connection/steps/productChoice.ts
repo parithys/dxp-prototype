@@ -2,7 +2,6 @@ import { workflowActions } from '../../../stores/workflowSlice';
 
 import { canStartProduct } from '../productAccess';
 import { customerContextActions } from '../../../stores/customerContextSlice';
-import { HOME_WIZARD_ID_BY_FLOW } from '../newConnectionModel';
 import type { CrossSalesValue } from '../../../capabilities';
 import { isRepresentativeOrder } from '../../../capabilities/CustomerQualification/representative';
 import { PRODUCT_OWNED_KEYS, billingStepActive, connectionOf, eligibilityJourney } from '../products';
@@ -10,6 +9,9 @@ import type { EligibilityResult } from '../../../components/domain/eligibilityTy
 import type { ConnectionProduct, HomeProduct, MnpType } from '../products';
 import type { ProductStepContext } from './ProductSelection';
 import { store } from '../../../stores/store';
+import { homeConnectionRoute } from './homeConnectionRoute';
+import type { Offer } from '../../../capabilities';
+import type { HomeStart } from '../rfsStart';
 
 /** The step right after Customer Verification: the first page a customer handed over from New Connection lands on (New Home Connection: its Address). */
 export const PRODUCT_STEP_INDEX = 1;
@@ -85,38 +87,71 @@ export const clearAndQuiet = (values: Record<string, unknown>, opts: { requireHo
   productEligibilityClear(values, opts) && !(values.eligibility as EligibilityResult).checks.some((c) => c.outcome === 'approval-routing');
 
 /**
- * Moves the customer from New Connection to New Home Connection without asking them to be identified again, and without the
- * "Leave this journey?" prompt: nothing is abandoned or left half-done, the journey simply continues as the home one. The
- * identity, the eligibility and the customer type already gathered are carried into the home draft, which opens at Product
- * Selection; the customer hold passes to it; and this journey's draft is cleared (its progress was only identification).
- */
-export function handOverToHomeConnection(ctx: ProductStepContext, values: Record<string, unknown>, route: string): void {
-  // The journey continues in its own flow: an existing customer stays an existing customer (their record, hold and account), not a new one.
-  // The existing flow's draft is keyed by the customer, as useNewConnectionJourney keys it.
-  const home = ctx.flow === 'existing' && ctx.existingCustomerId ? `${HOME_WIZARD_ID_BY_FLOW.existing}-${ctx.existingCustomerId}` : HOME_WIZARD_ID_BY_FLOW[ctx.flow];
-  store.dispatch(workflowActions.clearDraft(home));
-  store.dispatch(workflowActions.patchDraft(home, {
-    set: { contact: values.contact, eligibility: values.eligibility, customerType: values.customerType },
-    progressTo: PRODUCT_STEP_INDEX,
-  }));
-  store.dispatch(customerContextActions.endJourney(ctx.wizardId));
-  // Cleared last: the leave-journey guard asks only while the draft has progress, and it has none now.
-  store.dispatch(workflowActions.clearDraft(ctx.wizardId));
-  ctx.navigate(route);
-}
-
-/**
  * Another journey takes over for the customer identified here (an upgrade offer's journey): it opens for that customer (router state `launch`, which its
  * scan and eligibility read), and this journey's draft and customer hold are released so leaving does not ask what to do with a draft.
  */
-export function handOverToJourney(ctx: ProductStepContext, route: string, customer?: { customerId: string }): void {
+export function handOverToJourney(ctx: ProductStepContext, route: string, customer?: { customerId: string }, back?: { path: string; label: string }): void {
   store.dispatch(customerContextActions.endJourney(ctx.wizardId));
   store.dispatch(workflowActions.clearDraft(ctx.wizardId));
-  ctx.navigate(route, customer ? { state: { launch: customer } } : undefined);
+  // `back` names the page to return to (the screen it opens shows a Back bar for it), with the customer so that page opens for them again.
+  ctx.navigate(route, customer || back ? { state: { ...(customer ? { launch: customer } : {}), ...(back ? { returnTo: { ...back, launch: customer } } : {}) } } : undefined);
 }
 
 /** Fixed Line's connection type (Fibre / Fixed-Line / FWA / 5G Home), chosen on its own step after Product Selection. Changing it drops what the other type chose. */
 export function selectHomeKind(ctx: ProductStepContext, values: Record<string, unknown>, kind: HomeProduct): void {
   if (values.homeProduct === kind) return;
   store.dispatch(workflowActions.patchDraft(ctx.wizardId, { set: { homeProduct: kind }, unset: PRODUCT_OWNED_KEYS.filter((k) => k !== 'homeProduct') }));
+}
+
+/** Where a New Home offer leads first: Check RFS, which answers whether fibre or 5G Home can be sold at the address. */
+export const HOME_OFFER_ROUTE = '/fibre-home/check-rfs';
+
+/**
+ * New Home from New Connection - a New Home offer's Select Offer, or the Start Another Journey card - sends the agent to Check RFS to run the RFS check in place of the Address page. What this journey knows - the customer identified, the offer chosen (if one was) - goes along in
+ * the router state (`homeStart`); Start New Home Connection there opens the journey with it and the result (a fresh start, which clears the old draft first, then takes these values and the step to open at),
+ * so the customer is not identified again and neither Address nor Recommended Offers (seen once already) is asked. Back on Check RFS returns to this page. This journey's draft and customer hold are released.
+ */
+export function handOverHomeToRfs(ctx: ProductStepContext, values: Record<string, unknown>, offer?: Offer): void {
+  const customerId = (values.eligibility as EligibilityResult | undefined)?.customerId;
+  const crossSales: CrossSalesValue | undefined = offer && { decision: 'accepted', offerId: offer.offerId, offerName: offer.offerName, journey: offer.serviceJourney, linkedProductIds: offer.linkedProductIds };
+  store.dispatch(customerContextActions.endJourney(ctx.wizardId));
+  store.dispatch(workflowActions.clearDraft(ctx.wizardId));
+  // Check RFS already ran before the customer was identified (Check RFS -> the common Contact page -> Recommended Offers): its result goes straight into the home journey, with no second check.
+  const pendingHome = values.pendingHome as Record<string, unknown> | undefined;
+  if (pendingHome) {
+    ctx.navigate(homeConnectionRoute(ctx), {
+      state: {
+        startFresh: true,
+        navJourney: 'fib-new-home',
+        startValues: {
+          contact: values.contact, eligibility: values.eligibility, customerType: values.customerType,
+          offerCarried: true,
+          productPreselected: true,
+          ...(offer && crossSales ? { crossSales, serviceJourney: offer.serviceJourney } : {}),
+          ...pendingHome,
+        },
+        startProgressTo: (isRepresentativeOrder(values) ? 1 : 0) + 1,
+      },
+    });
+    return;
+  }
+  ctx.navigate(HOME_OFFER_ROUTE, {
+    state: {
+      returnTo: { path: window.location.pathname, label: 'Contact', launch: customerId ? { customerId } : undefined },
+      // Where Start New Home Connection leads: this customer's own home route when they are an existing one.
+      startRoute: homeConnectionRoute(ctx),
+      homeStart: {
+        values: {
+          contact: values.contact, eligibility: values.eligibility, customerType: values.customerType,
+          // Recommended Offers was shown once already, in New Connection: it is not shown again, only the product's eligibility is judged (the page moves on by itself when it is clear).
+          // An offer the agent chose there is kept on the order.
+          offerCarried: true,
+          productPreselected: true,
+          ...(offer && crossSales ? { crossSales, serviceJourney: offer.serviceJourney } : {}),
+        },
+        // Contact (and the Customer Representative's pages) are done: the journey opens at the offers page.
+        progressTo: (isRepresentativeOrder(values) ? 1 : 0) + 1,
+      } satisfies HomeStart,
+    },
+  });
 }

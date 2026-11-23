@@ -13,6 +13,8 @@ export const NUMBER_SELECTION_LABEL = 'Number Selection';
 export const BILLING_PROFILE_LABEL = 'Billing';
 /** The address a service is activated at. */
 export const SERVICE_ADDRESS_LABEL = 'Address';
+/** New Home Connection's Address page: where the service is installed. */
+export const HOME_ADDRESS_LABEL = 'Service/Installation Address';
 /** The page after the plan: the plan's add-ons (by category, Free or Paid), the bill limit and the eligible discounts. */
 export const ADDONS_DISCOUNTS_LABEL = 'Addons';
 /** Choose the plan the order is for. */

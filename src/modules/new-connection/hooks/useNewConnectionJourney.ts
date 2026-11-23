@@ -11,6 +11,10 @@ import { listEntities } from '../../../services/entityOps';
 // New Connection's journey state: the shared journey session (customer lock, draft, confirmed order) under its own
 // wizard id, plus what is specific to this journey - the fetched plan catalogue, the customer's benefits and how an
 // accepted offer is applied.
+/** The kind of plan an offer's journey sells: a New Prepaid offer a prepaid plan, a New Fixed Line offer a fixed-line plan, an FWA offer a 5G Home plan, every other a postpaid one. */
+const planKindOfOffer = (journey: string | undefined) =>
+  journey === 'new-prepaid' ? 'Prepaid Plan' : journey === 'new-fixed-line' ? 'Fixed Line Plan' : journey === 'new-fwa' ? 'FWA 5G Home Plan' : 'Postpaid Plan';
+
 export function useNewConnectionJourney(flow: NewConnectionFlow, journey: ConnectionJourney = 'connection') {
   const { customerId: existingCustomerId } = useParams<{ customerId: string }>();
   // The Existing flow's draft belongs to ONE customer: keyed by the customer id, so a draft left by another
@@ -43,7 +47,7 @@ export function useNewConnectionJourney(flow: NewConnectionFlow, journey: Connec
     applyCrossSalesDecision(
       setValue,
       v,
-      products.filter((p) => p.type === (v.journey === 'new-prepaid' ? 'Prepaid Plan' : 'Postpaid Plan') && isPlanOfferedTo(p, session.draftNationality))
+      products.filter((p) => p.type === planKindOfOffer(v.journey) && isPlanOfferedTo(p, session.draftNationality))
     );
   return { ...session, existingCustomerId, WIZARD_ID, customerBenefits, products, familyLines, familyOrders, applyCrossSales };
 }

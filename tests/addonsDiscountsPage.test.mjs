@@ -20,7 +20,7 @@ test('the page is named "Addons" from one shared label, in the postpaid and prep
   assert.equal(labels.ADDONS_DISCOUNTS_LABEL, 'Addons');
   // Both Addons steps are the Add-Ons capability's, and neither builder of Plan Selection carries the label any more.
   const addons = fs.readFileSync('src/capabilities/AddonsSelection/step.tsx', 'utf8');
-  assert.equal((addons.match(/label: ADDONS_DISCOUNTS_LABEL/g) ?? []).length, 2, 'postpaid and prepaid');
+  assert.equal((addons.match(/label: ADDONS_DISCOUNTS_LABEL/g) ?? []).length, 3, 'postpaid, prepaid and home');
   for (const f of ['src/capabilities/PlanSelection/postpaidStep.tsx', 'src/capabilities/PlanSelection/step.tsx']) assert.doesNotMatch(fs.readFileSync(f, 'utf8'), /ADDONS_DISCOUNTS_LABEL/, f);
 });
 

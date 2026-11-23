@@ -3,8 +3,7 @@ import { canUseFeature } from '../../../engines/personaEngine';
 
 import type { ConnectionProduct } from '../products';
 import { HOME_CONNECTION_FEATURE, canStartProduct } from '../productAccess';
-import { handOverToHomeConnection, productEligibilityClear } from './productChoice';
-import { homeConnectionRoute } from './homeConnectionRoute';
+import { handOverHomeToRfs, productEligibilityClear } from './productChoice';
 import type { ProductStepContext } from './ProductSelection';
 import { store } from '../../../stores/store';
 
@@ -55,7 +54,7 @@ export function StartCards({
   const personaId = store.getState().persona.activePersonaId;
   const shown = CARDS.filter((c) => (c.key === 'home' ? canUseFeature(personaId, HOME_CONNECTION_FEATURE) : c.product === 'postpaid' || !c.product || canStartProduct(personaId, c.product)));
   const start = (c: StartCard) => {
-    if (!c.product) return handOverToHomeConnection(ctx, values, homeConnectionRoute(ctx));
+    if (!c.product) return handOverHomeToRfs(ctx, values);
     // The same product again, with its eligibility already judged: go on.
     if (values.product === c.product && productEligibilityClear(values)) {
       setValue('productPreselected', false);

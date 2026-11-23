@@ -30,9 +30,13 @@ import {
   DRAFT_ORDERS_PATH,
   POST_EXIT_DESTINATION,
 } from '../../capabilities';
-import type { ConfirmedOrder } from '../../capabilities';
+import type { ConfirmedOrder, CrossSalesValue } from '../../capabilities';
 import { store } from '../../stores/store';
 import { DraftOrdersPrompt } from './steps/DraftOrdersPrompt';
+import { HomeDraftOrdersPrompt } from './steps/HomeDraftOrdersPrompt';
+import { HOME_DERIVED_KEYS } from './draftOrders';
+import { canUseFeature } from '../../engines/personaEngine';
+import { COMMON_CONTACT_FEATURE } from '../../engines/navigationEngine';
 import { useAppSelector } from '../../stores/hooks';
 import { useEntityOps } from '../../services/entityHooks';
 import { listEntities } from '../../services/entityOps';
@@ -111,6 +115,36 @@ export function NewConnectionWizard({
     setConfirmedOrder(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);
+  // New Home Connection has no Contact page of its own: every New Connection journey identifies the customer on the common Contact page (/start-connection), which does the customer-level
+  // checks once and leads to Recommended Offers, from where New Home starts. A home journey opened with nobody identified (the journey card, Customer 360, Sales, the home URL) therefore goes
+  // there - for the existing customer's route when the customer is known. Not when it is being resumed (a Draft Order re-verifies the ID in place), when it was opened with values carried (from
+  // Check RFS or Recommended Offers), when it is already under way, or when the role cannot use the common page (it keeps this journey's own Contact page).
+  const personaIdForEntry = useAppSelector((st) => st.persona.activePersonaId);
+  const entryState = location.state as { resumeOrderId?: string; startValues?: unknown } | null;
+  const homeEntryUnderway = Boolean(entryState?.resumeOrderId || entryState?.startValues || draftValues?.contact || draftOrderId || (draftStep ?? 0) > 0);
+  useEffect(() => {
+    if (journey !== 'home' || isMirrorWindow || homeEntryUnderway || !personaIdForEntry || !canUseFeature(personaIdForEntry, COMMON_CONTACT_FEATURE)) return;
+    navigate(flow === 'existing' && existingCustomerId ? existingCustomerPath(existingCustomerId) : '/start-connection', { replace: true, state: { startFresh: true } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [journey, isMirrorWindow, homeEntryUnderway, personaIdForEntry, flow, existingCustomerId]);
+  // A resumed New Home Connection draft (see HomeDraftOrdersPrompt and the Draft Orders list) carries what it computed for the CAF and the charges: an amended order recalculates its charges at
+  // Order Summary and is signed again, so none of it is kept. Only a journey that is being resumed (it has the step to return to) is cleaned; a new one has nothing to clean.
+  const resumingStepKey = useAppSelector((s) => s.workflow.drafts[WIZARD_ID]?.resumeToStepKey);
+  const hasDerived = HOME_DERIVED_KEYS.some((k) => draftValues?.[k] !== undefined);
+  useEffect(() => {
+    if (journey !== 'home' || !resumingStepKey || !hasDerived || isMirrorWindow) return;
+    store.dispatch(workflowActions.patchDraft(WIZARD_ID, { unset: HOME_DERIVED_KEYS }));
+  }, [journey, resumingStepKey, hasDerived, isMirrorWindow, WIZARD_ID]);
+  // An offer carried from New Connection (Select Offer on a New Home offer) brings the plan it is for once the catalogue is loaded.
+  const carriedOffer = draftValues?.offerCarried === true ? (draftValues.crossSales as CrossSalesValue | undefined) : undefined;
+  const carriedPlanSet = draftValues?.productId !== undefined;
+  useEffect(() => {
+    if (!carriedOffer || carriedPlanSet || products.length === 0 || isMirrorWindow) return;
+    const set: Record<string, unknown> = {};
+    applyCrossSales((field, value) => { set[field] = value; }, carriedOffer);
+    store.dispatch(workflowActions.patchDraft(WIZARD_ID, { set: { productId: set.productId } }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [carriedOffer, carriedPlanSet, products.length, isMirrorWindow, WIZARD_ID]);
   const familyLineInDraft = Boolean(draftValues?.familyLine);
   useEffect(() => {
     if (!familyLine || familyLineInDraft || confirmedOrder || isMirrorWindow) return;
@@ -213,9 +247,13 @@ export function NewConnectionWizard({
   const offerDrafts =
     journey === 'connection' && !isMirrorWindow && (draftStep ?? 0) === 0 && !draftOrderId && (initialProduct === undefined || initialProduct === 'postpaid') && (product === undefined || product === 'postpaid');
 
+  // New Home Connection: once the customer is identified (the first page, nothing saved of this journey yet), the agent's own drafts for them are offered.
+  const offerHomeDrafts = journey === 'home' && !isMirrorWindow && (draftStep ?? 0) === 0 && !draftOrderId;
+
   return (
     <div className="min-h-full flex flex-col" data-device={device}>
       {offerDrafts && <DraftOrdersPrompt wizardId={WIZARD_ID} customerId={identifiedCustomerId} agentId={agentId} steps={steps} currentValues={draftValues ?? {}} />}
+      {offerHomeDrafts && <HomeDraftOrdersPrompt wizardId={WIZARD_ID} customerId={identifiedCustomerId} agentId={agentId} steps={steps} currentValues={draftValues ?? {}} />}
       <GuidedActivationWizard
         belowPanel={(draftStep ?? 0) === 0 && !isMirrorWindow ? <DemoFaultPanel /> : undefined}
         wizardId={WIZARD_ID}

@@ -30,7 +30,7 @@ test('every role may start a product exactly when its grants hold that product\'
 
 test('the journey routes are guarded by their grants, so a typed URL is refused like the menu', () => {
   const router = routerSource();
-  for (const path of ['/mobile/start-connection"', '/mobile/start-connection/existing/:customerId"']) {
+  for (const path of ['/start-connection"', '/start-connection/existing/:customerId"']) {
     assert.match(router, new RegExp(`path="${path.replace(/[/:]/g, (c) => `\\${c}`)}[^>]*<RequireFeature featureKey="postpaid\\.new-postpaid-wizard">`));
   }
   assert.match(router, /path="\/fibre-home\/start-connection\/existing\/:customerId" element=\{<RequireFeature featureKey="fixedline\.new-fixed-line-wizard">/);

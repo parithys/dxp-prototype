@@ -97,7 +97,8 @@
     "iptvIncluded": true,
     "speedTierMbps": 500,
     "lockInMonths": 12,
-    "disconnectionFeeSchedule": "QR80 x remaining months of 12"
+    "disconnectionFeeSchedule": "QR80 x remaining months of 12",
+    "offer": true
   },
   {
     "productId": "PROD-300",
@@ -1715,5 +1716,299 @@
     "preBundledOffer": true,
     "salesAppOffer": true,
     "_note": "Prepaid Offers tab (2026-11-17): one of the six offers the Sales App supplies. Pre-bundled - its extras are included, so it takes no add-ons. Demo placeholder values pending the Sales App feed; it is listed on the Offers tab only, never among the Standard Plans."
+  },
+  {
+    "productId": "PROD-410",
+    "name": "GigaHome Fiber Starter 100",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 199,
+    "speedTierMbps": 100,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR60 x remaining months of 12",
+    "offer": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-411",
+    "name": "GigaHome Fiber Plus 250",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 299,
+    "speedTierMbps": 250,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR60 x remaining months of 12",
+    "offer": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-412",
+    "name": "GigaHome Fiber Gold 500 with TV",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 399,
+    "speedTierMbps": 500,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 12",
+    "iptvIncluded": true,
+    "offer": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-413",
+    "name": "GigaHome Fiber Max 1000",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 549,
+    "speedTierMbps": 1000,
+    "lockInMonths": 24,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 24",
+    "offer": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-414",
+    "name": "GigaHome Fiber Family Triple Play",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 499,
+    "speedTierMbps": 500,
+    "lockInMonths": 24,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 24",
+    "iptvIncluded": true,
+    "offer": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-420",
+    "name": "GigaHome Fiber Lite 50",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 149,
+    "speedTierMbps": 50,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR60 x remaining months of 12",
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-421",
+    "name": "GigaHome Fiber Basic 100",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 179,
+    "speedTierMbps": 100,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR60 x remaining months of 12",
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-422",
+    "name": "GigaHome Fiber Basic 100 with TV",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 229,
+    "speedTierMbps": 100,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR60 x remaining months of 12",
+    "iptvIncluded": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-423",
+    "name": "GigaHome Fiber Standard 200",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 249,
+    "speedTierMbps": 200,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR60 x remaining months of 12",
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-424",
+    "name": "GigaHome Fiber Standard 200 with TV",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 299,
+    "speedTierMbps": 200,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR60 x remaining months of 12",
+    "iptvIncluded": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-425",
+    "name": "GigaHome Fiber Smart 300",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 329,
+    "speedTierMbps": 300,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 12",
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-426",
+    "name": "GigaHome Fiber Smart 300 with TV",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 379,
+    "speedTierMbps": 300,
+    "lockInMonths": 12,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 12",
+    "iptvIncluded": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-427",
+    "name": "GigaHome Fiber Premium 500",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 419,
+    "speedTierMbps": 500,
+    "lockInMonths": 24,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 24",
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-428",
+    "name": "GigaHome Fiber Premium 500 with TV",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 469,
+    "speedTierMbps": 500,
+    "lockInMonths": 24,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 24",
+    "iptvIncluded": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-429",
+    "name": "GigaHome Fiber Elite 750",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 519,
+    "speedTierMbps": 750,
+    "lockInMonths": 24,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 24",
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-430",
+    "name": "GigaHome Fiber Elite 750 with TV",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 569,
+    "speedTierMbps": 750,
+    "lockInMonths": 24,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 24",
+    "iptvIncluded": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-431",
+    "name": "GigaHome Fiber Ultra 1000",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 619,
+    "speedTierMbps": 1000,
+    "lockInMonths": 24,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 24",
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-432",
+    "name": "GigaHome Fiber Ultra 1000 with TV",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 669,
+    "speedTierMbps": 1000,
+    "lockInMonths": 24,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 24",
+    "iptvIncluded": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-433",
+    "name": "GigaHome Fiber Pro 2000",
+    "type": "Fixed Line Plan",
+    "mrcQAR": 899,
+    "speedTierMbps": 2000,
+    "lockInMonths": 24,
+    "disconnectionFeeSchedule": "QR80 x remaining months of 24",
+    "iptvIncluded": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-440",
+    "name": "GigaHome 5G Indoor Starter",
+    "type": "FWA 5G Home Plan",
+    "mrcQAR": 199,
+    "speedTierMbps": 150,
+    "fupGB": 500,
+    "lockInMonths": 12,
+    "disconnectionFeeQAR": 600,
+    "offer": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-441",
+    "name": "GigaHome 5G Indoor Plus",
+    "type": "FWA 5G Home Plan",
+    "mrcQAR": 249,
+    "speedTierMbps": 250,
+    "fupGB": 800,
+    "lockInMonths": 12,
+    "disconnectionFeeQAR": 600,
+    "offer": true,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-450",
+    "name": "GigaHome 5G Indoor Basic",
+    "type": "FWA 5G Home Plan",
+    "mrcQAR": 149,
+    "speedTierMbps": 100,
+    "fupGB": 300,
+    "lockInMonths": 12,
+    "disconnectionFeeQAR": 600,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-451",
+    "name": "GigaHome 5G Indoor Standard",
+    "type": "FWA 5G Home Plan",
+    "mrcQAR": 229,
+    "speedTierMbps": 200,
+    "fupGB": 600,
+    "lockInMonths": 12,
+    "disconnectionFeeQAR": 600,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-452",
+    "name": "GigaHome 5G Outdoor Basic",
+    "type": "FWA 5G Home Plan",
+    "mrcQAR": 279,
+    "speedTierMbps": 200,
+    "fupGB": 800,
+    "lockInMonths": 12,
+    "disconnectionFeeQAR": 600,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-453",
+    "name": "GigaHome 5G Outdoor Standard",
+    "type": "FWA 5G Home Plan",
+    "mrcQAR": 329,
+    "speedTierMbps": 300,
+    "fupGB": 1000,
+    "lockInMonths": 24,
+    "disconnectionFeeQAR": 800,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-454",
+    "name": "GigaHome 5G Outdoor Plus",
+    "type": "FWA 5G Home Plan",
+    "mrcQAR": 399,
+    "speedTierMbps": 400,
+    "fupGB": 1500,
+    "lockInMonths": 24,
+    "disconnectionFeeQAR": 800,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+  },
+  {
+    "productId": "PROD-455",
+    "name": "GigaHome 5G Outdoor Max",
+    "type": "FWA 5G Home Plan",
+    "mrcQAR": 499,
+    "speedTierMbps": 500,
+    "fupGB": 2000,
+    "lockInMonths": 24,
+    "disconnectionFeeQAR": 800,
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
   }
 ]

@@ -59,6 +59,9 @@ export function approachFor(personaId: string | undefined): PersonaApproach {
 
 /** The role's ordered, filtered nav items. Never empty: Dashboard is in every
  * approach, so the shell always has at least one destination. */
+/** The grant the common Contact page (/start-connection) is gated on. */
+export const COMMON_CONTACT_FEATURE = 'postpaid.new-postpaid-wizard';
+
 export function resolveNavFor(personaId: string | undefined): NavItem[] {
   const keys = APPROACH_NAV[approachFor(personaId)];
   const items = keys
@@ -88,6 +91,8 @@ export function resolveNavFor(personaId: string | undefined): NavItem[] {
   // between roles and read as a missing feature rather than a scoping decision.
   // The line's own page carries the explanation instead.
   const scoped = [...items, ...extras].map((item) => {
+    // New Connections opens the common Contact page; a role that cannot use it (no postpaid wizard grant, Direct Sales say) keeps the hub of journey cards.
+    if (item.key === 'new-connections') return personaId && canUseFeature(personaId, COMMON_CONTACT_FEATURE) ? item : { ...item, to: '/new-connections' };
     if (item.key !== 'mobile' && item.key !== 'fibre-home') return item;
     const reachable = reachableCategories(item.key, (featureKey) =>
       personaId ? canUseFeature(personaId, featureKey) : false

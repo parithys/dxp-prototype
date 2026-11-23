@@ -19,7 +19,7 @@ const ROUTES: Array<[string, string]> = [
   ['bill-formatter', '/bill-formatter'],
   ['new-connections', '/new-connections'],
   ['mobile', '/mobile'],
-  ['journey-start-connection', '/mobile/start-connection'],
+  ['journey-start-connection', '/start-connection'],
   ['fibre-home', '/fibre-home'],
   ['operations', '/operations'],
   ['enterprise-account-creation', '/enterprise-iot-b2b/account-creation-screen'],

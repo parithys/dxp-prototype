@@ -1,4 +1,4 @@
-import { AVAILABILITY_BUILDINGS, type AvailabilityBuilding, type AvailabilityStatusKey, type AvailabilityUnit } from '../../data/reference/serviceAvailabilityData';
+import { AVAILABILITY_BUILDINGS, DEVICE_ZERO_TOUCH, type AvailabilityBuilding, type AvailabilityStatusKey, type AvailabilityUnit } from '../../data/reference/serviceAvailabilityData';
 
 // The pure half of the Check RFS Service Availability card: what the four search modes ask for, whether an entry is valid, and the lookup
 // of an entry against the inventory. No React, no I/O - the card renders what these return.
@@ -9,7 +9,8 @@ export interface SearchField {
   id: string;
   label: string;
   required: boolean;
-  hint?: string;
+  /** Format hint shown inside the empty field. */
+  watermark?: string;
   /** What a filled required field must match; absent = any non-empty text. */
   pattern?: RegExp;
   message?: string;
@@ -31,16 +32,16 @@ export interface SearchMode {
 
 export const SEARCH_MODES: SearchMode[] = [
   { id: 'zsb', title: 'ZSB', subtitle: 'Zone, street & building', matchedOn: 'Zone / Street / Building', columns: 4, fields: [
-    { id: 'zone', label: 'Zone Number', required: true, numeric: true, pattern: /^\d{1,3}$/, message: 'Enter a zone number (1–3 digits).' },
-    { id: 'street', label: 'Street Number', required: true, numeric: true, pattern: /^\d{1,4}$/, message: 'Enter a street number (1–4 digits).' },
-    { id: 'building', label: 'Building Number', required: true, numeric: true, pattern: /^\d{1,4}$/, message: 'Enter a building number (1–4 digits).' },
-    { id: 'unit', label: 'Unit / Flat (Optional)', required: false },
+    { id: 'zone', label: 'Zone Number', required: true, watermark: 'e.g. 55', numeric: true, pattern: /^\d{1,3}$/, message: 'Enter a zone number (1–3 digits).' },
+    { id: 'street', label: 'Street Number', required: true, watermark: 'e.g. 830', numeric: true, pattern: /^\d{1,4}$/, message: 'Enter a street number (1–4 digits).' },
+    { id: 'building', label: 'Building Number', required: true, watermark: 'e.g. 12', numeric: true, pattern: /^\d{1,4}$/, message: 'Enter a building number (1–4 digits).' },
+    { id: 'unit', label: 'Unit / Flat (Optional)', required: false, watermark: 'e.g. 4B' },
   ] },
   { id: 'kid', title: 'KID', subtitle: 'Kahramaa ID', matchedOn: 'Kahramaa ID', columns: 1, fields: [
-    { id: 'kid', label: 'Kahramaa ID (KID)', required: true, hint: 'Format: KID-########-###', pattern: /^KID-\d{8}-\w{1,4}$/i, message: 'Use the format KID-########-###.' },
+    { id: 'kid', label: 'Kahramaa ID (KID)', required: true, watermark: 'e.g. KID-12345678-001', pattern: /^KID-\d{8}-\w{1,4}$/i, message: 'Use the format KID-########-###.' },
   ] },
   { id: 'vfid', title: 'VFID', subtitle: 'Vodafone ID', matchedOn: 'Vodafone ID', columns: 1, fields: [
-    { id: 'vfid', label: 'Vodafone ID (VFID)', required: true, hint: 'Format: AAA-####-A', pattern: /^[A-Z]{3}-\d{4}-[A-Z]$/i, message: 'Use the format AAA-####-A.' },
+    { id: 'vfid', label: 'Vodafone ID (VFID)', required: true, watermark: 'e.g. ABC-1234-A', pattern: /^[A-Z]{3}-\d{4}-[A-Z]$/i, message: 'Use the format AAA-####-A.' },
   ] },
   { id: 'area', title: 'Area & Building', subtitle: 'Building name', matchedOn: 'Area & Building Name', columns: 2, fields: [
     { id: 'area', label: 'Area', required: true, kind: 'area' },
@@ -118,3 +119,32 @@ export function lookupAvailability(modeId: SearchModeId, values: SearchValues): 
     }
   }
 }
+
+/**
+ * What the Service Feasibility response says about the device already at a unit, and what UIM's mapping says that model can do:
+ * none (the response names no device), not-reusable, zero-touch (reusable and the model supports it), no-zero-touch (reusable, the model does not), unknown-model (reusable, the model is not mapped).
+ */
+export type DeviceReuse = { status: 'none' } | { status: 'not-reusable' | 'zero-touch' | 'no-zero-touch' | 'unknown-model'; model: string };
+
+export function deviceReuseOf(unit: Pick<AvailabilityUnit, 'device'>): DeviceReuse {
+  const d = unit.device;
+  if (!d) return { status: 'none' };
+  if (!d.reusable) return { status: 'not-reusable', model: d.model };
+  const zeroTouch = DEVICE_ZERO_TOUCH[d.model];
+  return { status: zeroTouch === undefined ? 'unknown-model' : zeroTouch ? 'zero-touch' : 'no-zero-touch', model: d.model };
+}
+
+/** The tags the result puts beside the device model (Reusable green, Zero Touch blue, so the two read apart): Reusable and Zero Touch where they hold, Not Reusable where it cannot be reused, Zero Touch Unknown where the model is not mapped. */
+export function deviceReuseTags(r: DeviceReuse): { label: string; tone: 'success' | 'info' | 'neutral' }[] {
+  switch (r.status) {
+    case 'none': return [];
+    case 'not-reusable': return [{ label: 'Not Reusable', tone: 'neutral' }];
+    case 'zero-touch': return [{ label: 'Reusable', tone: 'success' }, { label: 'Instant Activation', tone: 'info' }];
+    case 'no-zero-touch': return [{ label: 'Reusable', tone: 'success' }];
+    case 'unknown-model': return [{ label: 'Reusable', tone: 'success' }, { label: 'Instant Activation Unknown', tone: 'neutral' }];
+  }
+}
+
+/** The warning the result shows when the feasibility response reports a problem with the splitter serving the unit; none when it reports nothing. */
+export const SPLITTER_WARNING: Record<NonNullable<AvailabilityUnit['splitter']>, string> = { full: 'Splitter Full', 'not-mapped': 'Splitter Not Mapped' };
+export const splitterWarningOf = (unit: Pick<AvailabilityUnit, 'splitter'>): string | undefined => (unit.splitter ? SPLITTER_WARNING[unit.splitter] : undefined);

@@ -285,7 +285,7 @@ test('a Selected Add-Ons tray item is clickable: it takes the Addons page to the
   const tray = read('src/components/patterns/wizard/SelectedAddonsHeader.tsx');
   assert.match(tray, /requestAddonFocus\(addon\.productId\)/);
   const picker = read('src/capabilities/AddonsSelection/AddonsPicker.tsx');
-  assert.match(picker, /setCategory\(addonCategoryOf\(target\)\)/);
+  assert.match(picker, /setCategory\(homeTabs \? target\.addonCategory \?\? category : addonCategoryOf\(target\)\)/);
   assert.match(picker, /id=\{addonCardId\(a\.productId\)\}/);
   assert.match(picker, /classList\.add\('ring-4', 'ring-accent-border'\)/);
   const lib = read('src/lib/addonFocus.ts');

@@ -89,7 +89,7 @@ export const PRODUCT_LINES: readonly ProductLine[] = [
         description: 'Start a new mobile or home connection, add a line to an account, or activate an IPTV service.',
         icon: CAT_ICONS.newConnection,
         journeys: [
-          { id: 'mob-new-connection', title: 'New Connection', description: 'Start a new mobile connection: Postpaid, Prepaid or MNP', status: 'available', featureKey: 'postpaid.new-postpaid-wizard', path: '/mobile/start-connection', product: 'Mobile' },
+          { id: 'mob-new-connection', title: 'New Connection', description: 'Start a new mobile connection: Postpaid, Prepaid or MNP', status: 'available', featureKey: 'postpaid.new-postpaid-wizard', path: '/start-connection', product: 'Mobile' },
           { id: 'fib-new-home', title: 'New Home Connection', description: 'Activate a new home connection: fibre, fixed line, FWA or 5G Home', status: 'available', featureKey: 'fixedline.new-fixed-line-wizard', screenId: 'SCR-043', product: 'Fibre & Home' },
           { id: 'mob-add-line', title: 'Add a New Line', description: 'Add a line to an existing account: Postpaid, Prepaid or Fibre', status: 'planned', product: 'All products' },
           { id: 'fib-new-iptv', title: 'New IPTV Service', description: 'Add an IPTV subscription to a fibre account', status: 'planned', product: 'Fibre & Home' },

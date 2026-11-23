@@ -22,6 +22,8 @@ test('each search finds the status the inventory holds, or NOT_FOUND', () => {
     ['vfid', { vfid: 'WAK-0003-A' }, 'FWA_OUTDOOR'],
     ['zsb', { zone: '72', street: '120', building: '5' }, 'FWA_BOTH'],
     ['area', { area: 'Lusail', bname: 'Fox Hills Block 15' }, 'RFA'],
+    ['zsb', { zone: '63', street: '810', building: '40' }, 'EBU'],
+    ['vfid', { vfid: 'WBT-0040-A' }, 'EBU'],
     ['zsb', { zone: '12', street: '345', building: '6' }, 'NOT_FOUND'],
     ['kid', { kid: 'KID-12345678-001' }, 'NOT_FOUND'],
     ['vfid', { vfid: 'ABC-9999-Z' }, 'NOT_FOUND'],
@@ -68,4 +70,72 @@ test('inventory invariants: every building and unit is findable by every mode an
     assert.ok(data.AVAILABILITY_STATUS[b.status], b.status);
   }
   assert.deepEqual(model.availabilityAreas(), [...new Set(data.AVAILABILITY_BUILDINGS.map((b) => b.area))].sort());
+});
+
+test('every outcome offers one way to proceed, written out per status', () => {
+  const expected = {
+    RFS_UNLIMITED: 'fibre', RFS_LIMITED: 'fibre', FWA_INDOOR: 'fwa', FWA_OUTDOOR: 'fwa', FWA_BOTH: 'fwa',
+    RFA: 'mbb', EBU: 'mbb', NOT_FOUND: 'mbb',
+  };
+  assert.deepEqual(Object.keys(data.AVAILABILITY_STATUS).sort(), Object.keys(expected).sort());
+  for (const [key, proceed] of Object.entries(expected)) assert.equal(data.AVAILABILITY_STATUS[key].proceed, proceed, key);
+  // Only a sellable location starts a fibre / 5G Home connection; every other outcome (RFA, an EBU building, not found) continues to Mobile Postpaid Activation with the Mobile Broadband offers.
+  for (const st of Object.values(data.AVAILABILITY_STATUS)) assert.equal(st.sellable, st.proceed === 'fibre' || st.proceed === 'fwa');
+});
+
+test('RFA, an EBU building and a search that finds nothing all show the Mobile Broadband offers', () => {
+  for (const key of ['RFA', 'EBU', 'NOT_FOUND']) {
+    assert.equal(data.AVAILABILITY_STATUS[key].mbb, true, key);
+    assert.equal(data.AVAILABILITY_STATUS[key].sellable, false, key);
+  }
+  for (const key of ['RFS_UNLIMITED', 'RFS_LIMITED', 'FWA_INDOOR', 'FWA_OUTDOOR', 'FWA_BOTH']) assert.ok(!data.AVAILABILITY_STATUS[key].mbb, `${key} sells fibre or 5G Home`);
+  assert.deepEqual(data.MBB_OFFERS.map((o) => o.id), ['mbb50', 'mbb150', 'mbbU']);
+});
+
+test('device reuse and Zero Touch: read from the feasibility response and UIM\'s model mapping, never assumed', () => {
+  const table = [
+    [undefined, 'none'],
+    [{ model: 'Huawei HG8145V5', reusable: true }, 'zero-touch'],
+    [{ model: 'ZTE F670L', reusable: true }, 'zero-touch'],
+    [{ model: 'Nokia G-240W-C', reusable: true }, 'no-zero-touch'],
+    [{ model: 'Acme CPE X1', reusable: true }, 'unknown-model'],
+    [{ model: 'Huawei HG8145V5', reusable: false }, 'not-reusable'],
+    [{ model: 'Acme CPE X1', reusable: false }, 'not-reusable'],
+  ];
+  for (const [device, status] of table) assert.equal(model.deviceReuseOf({ device }).status, status, JSON.stringify(device));
+  assert.equal(data.DEVICE_ZERO_TOUCH['Acme CPE X1'], undefined, 'an unmapped model stays unknown');
+  const tags = (device) => model.deviceReuseTags(model.deviceReuseOf({ device })).map((t) => t.label);
+  assert.deepEqual(tags({ model: 'ZTE F670L', reusable: true }), ['Reusable', 'Instant Activation']);
+  assert.deepEqual(tags({ model: 'Nokia G-240W-C', reusable: true }), ['Reusable'], 'reusable, but the model does not support Zero Touch');
+  assert.deepEqual(tags({ model: 'Acme CPE X1', reusable: true }), ['Reusable', 'Instant Activation Unknown']);
+  assert.deepEqual(tags({ model: 'ZTE F670L', reusable: false }), ['Not Reusable']);
+  assert.deepEqual(tags(undefined), []);
+  // Through the lookup: unit 101 of Al Waab has a reusable Zero Touch device, 202 none.
+  const units = look('area', { area: 'Al Waab', bname: 'Al Waab Residence Tower' }).units;
+  assert.equal(model.deviceReuseOf(units.find((u) => u.unit === '101')).status, 'zero-touch');
+  assert.equal(model.deviceReuseOf(units.find((u) => u.unit === '102')).status, 'no-zero-touch');
+  assert.equal(model.deviceReuseOf(units.find((u) => u.unit === '201')).status, 'not-reusable');
+  assert.equal(model.deviceReuseOf(units.find((u) => u.unit === '202')).status, 'none');
+});
+
+test('the splitter warnings the feasibility response gives are shown as they come: Splitter Full, Splitter Not Mapped, and nothing when it says nothing', () => {
+  assert.equal(model.splitterWarningOf({ splitter: 'full' }), 'Splitter Full');
+  assert.equal(model.splitterWarningOf({ splitter: 'not-mapped' }), 'Splitter Not Mapped');
+  assert.equal(model.splitterWarningOf({}), undefined);
+  const al = look('area', { area: 'Al Waab', bname: 'Al Waab Residence Tower' }).units;
+  assert.equal(model.splitterWarningOf(al.find((u) => u.unit === '102')), 'Splitter Full');
+  assert.equal(model.splitterWarningOf(al.find((u) => u.unit === '101')), undefined);
+  assert.equal(model.splitterWarningOf(look('kid', { kid: 'KID-66840240-1402' }).units[0]), 'Splitter Not Mapped');
+});
+
+test('the unit cards carry an Interested button that raises a lead for the unit\'s location without selecting the unit', async () => {
+  const fs = await import('node:fs');
+  const sa = fs.readFileSync('src/modules/check-rfs/ServiceAvailability.tsx', 'utf8');
+  assert.match(sa, /createRecord\('leads', \{[\s\S]*createdVia: 'Check RFS - Interested'[\s\S]*customerName: leadName\.trim\(\)[\s\S]*mobileNumber: leadMobile[\s\S]*kid: u\.kid[\s\S]*vfid: u\.vfid/);
+  // Both details are mandatory: nothing is created until the name is entered and the mobile number is a valid Qatar mobile.
+  assert.match(sa, /if \(!u \|\| !result \|\| !b \|\| leadBusy \|\| !leadNameOk \|\| !leadMobileOk\) return;/);
+  assert.match(sa, /title="Customer Details"[\s\S]*label="Name"\s+required[\s\S]*label="Mobile Number"\s+required/);
+  assert.match(sa, /e\.stopPropagation\(\); onInterested\(\);/, 'the click is the button\'s own, not the card\'s selection');
+  // The card holds a button, so it is not itself a button (no nested buttons).
+  assert.match(sa, /<div\s+key=\{u\.kid\}\s+role="radio"/);
 });

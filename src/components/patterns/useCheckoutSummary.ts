@@ -1,6 +1,7 @@
 import { appliedDiscountFor, discountedAddon, type AddonDiscount, type AppliedAddonDiscounts } from '../../engines/addonDiscounts';
-import { addonChargeNowQar, addonOneTimeQar, addonWithBillingChoice, type AddonBillingFrequency } from '../../engines/addonCategories';
+import { addonChargeNowQar, addonOneTimeQar, addonWithBillingChoice, type AddonBillingFrequency, type AddonBillingOption, type AddonTermOption } from '../../engines/addonCategories';
 import { chargeAfterWaiverQar, waivedQar, type NumberWaiver } from '../../engines/numberWaiver';
+import { iptvOneTimeLines, type HomeIptvSelection, type IptvBundleTerms } from '../../engines/homeIptv';
 import { hrnAdvanceQar } from '../../engines/hrnConfiguration';
 
 import { useEffect, useState } from 'react';
@@ -13,11 +14,15 @@ import { useAppSelector } from '../../stores/hooks';
 import { listEntities } from '../../services/entityOps';
 
 interface UseCheckoutSummaryArgs {
+  /** A home order's IPTV choice: its set-top box charges join the one-time charges. */
+  iptv?: HomeIptvSelection;
   customerName: string | undefined;
   productId: string | undefined;
   discountId: string | undefined;
   addonIds: string[];
   addonBilling?: Record<string, AddonBillingFrequency>;
+  /** A Speed Booster's fixed term (months) by add-on id: priced at that term, charged once. */
+  addonTerms?: Record<string, number>;
   /** The add-on discounts the agent applied (see engines/addonDiscounts.ts): each add-on is charged after its discount. */
   /** The add-on discounts the agent applied (see engines/addonDiscounts.ts): each add-on is charged after its discount. */
   addonDiscounts?: AppliedAddonDiscounts;
@@ -53,6 +58,7 @@ export function useCheckoutSummary({
   discountId,
   addonIds,
   addonBilling = {},
+  addonTerms = {},
   addonDiscounts,
   msisdn,
   numberPriceQar,
@@ -65,17 +71,18 @@ export function useCheckoutSummary({
   extraRows,
   onLegalFactsComputed,
   planRentalIncluded = false,
+  iptv,
 }: UseCheckoutSummaryArgs) {
   const [products, setProducts] = useState<Product[]>([]);
   const [discounts, setDiscounts] = useState<
-    { addonDiscountId: string; name: string; price: number; durationMonths: number | null }[]
+    { addonDiscountId: string; name: string; price: number; durationMonths: number | null; category?: string; description?: string; lockInMonths?: number; billingOptions?: AddonBillingOption[]; termOptions?: AddonTermOption[] }[]
   >([]);
   const [starTiers, setStarTiers] = useState<StarNumberTier[]>([]);
   const [addonDiscountRecords, setAddonDiscountRecords] = useState<AddonDiscount[]>([]);
 
   useEffect(() => {
     listEntities<Product>('products').then(setProducts);
-    listEntities<{ addonDiscountId: string; name: string; price: number; durationMonths: number | null }>('addons-discounts')
+    listEntities<{ addonDiscountId: string; name: string; price: number; durationMonths: number | null; category?: string; description?: string }>('addons-discounts')
       .then(setDiscounts);
     listEntities<StarNumberTier>('star-number-tiers').then(setStarTiers);
     listEntities<AddonDiscount>('addon-discounts').then(setAddonDiscountRecords);
@@ -83,10 +90,31 @@ export function useCheckoutSummary({
 
   const listedPlan = products.find((p) => p.productId === productId);
   const plan = listedPlan && planRentalIncluded ? { ...listedPlan, rentalIncludedInPackage: true } : listedPlan;
-  const addons = products
+  // A home plan's add-ons are plan-bound add-ons/discounts records (Paid Add-on, charged monthly), not catalogue products: read as add-ons of the plan, so the order prices them too.
+  const planBoundAddons = discounts
+    .filter((d) => d.category === 'Paid Add-on' && addonIds.includes(d.addonDiscountId))
+    .map((d) => {
+      // A Speed Booster taken for a fixed term is priced at that term, named with it, and charged once.
+      const term = d.termOptions?.find((t) => t.months === addonTerms[d.addonDiscountId]);
+      return {
+        productId: d.addonDiscountId,
+        name: term ? `${d.name} (${term.months} ${term.months === 1 ? 'Month' : 'Months'})` : d.name,
+        type: 'Add-on',
+        mrcQAR: d.price,
+        description: d.description,
+        pricing: 'paid' as const,
+        lockInMonths: d.lockInMonths,
+        billingOptions: term ? [...(d.billingOptions ?? []).filter((o) => o.frequency !== 'one-time'), { frequency: 'one-time' as const, priceQAR: term.priceQAR }] : d.billingOptions,
+      };
+    }) as unknown as Product[];
+  const addons = [...products, ...planBoundAddons]
     .filter((p) => addonIds.includes(p.productId))
     // The chosen billing frequency's price, then the add-on's applied discount off it.
     .map((addon) => discountedAddon(addonWithBillingChoice(addon, addonBilling[addon.productId]), appliedDiscountFor(addonDiscountRecords, addonDiscounts, addon)));
+  // A home IPTV choice adds its set-top box charges as one-time items, paid at activation with the other one-time charges.
+  const iptvBundle = iptv?.enabled ? (discounts as (typeof discounts[number] & IptvBundleTerms)[]).find((d) => d.addonDiscountId === iptv.bundleId) : undefined;
+  const iptvStbItems = iptvOneTimeLines(iptvBundle, iptv).map((l) => ({ productId: l.key, name: l.label, type: 'Add-on', mrcQAR: l.amountQAR, billingFrequency: 'one-time' as const, pricing: 'paid' as const })) as unknown as typeof addons;
+  addons.push(...iptvStbItems);
   const discount = discounts.find((d) => d.addonDiscountId === discountId);
   // The number's own sticker price - kept separate from what is actually
   // CHARGED (numberChargeQar below), so "Star value QAR 5000 one-time" can

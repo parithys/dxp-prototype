@@ -1,3 +1,4 @@
+import { isIptvComplete, type HomeIptvSelection } from '../../engines/homeIptv';
 import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
@@ -13,7 +14,7 @@ import { AddonsPicker } from './AddonsPicker';
 import { MultiSimAddonSims } from './MultiSimAddonSims';
 import type { SimTypeValue } from '../../components/domain/SimTypeStep';
 import { SpendFlag } from './SpendFlag';
-import { addonsSummary } from './summary';
+import { addonsSummary, homeAddonsSummary } from './summary';
 import { ApplyAddonDiscountAction } from './ApplyAddonDiscountAction';
 import type { AppliedAddonDiscounts } from '../../engines/addonDiscounts';
 
@@ -159,7 +160,8 @@ export function prepaidAddonsStep(opts: {
         )}
       </>
     ),
-    isValid: () => true,
+    // IPTV, once enabled, needs its bundle, the set-top box choice and an answer on additional boxes.
+    isValid: (values) => isIptvComplete(values.iptv as HomeIptvSelection | undefined),
   };
 }
 
@@ -208,5 +210,27 @@ export function addonsSelectionStep(opts: {
         />
       ),
     isValid: (values) => ((values.addonIds as string[] | undefined) ?? []).length > 0,
+  };
+}
+
+/**
+ * The Add-ons step of a home journey (fixed line, fibre, FWA, 5G Home), the step after Offers & Plans: the chosen plan's add-ons, as on the postpaid page. Continue from the plan page passes over
+ * it; "Customise Add-ons" there is the way here (it sets `customiseAddons`, spent on arrival). An Offers-tab plan is pre-bundled and takes none. Add-ons never block.
+ */
+export function homeAddonsStep(): WizardStep {
+  return {
+    key: 'planExtras',
+    summary: homeAddonsSummary,
+    label: ADDONS_DISCOUNTS_LABEL,
+    subheading: 'Choose optional services for the plan.',
+    autoPass: (values) => !values.customiseAddons,
+    render: ({ values, setValue }) => (
+      <>
+        <SpendFlag active={Boolean(values.customiseAddons)} onSpend={() => setValue('customiseAddons', undefined)} />
+        <AddonsSelection kind="home" planId={values.productId as string | undefined} addonIds={(values.addonIds as string[] | undefined) ?? []} onAddonsChange={(ids) => setValue('addonIds', ids)} addonBilling={values.addonBilling as Record<string, import('../../engines/addonCategories').AddonBillingFrequency> | undefined} onBillingChange={(next) => setValue('addonBilling', next)} addonTerms={values.addonTerms as Record<string, number> | undefined} onTermsChange={(next) => setValue('addonTerms', next)} iptv={values.iptv as HomeIptvSelection | undefined} onIptvChange={(next) => setValue('iptv', next)} />
+      </>
+    ),
+    // IPTV, once enabled, needs its bundle, the set-top box choice and an answer on additional boxes.
+    isValid: (values) => isIptvComplete(values.iptv as HomeIptvSelection | undefined),
   };
 }

@@ -1,3 +1,4 @@
+import type { NumberPickerProfile, NumberTab } from '../../../components/domain/msisdnPickerModel';
 // Fixed Activation Journey (CBU): ids and value shapes. Kept apart from the New Connection model on purpose -
 // the two journeys share components, never state: their drafts, customer holds and route entries are separate.
 
@@ -22,8 +23,61 @@ export interface FixedInstallationValue {
   rfs?: FixedRfsStatus;
 }
 
-/** A fixed line number is allocated by the system, never picked: 44 + six digits. */
-export const allocateFixedLineNumber = () => `44${String(Math.floor(100000 + Math.random() * 899999))}`;
+/**
+ * The Fixed Line Number picker (New Home Connection): the Fixed Line Number pool, not the mobile numbers, with no Star numbers, lock-in or plan entitlement. The tabs an agent sees follow their
+ * role: Reserved (held against the customer's ID), Free, and Blocked (against the agent's user group - listed only when they search). MOCK persona simulation, as for Prepaid: Mass Market sees Free
+ * only; the business owns the final role-to-tab map. A role not listed sees all three.
+ */
+/** 5G Home (FWA): the order is an FWA Indoor or FWA Outdoor service (as the RFS result settled it), so it takes a SIM and an Indoor Unit. Fibre and fixed line take neither. */
+export const isFwaService = (values: Record<string, unknown>): boolean => {
+  const t = (values.installation as FixedInstallationValue | undefined)?.serviceType;
+  return t === 'fwa-indoor' || t === 'fwa-outdoor' || values.homeProduct === 'fwa';
+};
+
+/** An Indoor Unit as the inventory (cpe-devices) holds it. */
+export interface IndoorUnitDetails {
+  serialNumber: string;
+  brand?: string;
+  modelNumber?: string;
+  deviceType: string;
+  macAddress?: string;
+  firmwareVersion?: string;
+  stockStatus: string;
+}
+export const INDOOR_UNIT_DEVICE_TYPE = 'Indoor IDU';
+const IN_STOCK = 'In-Stock';
+
+/** The serial as the agent typed or scanned it: trimmed, upper case. */
+export const normaliseIndoorUnitSerial = (serial: string): string => serial.trim().toUpperCase();
+
+export type IndoorUnitCheck = { ok: true; details: IndoorUnitDetails } | { ok: false; error: string };
+
+/** Whether a serial is an Indoor Unit in stock: it must be in the inventory, be an Indoor Unit (not another device) and not already assigned. */
+export function checkIndoorUnitSerial(serial: string, devices: readonly IndoorUnitDetails[]): IndoorUnitCheck {
+  const s = normaliseIndoorUnitSerial(serial);
+  if (!s) return { ok: false, error: 'Indoor Unit Serial Number is required.' };
+  const found = devices.find((d) => d.serialNumber.toUpperCase() === s);
+  if (!found) return { ok: false, error: 'Indoor Unit Serial Number not found in inventory.' };
+  if (found.deviceType !== INDOOR_UNIT_DEVICE_TYPE) return { ok: false, error: `This serial is a ${found.deviceType}, not an Indoor Unit.` };
+  if (found.stockStatus !== IN_STOCK) return { ok: false, error: `This Indoor Unit is already assigned (${found.stockStatus}).` };
+  return { ok: true, details: found };
+}
+
+/** The Indoor Units in stock, which a barcode scan can return. */
+export const indoorUnitsInStock = (devices: readonly IndoorUnitDetails[]): IndoorUnitDetails[] => devices.filter((d) => d.deviceType === INDOOR_UNIT_DEVICE_TYPE && d.stockStatus === IN_STOCK);
+
+/** The order's Indoor Unit is complete when the serial in the field is one the inventory check accepted. */
+export const isIndoorUnitValid = (values: Record<string, unknown>): boolean => {
+  const unit = values.indoorUnit as IndoorUnitDetails | undefined;
+  const serial = values.indoorUnitSerial;
+  return Boolean(unit) && typeof serial === 'string' && normaliseIndoorUnitSerial(serial) === unit!.serialNumber.toUpperCase();
+};
+
+export const FIXED_NUMBER_TABS_BY_ROLE: Record<string, readonly NumberTab[]> = {
+  'ROLE-05': ['Free'],
+};
+export const fixedNumberTabsFor = (roleId: string): readonly NumberTab[] => FIXED_NUMBER_TABS_BY_ROLE[roleId] ?? ['Reserved', 'Free', 'Blocked'];
+export const FIXED_NUMBER_PICKER: NumberPickerProfile = { pool: 'fixed-line-numbers', tabsFor: fixedNumberTabsFor, lockIn: false, planEntitlement: false, selectHeld: false };
 
 export interface FixedDevice {
   name: string;

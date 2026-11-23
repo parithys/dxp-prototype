@@ -63,6 +63,10 @@ export const TAB_LABELS: Record<NumberTab, string> = {
  * (every tab, sorting, lock-in, entitlement when a plan is given). Mobile Prepaid passes one: its numbers depend on who the agent is, never on the pack.
  */
 export interface NumberPickerProfile {
+  /** The inventory the picker reads: the mobile numbers (default) or the Fixed Line Number pool (New Home Connection). */
+  pool?: 'numbers' | 'fixed-line-numbers';
+  /** Off: a number held for the customer is listed on the Reserved tab, and can be chosen there, but is not chosen for the agent when the picker opens (the order already has a number). Default on. */
+  selectHeld?: boolean;
   /** The tabs the signed-in role may see (an empty or absent answer for a role falls back to every tab). */
   tabsFor?: (personaId: string) => readonly NumberTab[];
   /** Off: no sort control on the Star tab (default on). */

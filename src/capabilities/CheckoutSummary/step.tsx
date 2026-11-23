@@ -61,6 +61,7 @@ export function checkoutSummaryStep(
           discountId={values.discountId as string | undefined}
           addonIds={(values.addonIds as string[] | undefined) ?? []}
           addonBilling={values.addonBilling as Record<string, import('../../engines/addonCategories').AddonBillingFrequency> | undefined}
+          addonTerms={values.addonTerms as Record<string, number> | undefined}
           addonDiscounts={values.addonDiscounts as Record<string, string> | undefined}
           msisdn={opts.msisdn ? opts.msisdn(values) : (values.msisdn as string | undefined)}
           numberPriceQar={values.numberPriceQAR as number | undefined}
@@ -75,6 +76,7 @@ export function checkoutSummaryStep(
           onLegalFactsComputed={(facts) => setValue('legalFacts', facts)}
           familyRows={opts.familyRows?.(values)}
           planRentalIncluded={opts.planRentalIncluded?.(values)}
+          iptv={values.iptv as import('../../engines/homeIptv').HomeIptvSelection | undefined}
           onEdit={() => goToStepKey(opts.editStepKey?.(values) ?? 'plan')}
         />
       );

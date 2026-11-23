@@ -14,3 +14,5 @@ Components and helpers the prototype still owns because they are NOT in `dxp-ui`
 | The toast system (`stores/notificationSlice` + `ToastContainer`) | Redux based. A presentational `Toast` (no store) would belong in the library; the store stays here. | A store-free `Toast` + `ToastRegion`. |
 | `components/domain/QidInput.tsx`, `ContactPhoneInput.tsx` | Qatar-specific ID and phone behaviour (QID rules, +974). | A neutral masked-number input; the QID rules stay here. |
 | `lib/router.ts`, `routerHooks.ts`, `routerLinks.tsx` | The application's Next.js navigation layer. Not a design-system concern; the library receives its link through `LinkProvider`. | Nothing - stays in the application. |
+
+Also: `Select` in `dxp-ui` discards its `placeholder` prop, so the Check RFS "Area" dropdown cannot show a watermark. Needed: an opt-in `watermark` on `Select`, like `Input`'s.

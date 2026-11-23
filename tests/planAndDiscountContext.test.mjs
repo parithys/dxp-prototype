@@ -93,7 +93,9 @@ test('an accepted offer skips Plan and Addons & Discounts whatever the customer 
   }
   assert.equal(Boolean(extras.skip({ customerType: { type: 'mada', officeId: doc, officeAccepted: true } })), false, 'no offer: the step runs');
   const hook = read('src/modules/new-connection/hooks/useNewConnectionJourney.ts');
-  assert.match(hook, /p\.type === \(v\.journey === 'new-prepaid' \? 'Prepaid Plan' : 'Postpaid Plan'\) && isPlanOfferedTo\(p, session\.draftNationality\)/);
+  assert.match(hook, /p\.type === planKindOfOffer\(v\.journey\) && isPlanOfferedTo\(p, session\.draftNationality\)/);
+  // The kind of plan an offer takes follows its journey: prepaid, a fixed-line offer a fixed-line plan, an FWA offer a 5G Home plan, every other a postpaid plan.
+  assert.match(hook, /journey === 'new-prepaid' \? 'Prepaid Plan' : journey === 'new-fixed-line' \? 'Fixed Line Plan' : journey === 'new-fwa' \? 'FWA 5G Home Plan' : 'Postpaid Plan'/);
 });
 
 test('a plan chosen on the Offers tab of Offers & Plans goes straight to Number Selection; one chosen on Plans keeps Addons & Discounts', async () => {

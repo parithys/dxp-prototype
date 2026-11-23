@@ -44,7 +44,7 @@ test('the confirmation page: Start New Fiber sits in the Ready-for-Service panel
   assert.match(src, /<Button onClick=\{\(\) => navigate\(fibreActivationPath\(order\.customerId\)\)\}>Start New Fiber<\/Button>/);
   assert.doesNotMatch(src, /label: 'Start New Fiber'/, 'not in the actions row');
   // It goes to New Connection's Recommended Offers (never straight into the home journey's Product Selection): the customer's own route when the order belongs to one.
-  assert.match(src, /customerId \? `\/mobile\/start-connection\/existing\/\$\{customerId\}` : '\/mobile\/start-connection'/);
+  assert.match(src, /customerId \? `\/start-connection\/existing\/\$\{customerId\}` : '\/start-connection'/);
   assert.doesNotMatch(src, /new-fixed-line-wizard-contact-step/);
   assert.doesNotMatch(src, /pushToast\('success', 'This customer location is Ready for Service/, 'the panel says it already');
   assert.match(src, /Fibre at the customer's location<\/span>\s+<Badge variant="success">RFS - Eligible for Fibre<\/Badge>/, 'the tag is under the text');

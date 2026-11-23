@@ -6,10 +6,11 @@ import type { Product, StarNumberTier } from './checkoutSummaryModel';
 import type { CheckoutSummaryDerived } from './useCheckoutSummary';
 import { toLocalMsisdn } from '../domain/msisdnPickerModel';
 
-/** "Name (QAR 20/mo)" - the suffix follows the add-on's effective billing cadence, never assumes monthly. */
-export function addonSummaryLabel(a: Product & { billingFrequency?: AddonBillingFrequency }): string {
+/** "Name (QAR 20/mo)" - the suffix follows the add-on's effective billing cadence, never assumes monthly. A home add-on that states a lock-in adds it: "Name (QAR 20/mo, 12-month lock-in)" or "..., no lock-in". */
+export function addonSummaryLabel(a: Product & { billingFrequency?: AddonBillingFrequency; lockInMonths?: number }): string {
   const suffix = a.billingFrequency === 'weekly' ? '/wk' : a.billingFrequency === 'one-time' ? ' one-time' : '/mo';
-  return `${a.name} (${formatQar(a.mrcQAR)}${suffix})`;
+  const lock = a.lockInMonths === undefined ? '' : a.lockInMonths > 0 ? `, ${a.lockInMonths}-month lock-in` : ', no lock-in';
+  return `${a.name} (${formatQar(a.mrcQAR)}${suffix}${lock})`;
 }
 
 interface CafSummaryRowsArgs

@@ -25,10 +25,14 @@ import type { ConfirmedOrder } from '../../../capabilities';
 import { isB2B2COrder } from '../../new-connection/approvalRouting';
 import { homeProductLabel } from '../../new-connection/products';
 import type { HomeProduct } from '../../new-connection/products';
-import { FIXED_JOURNEY_LABEL, serviceTypeLabel, type FixedInstallationValue } from './fixedActivationModel';
+import { FIXED_JOURNEY_LABEL, isFwaService, serviceTypeLabel, type FixedInstallationValue } from './fixedActivationModel';
 import { currentAgentId } from '../../../stores/currentAgent';
+import { orderInProgressForKid, type ExistingConnection, type ExistingService } from '../../../engines/kidInUse';
 import type { EntityOps } from '../../../services/types';
 import { listEntities } from '../../../services/entityOps';
+
+/** The team that decides an order replacing a connection on a KID in use (the job title the approval queue knows it by). */
+const FULFILMENT_TEAM_ROLE = 'Back Office Fulfilment';
 
 type EntityStore = EntityOps;
 
@@ -64,7 +68,14 @@ export async function submitFixedActivationOrder(
   const manualIdEntry = Boolean(contact.manualEntry);
   const approvalChecks = eligibility?.checks.filter((c) => c.outcome === 'approval-routing') ?? [];
   const customerType = values.customerType as CustomerTypeValue | undefined;
-  const pendingApproval = manualIdEntry || isB2B2COrder(contact, customerType) || Boolean(eligibility?.requiresHrnAdvance) || approvalChecks.length > 0;
+  // The KID chosen on Check RFS: recorded on the order (a second order cannot start on a KID that has one in progress). A KID that still carried a service (Active or Suspended) when the agent
+  // proceeded: the order replaces that connection, so it goes to the Fulfilment Team for approval, and once approved the existing connection is disconnected and its inventory released.
+  const rfsCheck = values.rfsCheck as { kid?: string; kidInUse?: ExistingService } | undefined;
+  const kidInUse = rfsCheck?.kid && rfsCheck.kidInUse ? rfsCheck.kidInUse : undefined;
+  // Judged again at submission (another order may have been submitted for the KID since Check RFS): a KID with an order in progress takes no second one, whoever it is for.
+  const blocking = orderInProgressForKid(await listEntities<{ orderId: string; kid?: string; status?: string }>('orders'), rfsCheck?.kid);
+  if (blocking) throw new Error(`Order ${blocking.orderId} is already in progress for ${rfsCheck?.kid}. A new order cannot be placed on this KID until it is decided.`);
+  const pendingApproval = manualIdEntry || isB2B2COrder(contact, customerType) || Boolean(eligibility?.requiresHrnAdvance) || approvalChecks.length > 0 || Boolean(kidInUse);
 
   // A customer with no billing account gets the one the journey built, created and set as their default.
   const billingProfileId = await persistBillingAccount(billingAccount, {
@@ -114,16 +125,37 @@ export async function submitFixedActivationOrder(
     serviceType: serviceTypeLabel(installation?.serviceType),
     installationAddress: address,
     productId: values.productId,
+    // The discount the agent gave on the plan (Standard Plans or Special Offers), if any.
+    ...(values.discountId ? { discountId: values.discountId } : {}),
+    // The plan's add-ons the agent chose (plan-bound add-on records of the home plan); none for an Offers-tab plan.
+    addonIds: (values.addonIds as string[] | undefined) ?? [],
+    // The IPTV choice, when IPTV is on: the bundle (also in addonIds), the set-top box and the additional boxes.
+    ...(values.iptv && (values.iptv as { enabled?: boolean }).enabled ? { iptv: values.iptv } : {}),
     msisdn: values.msisdn,
     devices: values.devices,
+    // 5G Home (FWA): the Physical SIM allocated to the order and the Indoor Unit's serial number the agent captured.
+    ...(isFwaService(values)
+      ? {
+          simType: (values.simType as { simType?: string } | undefined)?.simType ?? 'Physical',
+          simSerial: (values.simType as { simSerial?: string } | undefined)?.simSerial,
+          simIccid: (values.simType as { simIccid?: string } | undefined)?.simIccid,
+          indoorUnitSerial: (values.indoorUnit as { serialNumber?: string } | undefined)?.serialNumber,
+          indoorUnitBrand: (values.indoorUnit as { brand?: string } | undefined)?.brand,
+          indoorUnitModel: (values.indoorUnit as { modelNumber?: string } | undefined)?.modelNumber,
+        }
+      : {}),
     billingProfileId,
     newBillingProfileName: billingAccount?.newAccount?.profileName,
     dueTodayQAR: totals?.dueTodayQar ?? 0,
     monthlyRecurringQAR: plan?.mrcQAR ?? 0,
     ...decisionRecord(eligibility?.connectionDecision),
     ...(needsCreditControl(eligibility?.connectionDecision) ? { approverRole: COLLECTION_TEAM_ROLE } : {}),
+    // The Fulfilment Team decides an order that replaces a connection on a KID in use (it wins over the other routes: it is the one that disconnects the existing service).
+    ...(kidInUse ? { approverRole: FULFILMENT_TEAM_ROLE } : {}),
+    ...(rfsCheck?.kid ? { kid: rfsCheck.kid } : {}),
+    ...(kidInUse && rfsCheck?.kid ? { existingConnection: { ...kidInUse, kid: rfsCheck.kid, state: 'To Be Disconnected' } satisfies ExistingConnection } : {}),
     approvalReason: pendingApproval
-      ? [manualIdEntry ? 'Identity manually entered' : '', ...approvalChecks.map((c) => c.message?.split('\n')[0] ?? c.id)].filter(Boolean).join(' | ') || undefined
+      ? [manualIdEntry ? 'Identity manually entered' : '', kidInUse ? `KID in use: ${kidInUse.status} service ${kidInUse.fln} on ${kidInUse.pon}` : '', ...approvalChecks.map((c) => c.message?.split('\n')[0] ?? c.id)].filter(Boolean).join(' | ') || undefined
       : undefined,
     createdBy: currentAgentId(),
     sourceChannel: 'Tablet',

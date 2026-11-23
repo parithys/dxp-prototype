@@ -17,7 +17,8 @@ import type { EligibilityResult } from '../../components/domain/eligibilityTypes
 
 /** Step keys New Connection collects once, before Recommended Offers. */
 const SHARED_KEYS = ['address', 'billingAccount'];
-import { productStep } from './steps/productStep';
+import { homeOffersStep, productStep } from './steps/productStep';
+import { rfsStarted } from './rfsStart';
 import { IdTypeApprovalNotice } from './steps/IdTypeApprovalNotice';
 import { homeKindStep } from './steps/HomeKindStep';
 import type { ProductStepContext } from './steps/ProductSelection';
@@ -65,8 +66,10 @@ export function buildConnectionSteps(ctx: ConnectionStepContext): WizardStep[] {
     // Identification, the installation Address, then Product Selection (the address comes first; the home steps after it carry no second copy of it).
     return [
       ...contactPages(customerQualificationStep({ ...ctx, productAgnostic: true, journeyChosenLater: true }), representativeContactStep({ ...ctx, productAgnostic: true, journeyChosenLater: true })),
-      homeAddressStep(),
+      // Check RFS gave the address: from there the journey has no Address page, and Recommended Offers replaces the product cards (see rfsStart.ts).
+      { ...homeAddressStep(), skip: rfsStarted },
       productStep(ctx),
+      homeOffersStep(ctx),
       ...forProduct('fixed-line', withIdTypeNotice(fixedLineSteps().filter((s) => s.key !== 'address'))),
     ];
   }

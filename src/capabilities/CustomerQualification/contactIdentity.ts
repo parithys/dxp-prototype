@@ -24,7 +24,7 @@ export interface ContactIdentityContext {
 }
 
 /**
- * THE props the New Connection Contact step (/mobile/start-connection) gives Customer Verification: contact details collected with the identity, the ID types of its
+ * THE props the New Connection Contact step (/start-connection) gives Customer Verification: contact details collected with the identity, the ID types of its
  * journey, and who the scanned ID is allowed to be. The journey's step and the Capability Library preview both spread this, so the library shows exactly what the
  * journey renders and the two cannot drift apart. (The journey adds only what is its own: the value, the guarded change handler that locks the customer.)
  */

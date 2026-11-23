@@ -10,7 +10,7 @@ export type ServiceJourney =
 
 export const SERVICE_JOURNEYS: { key: ServiceJourney; label: string; description: string; route?: string }[] = [
   { key: 'new-prepaid', label: 'New Prepaid', description: 'Activate a new prepaid SIM and starter bundle', route: '/mobile-prepaid/new-prepaid' },
-  { key: 'new-postpaid', label: 'New Postpaid', description: 'Activate a new postpaid line with plan and SIM', route: '/mobile/start-connection' },
+  { key: 'new-postpaid', label: 'New Postpaid', description: 'Activate a new postpaid line with plan and SIM', route: '/start-connection' },
   { key: 'mnp-postpaid', label: 'MNP Postpaid', description: 'Port a number in onto a postpaid plan', route: '/mnp-fnp-porting/mnp-wizard-step-contact' },
   { key: 'mnp-prepaid', label: 'MNP Prepaid', description: 'Port a number in onto a prepaid plan', route: '/mnp-fnp-porting/mnp-wizard-step-contact' },
   { key: 'new-fixed-line', label: 'New Fixed Line', description: 'Activate a new fixed line service', route: '/fixed-line-fibre/new-fixed-line-wizard-contact-step' },

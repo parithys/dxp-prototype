@@ -125,3 +125,69 @@ export function resumedDraftValues(saved: Rec, current: Rec, orderType?: string)
   if (merged.product === undefined && orderType === POSTPAID_ORDER_TYPE) merged.product = 'postpaid';
   return merged;
 }
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------------
+// New Home Connection's drafts. Kept apart from the Mobile Postpaid ones above (which are not changed): the same rules - this agent's, for this customer, still a
+// Draft - over the home journey's own drafts.
+
+/** The wizard ids of New Home Connection: the new-customer journey and, per customer, the existing-customer one (`new-home-connection-existing-<customerId>`). */
+export const HOME_WIZARD_ID_PREFIX = 'new-home-connection';
+
+/** A draft saved by New Home Connection. */
+export const isHomeDraft = (o: DraftOrderRecord): boolean => typeof o.draftWizardId === 'string' && o.draftWizardId.startsWith(HOME_WIZARD_ID_PREFIX);
+
+/** The ID number a draft was started with: the one the Contact step captured. */
+export const draftOrderIdNumber = (o: DraftOrderRecord): string | undefined => text((o.draftValues?.contact as { idNumber?: unknown } | undefined)?.idNumber);
+
+/**
+ * The New Home Connection drafts to offer once the customer is identified: status Draft, saved by this journey, created by THIS agent, for THIS customer - by their customer record when they
+ * have one, else (a customer new to the journey has no record yet) by the ID number the draft was started with. A draft of another customer, or of the same customer by another agent, is
+ * never offered. Newest change first.
+ */
+export function applicableHomeDraftOrders(
+  orders: DraftOrderRecord[],
+  tasks: DraftTaskRecord[],
+  who: { customerId: string | undefined; idNumber?: string | undefined; agentId: string | undefined }
+): DraftOrderOption[] {
+  if ((!who.customerId && !who.idNumber) || !who.agentId) return [];
+  const mine = orders.filter((o) => {
+    if (o.status !== 'Draft' || !isHomeDraft(o) || draftOrderAgentId(o, tasks) !== who.agentId) return false;
+    const forCustomer = Boolean(who.customerId) && draftOrderCustomerId(o) === who.customerId;
+    const forId = Boolean(who.idNumber) && draftOrderIdNumber(o) === who.idNumber;
+    return forCustomer || forId;
+  });
+  return optionsOf(mine, tasks);
+}
+
+/** What a draft computed for the signature and the charges: none of it survives into a resumed order, which recalculates its charges and is signed again on the CAF. */
+export const HOME_DERIVED_KEYS = ['caf', 'cafSummary', 'legalFacts', 'checkoutTotals'] as const;
+
+/**
+ * The values a resumed New Home Connection holds: the draft's, over what Customer Verification has produced (as for any resumed draft), without what the draft computed for the CAF
+ * and the charges - an amended order is re-validated, its charges recalculated at Order Summary and the CAF signed again with the updated information.
+ */
+export function homeResumedDraftValues(saved: Rec, current: Rec): Rec {
+  const merged = resumedDraftValues(saved, current);
+  for (const key of HOME_DERIVED_KEYS) delete merged[key];
+  return merged;
+}
+
+function optionsOf(orders: DraftOrderRecord[], tasks: DraftTaskRecord[]): DraftOrderOption[] {
+  return orders
+    .map((o) => {
+      const task = tasks.find((t) => t.relatedOrderId === o.orderId);
+      const v = o.draftValues ?? {};
+      return {
+        orderId: o.orderId,
+        orderType: text(o.orderType),
+        createdAt: text(o.createdAt) ?? text(task?.createdAt),
+        modifiedAt: text(task?.updatedAt) ?? text(o.updatedAt) ?? text(o.createdAt) ?? text(task?.createdAt),
+        stepKey: text(o.draftStepKey),
+        planId: text(v.productId),
+        msisdn: text(v.msisdn),
+        comment: text(task?.draftComment),
+        order: o,
+      };
+    })
+    .sort((a, b) => (b.modifiedAt ?? '').localeCompare(a.modifiedAt ?? ''));
+}

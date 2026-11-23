@@ -136,7 +136,7 @@
     "createdBy": "USR-1101",
     "sourceChannel": "Retail Store",
     "draftWizardId": "new-connection",
-    "draftResumePath": "/mobile/start-connection",
+    "draftResumePath": "/start-connection",
     "draftStepKey": "contact",
     "draftValues": {
       "contact": {
@@ -211,7 +211,7 @@
     "createdBy": "USR-1101",
     "sourceChannel": "Retail Store",
     "draftWizardId": "new-connection",
-    "draftResumePath": "/mobile/start-connection",
+    "draftResumePath": "/start-connection",
     "draftStepKey": "contact",
     "draftValues": {
       "contact": {
@@ -2208,7 +2208,7 @@
     "createdBy": "USR-1101",
     "createdAt": "2026-11-02T10:15:00+03:00",
     "draftWizardId": "new-connection",
-    "draftResumePath": "/mobile/start-connection",
+    "draftResumePath": "/start-connection",
     "draftStepKey": "plan",
     "draftValues": {
       "contact": {
@@ -2260,7 +2260,7 @@
     "createdBy": "USR-1101",
     "createdAt": "2026-11-04T14:05:00+03:00",
     "draftWizardId": "new-connection",
-    "draftResumePath": "/mobile/start-connection",
+    "draftResumePath": "/start-connection",
     "draftStepKey": "number",
     "draftValues": {
       "contact": {
@@ -2313,7 +2313,7 @@
     "createdBy": "USR-1103",
     "createdAt": "2026-11-03T11:00:00+03:00",
     "draftWizardId": "new-connection",
-    "draftResumePath": "/mobile/start-connection",
+    "draftResumePath": "/start-connection",
     "draftStepKey": "plan",
     "draftValues": {
       "contact": {
@@ -2365,7 +2365,7 @@
     "createdBy": "USR-1101",
     "createdAt": "2026-11-01T16:30:00+03:00",
     "draftWizardId": "new-connection",
-    "draftResumePath": "/mobile/start-connection",
+    "draftResumePath": "/start-connection",
     "draftStepKey": "plan",
     "draftValues": {
       "contact": {
@@ -2417,7 +2417,7 @@
     "createdBy": "USR-1103",
     "createdAt": "2026-11-05T09:00:00+03:00",
     "draftWizardId": "new-connection",
-    "draftResumePath": "/mobile/start-connection",
+    "draftResumePath": "/start-connection",
     "draftStepKey": "number",
     "draftValues": {
       "contact": {
@@ -2470,7 +2470,7 @@
     "createdBy": "USR-1102",
     "createdAt": "2026-11-06T13:10:00+03:00",
     "draftWizardId": "new-connection",
-    "draftResumePath": "/mobile/start-connection",
+    "draftResumePath": "/start-connection",
     "draftStepKey": "plan",
     "draftValues": {
       "contact": {

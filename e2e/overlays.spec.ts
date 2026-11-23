@@ -190,12 +190,12 @@ async function makeJourneyDirty(page: Page, project: string) {
 test.describe('leave-journey prompt', () => {
   async function dirtyJourney(page: Page, project: string) {
     await signIn(page, project, 'VFQ12341');
-    await go(page, '/mobile/start-connection');
+    await go(page, '/start-connection');
     await makeJourneyDirty(page, project);
   }
   test('a clean journey leaves without a prompt; a dirty one asks, Escape stays, Abandon leaves', async ({ page }, info) => {
     await signIn(page, info.project.name, 'VFQ12341');
-    await go(page, '/mobile/start-connection');
+    await go(page, '/start-connection');
     await page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Dashboard' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page).toHaveURL(/\/$/);
@@ -295,7 +295,7 @@ for (const theme of ['light', 'dark'] as const) {
     test.setTimeout(150_000);
     await signIn(page, info.project.name, 'VFQ12341', theme);
     await page.addStyleTag({ content: 'nextjs-portal { display: none !important; }' });
-    await go(page, '/mobile/start-connection');
+    await go(page, '/start-connection');
     await makeJourneyDirty(page, info.project.name);
     await page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Dashboard' }).click();
     await page.getByRole('dialog', { name: 'Leave this journey?' }).waitFor();

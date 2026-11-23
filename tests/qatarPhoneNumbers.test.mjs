@@ -11,6 +11,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LANDLINE_FIELDS = new Set(['workPhone', 'voipNumber']);
 // line-items.json's voipNumber sits on a SIM Card row and holds that line's mobile MSISDN (the same +97433001003 the customer's
 // other screens use), so the column name does not make it a landline. Every other voipNumber (cpe-devices.json) is a fixed line.
+// The Fixed Line Number pool keeps the picker's record shape (`msisdn`), but every number in it is a landline (leading 4).
+const LANDLINE_IN_FILE = new Set(['public/mock-data/fixed-line-numbers.json:msisdn']);
 const MOBILE_IN_FILE = new Set(['public/mock-data/line-items.json:voipNumber']);
 const MOBILE_FIELDS = new Set([
   'cellNumber', 'mobile', 'mobileNumber', 'msisdn', 'phone', 'billingContactPhone', 'altPhone', 'accountManagerMobile',
@@ -40,7 +42,8 @@ test('every seeded Qatar phone number is 8 digits and matches its field type', a
   assert.ok(all.length > 400, `expected a real population, saw ${all.length}`);
   const wrong = all.filter(({ file, field, value }) => {
     const local = toLocal(value);
-    return !(LANDLINE_FIELDS.has(field) && !MOBILE_IN_FILE.has(`${file}:${field}`) ? isQatarLandlineLocalNumber(local) : isQatarMobileLocalNumber(local));
+    const landline = LANDLINE_IN_FILE.has(`${file}:${field}`) || (LANDLINE_FIELDS.has(field) && !MOBILE_IN_FILE.has(`${file}:${field}`));
+    return !(landline ? isQatarLandlineLocalNumber(local) : isQatarMobileLocalNumber(local));
   });
   assert.deepEqual(wrong, []);
 });

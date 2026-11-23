@@ -5,6 +5,8 @@ import { formatQar } from '../lib/format';
 // words as TBC / plan-based). An add-on without `pricing` is Free only when priced QAR 0. Nothing is guessed from a name or a description.
 
 export const ADDON_CATEGORIES = ['Local Data', 'Local Minutes', 'International', 'Roaming', 'Combo', 'Others'] as const;
+/** The home Add-ons page's category tabs (Frequently Used follows them); an add-on's record names its own in `addonCategory`. */
+export const HOME_ADDON_TABS = ['IPTV', 'Mesh', 'Speed Booster', 'Voice'] as const;
 export type AddonCategory = (typeof ADDON_CATEGORIES)[number];
 
 /**
@@ -62,7 +64,15 @@ export interface AddonBillingOption {
 }
 const WEEKS_PER_MONTH = 52 / 12;
 
+/** A fixed-term way to take an add-on (the home Speed Booster): the months it runs and what the term costs, charged once at activation. */
+export interface AddonTermOption {
+  months: number;
+  priceQAR: number;
+}
+
 export interface CategorisedAddon {
+  /** Fixed terms offered instead of the ongoing (lifetime) charge. */
+  termOptions?: AddonTermOption[];
   /** Stated on the record when it is not monthly. */
   billingFrequency?: AddonBillingFrequency;
   /** Explicit alternatives when the agent may choose how often this add-on is billed. */

@@ -13,7 +13,11 @@ const nextConfig = {
       '/mobile-prepaid/new-prepaid-tablet-step-1-contact-id-capture',
       '/mobile-prepaid/new-prepaid-tablet-step-3-number-selection',
       '/mobile-prepaid/new-prepaid-tablet-step-4-sim-serial',
-    ].map((source) => ({ source, destination: '/mobile-prepaid/new-prepaid', permanent: false }));
+    ].map((source) => ({ source, destination: '/mobile-prepaid/new-prepaid', permanent: false })).concat([
+      // The common Contact page of every New Connection journey moved from /mobile/start-connection to /start-connection: the old addresses (bookmarks, saved links) still arrive.
+      { source: '/mobile/start-connection', destination: '/start-connection', permanent: false },
+      { source: '/mobile/start-connection/existing/:customerId', destination: '/start-connection/existing/:customerId', permanent: false },
+    ]);
   },
 };
 export default nextConfig;

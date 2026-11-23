@@ -9,13 +9,19 @@ import type { EntityKind } from '../../../engines/mockDataEngine';
 import type { EligibilityResult } from '../../../components/domain/eligibilityTypes';
 import { Radio, Icon, Label } from 'dxp-ui';
 import { HOME_PRODUCT_ICON } from './homeProductIcon';
-import { clearAndQuiet, handOverToJourney, productEligibilityClear, selectProduct } from './productChoice';
+import { HOME_OFFER_ROUTE, clearAndQuiet, handOverHomeToRfs, handOverToJourney, productEligibilityClear, selectProduct } from './productChoice';
 import { ProductEligibility } from './ProductEligibility';
 import { ID_TYPE_NOTICE, idTypeApprovalOf } from './idTypeNotice';
 import { HOME_PRODUCTS, IN_JOURNEY_OFFERS, PRODUCTS, PRODUCT_OF_OFFER_JOURNEY, homeProductOfOffer, mnpTypeOfOffer } from '../products';
 import type { HomeProduct, MnpType, ConnectionProduct } from '../products';
 import type { ConnectionJourney } from '../newConnectionModel';
+import { offerJourneyOfRfs } from '../rfsStart';
+import type { RfsCheckValue } from '../rfsStart';
+import type { ServiceJourney } from '../../../capabilities';
 import { store } from '../../../stores/store';
+
+/** The journeys New Home Connection's offers page continues in itself: the home ones (the others, postpaid and MNP, open their own journey). */
+const HOME_OFFER_JOURNEYS: readonly ServiceJourney[] = ['new-fixed-line', 'new-fwa'];
 
 /** What the product step needs from the journey. */
 
@@ -64,7 +70,7 @@ export function ProductSelection({
   ctx: ProductStepContext;
   /** 'buttons': the mobile page, whose products are the footer buttons (New Fixed Line, New MNP, New Prepaid, New Postpaid). 'cards': the home product cards. */
   /** 'buttons': the mobile page, whose products are the footer buttons (New Fixed Line, New MNP, New Prepaid, New Postpaid). 'cards': the home product cards. */
-  variant?: 'cards' | 'buttons';
+  variant?: 'cards' | 'buttons' | 'offers';
 }) {
   const product = values.product as ConnectionProduct | undefined;
   const mnpType = values.mnpType as MnpType | undefined;
@@ -75,6 +81,10 @@ export function ProductSelection({
   const crossSales = values.crossSales as CrossSalesValue | undefined;
 
   const buttons = variant === 'buttons';
+  // New Home Connection started from Check RFS: the product is known (the service the check found), so the page lists the home offers that fit it and judges the product's eligibility, with no product
+  // cards. While it is passing through on the way in (an offer was already chosen in New Connection: `productPreselected` is set until the page moves on) it lists none; coming Back to it lists them.
+  const offersOnly = variant === 'offers';
+  const rfs = values.rfsCheck as RfsCheckValue | undefined;
   // A product chosen by a footer button (or named by the entry point) moves on by itself once its eligibility is judged and
   // quiet. The flag is cleared as it fires, so coming Back to this page later never skips it again.
   // An offer the agent selected (Select Offer) also goes on when its eligibility routes the order for approval: the routing is shown on this page
@@ -118,13 +128,13 @@ export function ProductSelection({
 
       {/* Recommended offers belong to New Connection; New Home Connection goes straight to the home products. */}
       {/* A connection added to a Family Package is on the package's plan: there is no offer to choose, only the product's eligibility to judge. */}
-      {!homeJourney && !values.familyLine && (
+      {(!homeJourney || offersOnly) && !values.familyLine && !(values.offerCarried && values.productPreselected === true) && (
         <CrossSalesStep
           customerId={eligibility?.customerId}
           value={crossSales ?? {}}
-          onChange={onOfferChange}
+          onChange={offersOnly ? (v) => ctx.applyCrossSales(setValue, v) : onOfferChange}
           // An offer for another journey (an upgrade) opens that journey for the customer identified here: this draft has done its job.
-          onHandOff={(route, customer) => handOverToJourney(ctx, route, customer)}
+          onHandOff={(route, customer, offer) => (route === HOME_OFFER_ROUTE && offer ? handOverHomeToRfs(ctx, values, offer) : handOverToJourney(ctx, route, customer))}
           // Select Offer on a card: the offer's product is chosen (onChange above), then the page moves on by itself once that product's eligibility is
           // judged and quiet - the same hand-over the footer buttons use. Without this the offer was only selected and the agent was left on the page.
           onContinue={() => {
@@ -132,9 +142,12 @@ export function ProductSelection({
             setValue('productPreselected', true);
           }}
           // Recommended Offers lists postpaid-side offers only (postpaid, fixed line, MNP ...): a New Prepaid pack is chosen on the prepaid journey's own Offers & Plans page.
-          journey={IN_JOURNEY_OFFERS.filter((j) => j !== 'new-prepaid')}
+          journey={offersOnly ? HOME_OFFER_JOURNEYS : IN_JOURNEY_OFFERS.filter((j) => j !== 'new-prepaid')}
+          homeFit={offersOnly && rfs ? (o) => o.serviceJourney === offerJourneyOfRfs(rfs.service) : undefined}
           // Every customer, new or existing, sees every offer type, topped up with the standard offers.
           showAllOfferTypes
+          // A New Home offer (fixed line, FWA) opens Check RFS: whether fibre or 5G Home can be sold at the address comes first.
+          homeRoute={offersOnly ? undefined : HOME_OFFER_ROUTE}
           onInterestedOffer={async (offer: Offer) => {
             const leadId = `LEAD-${Date.now().toString().slice(-6)}`;
             await ctx.createRecord('leads', {
@@ -154,7 +167,7 @@ export function ProductSelection({
       )}
 
       <section aria-labelledby="product-choice" className="space-y-3">
-        {!buttons && (
+        {!buttons && !offersOnly && (
           <>
           <h3 id="product-choice" className="title title-lg">
             {homeJourney ? 'Which connection does the customer want?' : 'What does the customer want?'}
@@ -207,7 +220,7 @@ export function ProductSelection({
       </section>
 
       {/* New Home Connection: what the chosen product needs from the address given on the page before (FWA's service type, Fibre's RFS read-out). */}
-      {homeJourney && product === 'fixed-line' && homeProduct && <InstallationReadiness values={values} setValue={setValue} addressOnPage={false} />}
+      {homeJourney && !offersOnly && product === 'fixed-line' && homeProduct && <InstallationReadiness values={values} setValue={setValue} addressOnPage={false} />}
     </div>
   );
 }

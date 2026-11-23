@@ -62,6 +62,8 @@ const CONDITIONS: Record<string, (v: Values) => boolean> = {
     // Only a NEW account has VAT details: an existing profile in use (selected or being edited) never does.
     return Boolean(b?.creatingNew && !b.selectedProfileId && !b.editingProfileId && b.newAccount?.vatRegistrationNumber?.trim());
   },
+  // New Home Connection on a KID that already carries a service (Active or Suspended): the agent proceeded from Check RFS (rfsCheck.kidInUse).
+  'kid-in-use': (v) => Boolean((v.rfsCheck as { kidInUse?: unknown } | undefined)?.kidInUse),
   'upfront-payment': (v) => ((v.checkoutTotals as { dueTodayQar?: number } | undefined)?.dueTodayQar ?? 0) > 0,
 };
 const specialDiscount = (v: Values, kind: string) => {

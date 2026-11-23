@@ -29,10 +29,11 @@ test('the set is New Postpaid x3, then one Fixed Line, one MNP, one Prepaid - fr
   assert.ok(!set.some((o) => o.serviceJourney === 'new-fwa' || o.serviceJourney === 'pre-to-post' || o.serviceJourney === 'post-to-post'), 'no FWA, and no upgrades');
 });
 
-test('the home slot is a Fixed Line offer even when FWA is listed first; a type with no offer contributes none', () => {
+test('the home cards lead with the offers that fit (Fixed Line by default), the rest after; a type with no offer contributes none', () => {
   const fixed = { offerName: 'Fixed', serviceJourney: 'new-fixed-line' }, fwa = { offerName: 'FWA', serviceJourney: 'new-fwa' };
-  assert.deepEqual(names(model.demoOfferSet({ 'new-home': [fwa, fixed] })), ['Fixed']);
-  assert.deepEqual(names(model.demoOfferSet({ 'new-home': [fwa] })), [], 'FWA alone is not a Fixed Line offer');
+  assert.deepEqual(names(model.demoOfferSet({ 'new-home': [fwa, fixed] })), ['Fixed', 'FWA'], 'Fixed Line first even when FWA is listed first');
+  assert.deepEqual(names(model.demoOfferSet({ 'new-home': [fixed, fwa] }, [], (o) => o.serviceJourney === 'new-fwa')), ['FWA', 'Fixed'], 'with Check RFS found FWA, the FWA offer leads');
+  assert.deepEqual(names(model.demoOfferSet({ 'new-home': [fwa] })), ['FWA'], 'one home offer is one card');
   assert.deepEqual(model.demoOfferSet({}), []);
   const mnp = [{ offerName: 'M1' }, { offerName: 'M2' }];
   assert.deepEqual(names(model.demoOfferSet({ 'new-mnp': mnp })), ['M1'], 'one per type');
@@ -80,19 +81,19 @@ test('no top strip on the cards', async () => {
   assert.doesNotMatch(block, /border-t-4|border-t-\[/);
 });
 
-test('Recommended Offers always shows six cards: with five available, Fiber Connection is the sixth; with six, it is not added', () => {
-  const lists = { 'new-postpaid': std.STANDARD_OFFERS['new-postpaid'], 'new-home': std.STANDARD_OFFERS['new-home'], 'new-mnp': std.STANDARD_OFFERS['new-mnp'] };
-  const five = model.demoOfferSet(lists);
-  assert.equal(five.length, 5, 'prepaid offers are not on this page');
+test('Recommended Offers always shows six cards: Postpaid Voice, Broadband, Family, two New Home, one New MNP - in that order', () => {
+  const lists = { 'new-postpaid': std.STANDARD_OFFERS['new-postpaid'], 'new-home': std.STANDARD_OFFERS['new-home'], 'new-mnp': std.STANDARD_OFFERS['new-mnp'], 'new-prepaid': [] };
   const six = model.demoOfferSet(lists, [std.FIBER_CONNECTION_OFFER]);
   assert.equal(six.length, 6);
-  assert.equal(six[5].offerName, 'Fiber Connection');
-  assert.equal(six[5].cardTag, 'New Home', 'the standing fibre card is tagged New Home');
-  assert.equal(six[5].serviceJourney, 'new-fixed-line');
+  assert.deepEqual(six.map((o) => o.serviceJourney), ['new-postpaid', 'new-postpaid', 'new-postpaid', 'new-fixed-line', 'new-fixed-line', 'mnp-postpaid']);
+  assert.equal(six[4].offerName, 'Fiber Connection', 'the standing fibre card is the second New Home card');
+  assert.equal(six[4].cardTag, 'New Home');
   assert.equal(new Set(six.map((o) => o.offerId)).size, 6, 'no card twice');
-  // Already six: the filler is not added.
-  const full = model.demoOfferSet({ ...lists, 'new-prepaid': std.STANDARD_OFFERS['new-prepaid'] }, [std.FIBER_CONNECTION_OFFER]);
-  assert.equal(full.length, 6);
-  assert.equal(full[5].serviceJourney, 'new-prepaid', 'a real sixth offer keeps its place; the filler is cut off');
+  // With only one home offer in the lists, the standing card is the second New Home card; with none, the set is short by what the catalogue lacks.
+  const one = model.demoOfferSet({ ...lists, 'new-home': [std.STANDARD_OFFERS['new-home'][0]] }, [std.FIBER_CONNECTION_OFFER]);
+  assert.deepEqual(names(one.slice(3)), ['GigaHome Fiber Triple Play', 'Fiber Connection', 'Port-in Postpaid Essential']);
   assert.equal(model.demoOfferSet({}, [std.FIBER_CONNECTION_OFFER]).length, 1, 'never more than the fillers given');
+  // The New Prepaid journey's own page lists the prepaid type: its pack is the sixth card and New Home gives one.
+  const prepaid = model.demoOfferSet({ ...lists, 'new-prepaid': std.STANDARD_OFFERS['new-prepaid'] }, [std.FIBER_CONNECTION_OFFER]);
+  assert.deepEqual(prepaid.map((o) => o.serviceJourney), ['new-postpaid', 'new-postpaid', 'new-postpaid', 'new-fixed-line', 'mnp-postpaid', 'new-prepaid']);
 });

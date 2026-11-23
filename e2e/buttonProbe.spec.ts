@@ -72,7 +72,7 @@ test('buttons: the shell (header, profile menu, sidebar) and the main screens', 
     out.push('## global search open', await probe(page));
     await page.keyboard.press('Escape');
   }
-  for (const path of ['/customer-search', '/customer/CUST-1001', '/orders', '/leads', '/tasks', '/ticket-history', '/new-connections', '/mobile', '/mobile/start-connection']) {
+  for (const path of ['/customer-search', '/customer/CUST-1001', '/orders', '/leads', '/tasks', '/ticket-history', '/new-connections', '/mobile', '/start-connection']) {
     await go(page, path);
     out.push(`## ${path}`, await probe(page));
   }
@@ -88,7 +88,7 @@ test('buttons: customer search results and the New Connection journey after the 
   await input.press('Enter');
   await page.waitForTimeout(1500);
   const out: string[] = ['## customer search results', await probe(page)];
-  await go(page, '/mobile/start-connection');
+  await go(page, '/start-connection');
   await page.getByRole('button', { name: /Qatar ID \(QID\)/ }).first().click();
   if (info.project.name === 'desktop') await page.getByRole('button', { name: 'Initiate scan' }).first().click();
   await page.waitForTimeout(1500);

@@ -657,7 +657,7 @@
 "evidence": "ModuleScreenList.tsx:~66, ScreenNotYetBuilt.tsx:17-24, router.tsx:74,76,99-101, 72",
 "recommendation": "NotFound for unknown module/screen/category; rename the wizard URL.",
 "status": "Fixed",
-"resolution": "NotFound for unknown module, screen and category; wizard URL renamed /mobile/start-connection."
+"resolution": "NotFound for unknown module, screen and category; wizard URL renamed /start-connection."
 },
 {
 "id": "D-05",

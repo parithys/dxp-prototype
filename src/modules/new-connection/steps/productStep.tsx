@@ -7,12 +7,12 @@ import { ICONS_HOME, Card } from 'dxp-ui';
 import { StartCards } from './StartCards';
 import { ProductSelection } from './ProductSelection';
 import type { ProductStepContext } from './ProductSelection';
-import { handOverToHomeConnection, productEligibilityClear, selectProduct } from './productChoice';
+import { handOverHomeToRfs, productEligibilityClear, selectProduct } from './productChoice';
 export { productEligibilityClear } from './productChoice';
 import { PRODUCT_OF_OFFER_JOURNEY, homeProductLabel, mnpTypeOfOffer, productLabel } from '../products';
 import type { ConnectionProduct, HomeProduct } from '../products';
 
-import { homeConnectionRoute } from './homeConnectionRoute';
+import { rfsStarted } from '../rfsStart';
 import { homeInstallationReady, serviceTypeLabel } from '../../fixed-line-fibre/fixedActivation/fixedActivationModel';
 import { store } from '../../../stores/store';
 
@@ -31,6 +31,23 @@ const SHOW_START_CARDS = false;
 const productSummary = [
   { key: 'product', label: 'Product', type: 'text' as const, value: (v: Record<string, unknown>) => (v.product === 'fixed-line' && v.homeProduct ? homeProductLabel(v.homeProduct as HomeProduct) : productLabel(v.product as ConnectionProduct | undefined)) },
 ];
+
+/**
+ * New Home Connection started from Check RFS: Recommended Offers in place of the product cards (the check named the product). It lists the home offers that fit the service found - none when the
+ * offer was already chosen in New Connection - and judges the product's eligibility, moving on by itself when that is clear. Active only when the journey began from Check RFS.
+ */
+export function homeOffersStep(ctx: ProductStepContext): WizardStep {
+  return {
+    key: 'homeOffers',
+    label: 'Recommended Offers',
+    heading: 'Recommended Offers',
+    subheading: 'Personalised using the customer’s profile and eligibility.',
+    summary: [...crossSalesSummary, ...productSummary, { key: 'serviceType', label: 'Service Type', type: 'text' as const, optional: true, value: (v: Record<string, unknown>) => serviceTypeLabel((v.installation as { serviceType?: string } | undefined)?.serviceType) }],
+    render: ({ values, setValue, goNext }) => <ProductSelection values={values} setValue={setValue} goNext={goNext} ctx={ctx} variant="offers" />,
+    isValid: (values) => Boolean(values.product) && productEligibilityClear(values, { requireHomeKind: true }) && homeInstallationReady(values),
+    skip: (values) => !rfsStarted(values),
+  };
+}
 
 /**
  * Product selection, the second step of both journeys (see ProductSelection). Continue needs a product and its eligibility
@@ -54,6 +71,8 @@ export function productStep(ctx: ProductStepContext): WizardStep {
       render: ({ values, setValue, goNext }) => <ProductSelection values={values} setValue={setValue} goNext={goNext} ctx={ctx} />,
       // The Address was given before this page: Fibre also needs it read as RFS and FWA its service type, shown under the cards.
       isValid: (values) => Boolean(values.product) && productEligibilityClear(values, { requireHomeKind: true }) && homeInstallationReady(values),
+      // Not asked when the journey began from Check RFS: the check named the product (see homeOffersStep).
+      skip: rfsStarted,
     };
   }
   return {
@@ -98,7 +117,7 @@ export function productStep(ctx: ProductStepContext): WizardStep {
             <span className="title title-md font-bold">Start Another Journey</span>
           </div>
           {canUseFeature(personaId, HOME_CONNECTION_FEATURE) && (
-            <JourneyCardButton label="New Home" hint="Home broadband" tone="amber" icon={ICONS_HOME} onClick={() => handOverToHomeConnection(ctx, values, homeConnectionRoute(ctx))} />
+            <JourneyCardButton label="New Home" hint="Home broadband" tone="amber" icon={ICONS_HOME} onClick={() => handOverHomeToRfs(ctx, values)} />
           )}
           <NewJourneyButtons
             variant="cards"

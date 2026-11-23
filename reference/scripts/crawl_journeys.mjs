@@ -536,7 +536,7 @@ async function runJourney(page, j) {
       // New Connection has a second implemented path: the existing customer, opened from Customer 360.
       if (j.id === 'mob-new-connection') {
         await page.evaluate(() => sessionStorage.clear());
-        await page.goto(BASE + `/mobile/start-connection/existing/${SAMPLE.customerId}`);
+        await page.goto(BASE + `/start-connection/existing/${SAMPLE.customerId}`);
         await sleep(1500);
         await driveWizard(rec, 'existing customer start');
       }
