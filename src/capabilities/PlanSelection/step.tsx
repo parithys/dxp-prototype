@@ -97,6 +97,7 @@ export function fixedPlanSelectionStep(): WizardStep {
           if (field === 'productId') {
             setValue('addonIds', []);
             setValue('iptv', undefined);
+            setValue('extenders', undefined);
           }
         }}
       />

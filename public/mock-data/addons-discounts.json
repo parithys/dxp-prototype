@@ -1753,7 +1753,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -1820,7 +1821,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -1887,7 +1889,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -1954,7 +1957,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2021,7 +2025,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2088,7 +2093,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2155,7 +2161,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2222,7 +2229,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2289,7 +2297,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2356,7 +2365,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2423,7 +2433,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2490,7 +2501,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2557,7 +2569,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2624,7 +2637,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -2691,7 +2705,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -3126,7 +3141,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -3193,7 +3209,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -3260,7 +3277,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -3327,7 +3345,8 @@
         "frequency": "one-time",
         "priceQAR": 250
       }
-    ]
+    ],
+    "extender": true
   },
   {
     "_note": "Demo catalogue entry (2026-11-22): a sample add-on for a sample home plan.",
@@ -7634,17 +7653,7 @@
     "durationMonths": null,
     "planId": "PROD-201",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -7775,17 +7784,7 @@
     "durationMonths": null,
     "planId": "PROD-410",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -7916,17 +7915,7 @@
     "durationMonths": null,
     "planId": "PROD-411",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -8057,17 +8046,7 @@
     "durationMonths": null,
     "planId": "PROD-412",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -8198,17 +8177,7 @@
     "durationMonths": null,
     "planId": "PROD-413",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -8339,17 +8308,7 @@
     "durationMonths": null,
     "planId": "PROD-414",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -8480,17 +8439,7 @@
     "durationMonths": null,
     "planId": "PROD-420",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -8621,17 +8570,7 @@
     "durationMonths": null,
     "planId": "PROD-421",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -8762,17 +8701,7 @@
     "durationMonths": null,
     "planId": "PROD-422",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -8903,17 +8832,7 @@
     "durationMonths": null,
     "planId": "PROD-423",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -9044,17 +8963,7 @@
     "durationMonths": null,
     "planId": "PROD-424",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -9185,17 +9094,7 @@
     "durationMonths": null,
     "planId": "PROD-425",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -9326,17 +9225,7 @@
     "durationMonths": null,
     "planId": "PROD-426",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -9467,17 +9356,7 @@
     "durationMonths": null,
     "planId": "PROD-427",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -9608,17 +9487,7 @@
     "durationMonths": null,
     "planId": "PROD-428",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -9749,17 +9618,7 @@
     "durationMonths": null,
     "planId": "PROD-429",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -9890,17 +9749,7 @@
     "durationMonths": null,
     "planId": "PROD-430",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -10031,17 +9880,7 @@
     "durationMonths": null,
     "planId": "PROD-431",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -10172,17 +10011,7 @@
     "durationMonths": null,
     "planId": "PROD-432",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -10313,17 +10142,7 @@
     "durationMonths": null,
     "planId": "PROD-433",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -10454,17 +10273,7 @@
     "durationMonths": null,
     "planId": "PROD-440",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -10595,17 +10404,7 @@
     "durationMonths": null,
     "planId": "PROD-441",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -10736,17 +10535,7 @@
     "durationMonths": null,
     "planId": "PROD-450",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -10877,17 +10666,7 @@
     "durationMonths": null,
     "planId": "PROD-451",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -11018,17 +10797,7 @@
     "durationMonths": null,
     "planId": "PROD-452",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -11159,17 +10928,7 @@
     "durationMonths": null,
     "planId": "PROD-453",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -11300,17 +11059,7 @@
     "durationMonths": null,
     "planId": "PROD-454",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -11441,17 +11190,7 @@
     "durationMonths": null,
     "planId": "PROD-455",
     "isLockedReadOnly": false,
-    "lockInMonths": 0,
-    "billingOptions": [
-      {
-        "frequency": "monthly",
-        "priceQAR": 45
-      },
-      {
-        "frequency": "one-time",
-        "priceQAR": 400
-      }
-    ]
+    "lockInMonths": 0
   },
   {
     "_note": "Demo catalogue entry (2026-11-23): a sample add-on for the home Add-ons page tabs.",
@@ -11970,5 +11709,275 @@
     "durationMonths": 3,
     "planId": "PROD-455",
     "isLockedReadOnly": false
+  },
+  {
+    "_note": "Demo catalogue entry (2026-11-23): the Wi-Fi Extender of a home plan (mock pricing: QAR 25 a month or QAR 250 once).",
+    "addonDiscountId": "ADO-9997",
+    "addonType": "Wi-Fi Add-on",
+    "name": "Wi-Fi Extender",
+    "description": "One mesh extender for larger homes",
+    "price": 25,
+    "category": "Paid Add-on",
+    "durationMonths": null,
+    "planId": "PROD-201",
+    "isLockedReadOnly": false,
+    "addonCategory": "Mesh",
+    "extender": true,
+    "frequentlyUsedFor": {
+      "plans": [
+        "PROD-201"
+      ]
+    },
+    "lockInMonths": 12,
+    "billingOptions": [
+      {
+        "frequency": "monthly",
+        "priceQAR": 25
+      },
+      {
+        "frequency": "one-time",
+        "priceQAR": 250
+      }
+    ]
+  },
+  {
+    "_note": "Demo catalogue entry (2026-11-23): the Wi-Fi Extender of a home plan (mock pricing: QAR 25 a month or QAR 250 once).",
+    "addonDiscountId": "ADO-9998",
+    "addonType": "Wi-Fi Add-on",
+    "name": "Wi-Fi Extender",
+    "description": "One mesh extender for larger homes",
+    "price": 25,
+    "category": "Paid Add-on",
+    "durationMonths": null,
+    "planId": "PROD-440",
+    "isLockedReadOnly": false,
+    "addonCategory": "Mesh",
+    "extender": true,
+    "frequentlyUsedFor": {
+      "plans": [
+        "PROD-440"
+      ]
+    },
+    "lockInMonths": 12,
+    "billingOptions": [
+      {
+        "frequency": "monthly",
+        "priceQAR": 25
+      },
+      {
+        "frequency": "one-time",
+        "priceQAR": 250
+      }
+    ]
+  },
+  {
+    "_note": "Demo catalogue entry (2026-11-23): the Wi-Fi Extender of a home plan (mock pricing: QAR 25 a month or QAR 250 once).",
+    "addonDiscountId": "ADO-9999",
+    "addonType": "Wi-Fi Add-on",
+    "name": "Wi-Fi Extender",
+    "description": "One mesh extender for larger homes",
+    "price": 25,
+    "category": "Paid Add-on",
+    "durationMonths": null,
+    "planId": "PROD-441",
+    "isLockedReadOnly": false,
+    "addonCategory": "Mesh",
+    "extender": true,
+    "frequentlyUsedFor": {
+      "plans": [
+        "PROD-441"
+      ]
+    },
+    "lockInMonths": 12,
+    "billingOptions": [
+      {
+        "frequency": "monthly",
+        "priceQAR": 25
+      },
+      {
+        "frequency": "one-time",
+        "priceQAR": 250
+      }
+    ]
+  },
+  {
+    "_note": "Demo catalogue entry (2026-11-23): the Wi-Fi Extender of a home plan (mock pricing: QAR 25 a month or QAR 250 once).",
+    "addonDiscountId": "ADO-10000",
+    "addonType": "Wi-Fi Add-on",
+    "name": "Wi-Fi Extender",
+    "description": "One mesh extender for larger homes",
+    "price": 25,
+    "category": "Paid Add-on",
+    "durationMonths": null,
+    "planId": "PROD-450",
+    "isLockedReadOnly": false,
+    "addonCategory": "Mesh",
+    "extender": true,
+    "frequentlyUsedFor": {
+      "plans": [
+        "PROD-450"
+      ]
+    },
+    "lockInMonths": 12,
+    "billingOptions": [
+      {
+        "frequency": "monthly",
+        "priceQAR": 25
+      },
+      {
+        "frequency": "one-time",
+        "priceQAR": 250
+      }
+    ]
+  },
+  {
+    "_note": "Demo catalogue entry (2026-11-23): the Wi-Fi Extender of a home plan (mock pricing: QAR 25 a month or QAR 250 once).",
+    "addonDiscountId": "ADO-10001",
+    "addonType": "Wi-Fi Add-on",
+    "name": "Wi-Fi Extender",
+    "description": "One mesh extender for larger homes",
+    "price": 25,
+    "category": "Paid Add-on",
+    "durationMonths": null,
+    "planId": "PROD-451",
+    "isLockedReadOnly": false,
+    "addonCategory": "Mesh",
+    "extender": true,
+    "frequentlyUsedFor": {
+      "plans": [
+        "PROD-451"
+      ]
+    },
+    "lockInMonths": 12,
+    "billingOptions": [
+      {
+        "frequency": "monthly",
+        "priceQAR": 25
+      },
+      {
+        "frequency": "one-time",
+        "priceQAR": 250
+      }
+    ]
+  },
+  {
+    "_note": "Demo catalogue entry (2026-11-23): the Wi-Fi Extender of a home plan (mock pricing: QAR 25 a month or QAR 250 once).",
+    "addonDiscountId": "ADO-10002",
+    "addonType": "Wi-Fi Add-on",
+    "name": "Wi-Fi Extender",
+    "description": "One mesh extender for larger homes",
+    "price": 25,
+    "category": "Paid Add-on",
+    "durationMonths": null,
+    "planId": "PROD-452",
+    "isLockedReadOnly": false,
+    "addonCategory": "Mesh",
+    "extender": true,
+    "frequentlyUsedFor": {
+      "plans": [
+        "PROD-452"
+      ]
+    },
+    "lockInMonths": 12,
+    "billingOptions": [
+      {
+        "frequency": "monthly",
+        "priceQAR": 25
+      },
+      {
+        "frequency": "one-time",
+        "priceQAR": 250
+      }
+    ]
+  },
+  {
+    "_note": "Demo catalogue entry (2026-11-23): the Wi-Fi Extender of a home plan (mock pricing: QAR 25 a month or QAR 250 once).",
+    "addonDiscountId": "ADO-10003",
+    "addonType": "Wi-Fi Add-on",
+    "name": "Wi-Fi Extender",
+    "description": "One mesh extender for larger homes",
+    "price": 25,
+    "category": "Paid Add-on",
+    "durationMonths": null,
+    "planId": "PROD-453",
+    "isLockedReadOnly": false,
+    "addonCategory": "Mesh",
+    "extender": true,
+    "frequentlyUsedFor": {
+      "plans": [
+        "PROD-453"
+      ]
+    },
+    "lockInMonths": 12,
+    "billingOptions": [
+      {
+        "frequency": "monthly",
+        "priceQAR": 25
+      },
+      {
+        "frequency": "one-time",
+        "priceQAR": 250
+      }
+    ]
+  },
+  {
+    "_note": "Demo catalogue entry (2026-11-23): the Wi-Fi Extender of a home plan (mock pricing: QAR 25 a month or QAR 250 once).",
+    "addonDiscountId": "ADO-10004",
+    "addonType": "Wi-Fi Add-on",
+    "name": "Wi-Fi Extender",
+    "description": "One mesh extender for larger homes",
+    "price": 25,
+    "category": "Paid Add-on",
+    "durationMonths": null,
+    "planId": "PROD-454",
+    "isLockedReadOnly": false,
+    "addonCategory": "Mesh",
+    "extender": true,
+    "frequentlyUsedFor": {
+      "plans": [
+        "PROD-454"
+      ]
+    },
+    "lockInMonths": 12,
+    "billingOptions": [
+      {
+        "frequency": "monthly",
+        "priceQAR": 25
+      },
+      {
+        "frequency": "one-time",
+        "priceQAR": 250
+      }
+    ]
+  },
+  {
+    "_note": "Demo catalogue entry (2026-11-23): the Wi-Fi Extender of a home plan (mock pricing: QAR 25 a month or QAR 250 once).",
+    "addonDiscountId": "ADO-10005",
+    "addonType": "Wi-Fi Add-on",
+    "name": "Wi-Fi Extender",
+    "description": "One mesh extender for larger homes",
+    "price": 25,
+    "category": "Paid Add-on",
+    "durationMonths": null,
+    "planId": "PROD-455",
+    "isLockedReadOnly": false,
+    "addonCategory": "Mesh",
+    "extender": true,
+    "frequentlyUsedFor": {
+      "plans": [
+        "PROD-455"
+      ]
+    },
+    "lockInMonths": 12,
+    "billingOptions": [
+      {
+        "frequency": "monthly",
+        "priceQAR": 25
+      },
+      {
+        "frequency": "one-time",
+        "priceQAR": 250
+      }
+    ]
   }
 ]

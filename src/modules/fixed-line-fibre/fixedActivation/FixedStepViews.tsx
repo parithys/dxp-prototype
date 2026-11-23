@@ -242,44 +242,58 @@ export function NumberDevicesStep({ values, setValue }: { values: Values; setVal
     if (!devices) setValue('devices', devicesFor(serviceType, serviceType === 'fiber'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // A number already reserved for the customer is not replaced by a new allocation: the agent is shown the number selection (on its Reserved tab) to choose from. With none held, the first available
+  // Free number is allocated whenever the order has none (on opening, or after the agent clears a chosen number).
   const customerIdNumber = (values.contact as { idNumber?: string } | undefined)?.idNumber;
-  // The first available Free number is allocated whenever the order has none (on opening, or after the agent clears a chosen number).
+  const [heldForCustomer, setHeldForCustomer] = useState(false);
   useEffect(() => {
     if (msisdn) return;
     let live = true;
     void listEntities<MsisdnRecord>('fixed-line-numbers').then((all) => {
-      const n = live ? autoAllocatedFreeNumber(all) : undefined;
+      if (!live) return;
+      const held = all.some((n) => n.status === 'Reserved' && Boolean(customerIdNumber) && (n as { reservedForQid?: string }).reservedForQid === customerIdNumber);
+      setHeldForCustomer(held);
+      if (held) return;
+      const n = autoAllocatedFreeNumber(all);
       if (n) {
         setValue('msisdn', n.msisdn);
         setValue('msisdnSource', 'auto');
         setPoolEmpty(false);
-      } else if (live) setPoolEmpty(true);
+      } else setPoolEmpty(true);
     });
     return () => {
       live = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [msisdn]);
+  }, [msisdn, customerIdNumber]);
   return (
     <div className="space-y-6">
       <section className="space-y-3">
-        <div className="split">
+        {/* A number reserved for the customer: nothing is allocated; the selection opens on its Reserved tab for the agent to choose from. */}
+        {!msisdn && heldForCustomer ? (
           <div>
-            <h3 className="title title-lg font-semibold mb-2">{source === 'selected' ? 'Selected Fixed Line Number' : 'Allocated Fixed Line Number'}</h3>
-            <p className="title title-xl">{msisdn ? toLocalMsisdn(msisdn) : poolEmpty ? '-' : '…'}</p>
-            {poolEmpty && !msisdn && <p className="caption-secondary" role="status">No Free Fixed Line Number is available to allocate. Choose one below.</p>}
+            <h3 className="title title-lg font-semibold mb-2">Select a Fixed Line Number</h3>
+            <p className="caption-secondary" role="status">A Fixed Line Number is reserved for this customer. Choose it, or another number.</p>
           </div>
-          <Button variant="secondary" onClick={() => setChoosing((v) => !v)}>
-            {choosing ? 'Keep This Number' : 'Choose Another Number'}
-          </Button>
-        </div>
-        {(choosing || (poolEmpty && !msisdn)) && (
+        ) : (
+          <div className="split">
+            <div>
+              <h3 className="title title-lg font-semibold mb-2">{source === 'selected' ? 'Selected Fixed Line Number' : 'Allocated Fixed Line Number'}</h3>
+              <p className="title title-xl">{msisdn ? toLocalMsisdn(msisdn) : poolEmpty ? '-' : '…'}</p>
+              {poolEmpty && !msisdn && <p className="caption-secondary" role="status">No Free Fixed Line Number is available to allocate. Choose one below.</p>}
+            </div>
+            <Button variant="secondary" onClick={() => setChoosing((v) => !v)}>
+              {choosing ? 'Keep This Number' : 'Choose Another Number'}
+            </Button>
+          </div>
+        )}
+        {(choosing || (poolEmpty && !msisdn) || (!msisdn && heldForCustomer)) && (
           <NumberSelection
             value={msisdn}
             profile={FIXED_NUMBER_PICKER}
             customerIdNumber={customerIdNumber}
             onChange={(next) => {
-              // Choosing the selected number again clears it, and the Free pool allocates the next one.
+              // Choosing the selected number again clears it: the Free pool allocates the next one, or - with a number reserved for the customer - the selection opens again.
               setValue('msisdn', next);
               setValue('msisdnSource', next ? 'selected' : undefined);
             }}

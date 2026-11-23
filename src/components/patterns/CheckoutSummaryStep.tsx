@@ -1,5 +1,6 @@
 import type { NumberWaiver } from '../../engines/numberWaiver';
 import type { HomeIptvSelection } from '../../engines/homeIptv';
+import type { HomeExtendersSelection } from '../../engines/homeExtenders';
 import type { EligibilityResult } from '../domain/eligibilityTypes';
 import type { SimTypeValue } from '../domain/SimTypeStep';
 import type { CheckoutTotals, TncLegalFacts } from './checkoutSummaryModel';
@@ -13,6 +14,8 @@ import type { AddonBillingFrequency } from '../../engines/addonCategories';
 interface CheckoutSummaryStepProps {
   /** A home order's IPTV choice (see engines/homeIptv.ts). */
   iptv?: HomeIptvSelection;
+  /** A home order's Wi-Fi Extenders. */
+  extenders?: HomeExtendersSelection;
   /** The Waive Off chosen on Number Selection; Checkout shows the waived amount and the revised upfront charge. */
   numberWaiver?: NumberWaiver;
   customerName: string | undefined;
@@ -123,6 +126,7 @@ export function CheckoutSummaryStep({
   familyRows,
   planRentalIncluded,
   iptv,
+  extenders,
   layout = 'default',
 }: CheckoutSummaryStepProps) {
   const derived = useCheckoutSummary({
@@ -145,6 +149,7 @@ export function CheckoutSummaryStep({
     extraRows: familyRows,
     planRentalIncluded,
     iptv,
+    extenders,
   });
 
   if (layout === 'detailed') {

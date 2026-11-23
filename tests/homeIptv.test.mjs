@@ -20,11 +20,13 @@ test('the STB that comes with a bundle is charged by its own terms; no box and a
   assert.equal(includedStbChargeQar({ stb: { included: false, litePriceQAR: 50, premiumPriceQAR: 150 } }, { enabled: true, stb: 'premium' }), 0);
 });
 
-test('additional physical STBs are always chargeable, whatever the box choice, and capped', () => {
-  for (const stb of ['premium', 'lite', 'none']) assert.equal(extraStbChargeQar(bundle, { enabled: true, stb, extraStbs: 2 }), 398);
-  assert.equal(extraStbCount({ enabled: true, extraStbs: 99 }), MAX_EXTRA_STBS);
-  assert.equal(extraStbCount({ enabled: true, extraStbs: -3 }), 0);
-  assert.equal(extraStbChargeQar(bundle, { enabled: true, extraStbs: 0 }), 0);
+test('additional physical STBs are chargeable once a Premium or Lite STB is chosen, capped, and not asked (so not charged) with no STB', () => {
+  for (const stb of ['premium', 'lite']) assert.equal(extraStbChargeQar(bundle, { enabled: true, stb, extraStbs: 2 }), 398);
+  assert.equal(extraStbChargeQar(bundle, { enabled: true, stb: 'none', extraStbs: 2 }), 0, 'no STB: no question, no charge');
+  assert.equal(extraStbChargeQar(bundle, { enabled: true, extraStbs: 2 }), 0, 'no box chosen yet');
+  assert.equal(extraStbCount({ enabled: true, stb: 'lite', extraStbs: 99 }), MAX_EXTRA_STBS);
+  assert.equal(extraStbCount({ enabled: true, stb: 'lite', extraStbs: -3 }), 0);
+  assert.equal(extraStbChargeQar(bundle, { enabled: true, stb: 'lite', extraStbs: 0 }), 0);
 });
 
 test('one-time lines: the chargeable box and the additional boxes; nothing when IPTV is off', () => {
@@ -33,14 +35,15 @@ test('one-time lines: the chargeable box and the additional boxes; nothing when 
   assert.deepEqual(iptvOneTimeLines(bundle, { enabled: false, stb: 'lite', extraStbs: 1 }), []);
 });
 
-test('IPTV is complete when off, or when it has a bundle, the box choice (if offered) and an answer on additional boxes', () => {
+test('IPTV is complete when off, or with a bundle, the box choice (if offered) and - after a Premium or Lite STB only - an answer on additional boxes', () => {
   assert.equal(isIptvComplete(undefined), true);
   assert.equal(isIptvComplete({ enabled: false }), true);
   assert.equal(isIptvComplete({ enabled: true }), false);
-  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, extraStbs: 0 }), false);
-  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'none', extraStbs: 0 }), true);
-  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: false }), false);
-  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: false, extraStbs: 0 }), true);
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true }), false, 'no box choice');
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'lite' }), false, 'a box, additional boxes not answered');
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'lite', extraStbs: 0 }), true);
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'none' }), true, 'no STB: nothing more to ask');
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: false }), true, 'a bundle with no STB');
 });
 
 test('every home IPTV bundle record states its STB terms and extra-box price, and shares one exclusive group (one bundle at a time)', () => {
@@ -58,7 +61,7 @@ test('every home IPTV bundle record states its STB terms and extra-box price, an
 
 test('a Triple Play plan has IPTV on without the switch, and a bundle is optional; a Double Play plan must enable it first', () => {
   assert.equal(isIptvComplete({ enabled: true, planIncluded: true }), true);
-  assert.equal(isIptvComplete({ enabled: true, planIncluded: true, bundleId: 'B', stbOffered: true, extraStbs: 0 }), false, 'a chosen bundle still needs its box choice');
+  assert.equal(isIptvComplete({ enabled: true, planIncluded: true, bundleId: 'B', stbOffered: true }), false, 'a chosen bundle still needs its box choice');
   assert.equal(isIptvComplete({ enabled: true }), false);
   const step = fs.readFileSync('src/capabilities/AddonsSelection/HomeAddonsStep.tsx', 'utf8');
   assert.match(step, /triple \? undefined : <IptvEnable/);

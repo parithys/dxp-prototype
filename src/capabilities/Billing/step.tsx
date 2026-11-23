@@ -34,6 +34,11 @@ export function billingStep(
     profileSuffix?: string;
     /** The journey the agent started, which decides the account type (default postpaid); a function when one wizard serves several products. */
     journey?: BillingJourney | ((values: Record<string, unknown>) => BillingJourney);
+    /**
+     * New Home Connection: the page is shown (not passed over), a new account's Billing Address is "Same as Installation Address" unless the agent - a persona that may edit it - gives another, and an
+     * existing account's address is edited only by such a persona. Off: the page is what it always was.
+     */
+    homeBillingAddress?: boolean;
   } = {}
 ): WizardStep {
   return {
@@ -43,7 +48,7 @@ export function billingStep(
     // reported as a problem): BillingAccountAutoResolver, mounted by the wizard for this step wherever the journey enters it (a journey that skips
     // Product Selection included). A new account takes the default credit limit for the segment (the agent's choice, if any, still wins). The step
     // stays in the rail, so the agent can go back to change the profile or choose a different credit limit.
-    autoPass: () => true,
+    ...(opts.homeBillingAddress ? {} : { autoPass: () => true }),
     headless: ({ values, setValue }) => {
       const contact = values.contact as GuidedContactValue | undefined;
       if (!contact?.moiResult) return null;
@@ -91,6 +96,7 @@ export function billingStep(
               if (vatRequirement && attachedDocs.some((d) => d.requirementId === vatRequirement.id)) setVatDocument(undefined);
             }
           }}
+          homeBillingAddress={opts.homeBillingAddress ? { installation: address } : undefined}
           vatDocumentRequirement={vatRequirement}
           vatDocument={vatRequirement ? attachedDocs.find((d) => d.requirementId === vatRequirement.id) : undefined}
           onVatDocumentChange={vatRequirement ? setVatDocument : undefined}
@@ -124,6 +130,11 @@ export function billingStep(
     isValid: (values) => {
       const billing = (values.billingAccount as BillingAccountValue) ?? {};
       if (!isBillingAccountValid(billing)) return false;
+      // A home account's own billing address (the box unticked) needs its zone, street, building and unit.
+      if (opts.homeBillingAddress && billing.creatingNew && !billing.selectedProfileId && billing.newAccount?.sameAsInstallation === false) {
+        const g = billing.newAccount.billingAddress;
+        if (!(g?.zone?.trim() && g.streetNo?.trim() && g.buildingNo?.trim() && g.aptFlatUnit?.trim())) return false;
+      }
       // A VAT registration number on a new account needs its supporting document before the journey goes on.
       if (billing.creatingNew && !billing.selectedProfileId && !billing.editingProfileId && billing.newAccount?.vatRegistrationNumber?.trim()) {
         const req = requirementForCondition('vat-registration');

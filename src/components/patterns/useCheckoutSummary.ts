@@ -1,6 +1,7 @@
 import { appliedDiscountFor, discountedAddon, type AddonDiscount, type AppliedAddonDiscounts } from '../../engines/addonDiscounts';
 import { addonChargeNowQar, addonOneTimeQar, addonWithBillingChoice, type AddonBillingFrequency, type AddonBillingOption, type AddonTermOption } from '../../engines/addonCategories';
 import { chargeAfterWaiverQar, waivedQar, type NumberWaiver } from '../../engines/numberWaiver';
+import { extenderCheckoutItems, type HomeExtendersSelection } from '../../engines/homeExtenders';
 import { iptvOneTimeLines, type HomeIptvSelection, type IptvBundleTerms } from '../../engines/homeIptv';
 import { hrnAdvanceQar } from '../../engines/hrnConfiguration';
 
@@ -16,6 +17,8 @@ import { listEntities } from '../../services/entityOps';
 interface UseCheckoutSummaryArgs {
   /** A home order's IPTV choice: its set-top box charges join the one-time charges. */
   iptv?: HomeIptvSelection;
+  /** A home order's Wi-Fi Extenders (quantity, with the plan's free allowance applied). */
+  extenders?: HomeExtendersSelection;
   customerName: string | undefined;
   productId: string | undefined;
   discountId: string | undefined;
@@ -72,6 +75,7 @@ export function useCheckoutSummary({
   onLegalFactsComputed,
   planRentalIncluded = false,
   iptv,
+  extenders,
 }: UseCheckoutSummaryArgs) {
   const [products, setProducts] = useState<Product[]>([]);
   const [discounts, setDiscounts] = useState<
@@ -115,6 +119,8 @@ export function useCheckoutSummary({
   const iptvBundle = iptv?.enabled ? (discounts as (typeof discounts[number] & IptvBundleTerms)[]).find((d) => d.addonDiscountId === iptv.bundleId) : undefined;
   const iptvStbItems = iptvOneTimeLines(iptvBundle, iptv).map((l) => ({ productId: l.key, name: l.label, type: 'Add-on', mrcQAR: l.amountQAR, billingFrequency: 'one-time' as const, pricing: 'paid' as const })) as unknown as typeof addons;
   addons.push(...iptvStbItems);
+  // Wi-Fi Extenders: the units the plan includes (no charge) and the chargeable ones, monthly or one-time.
+  addons.push(...(extenderCheckoutItems(extenders).map((i) => ({ productId: i.key, name: i.name, type: 'Add-on', mrcQAR: i.amountQAR, billingFrequency: i.billingFrequency, pricing: 'paid' as const })) as unknown as typeof addons));
   const discount = discounts.find((d) => d.addonDiscountId === discountId);
   // The number's own sticker price - kept separate from what is actually
   // CHARGED (numberChargeQar below), so "Star value QAR 5000 one-time" can

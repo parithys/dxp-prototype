@@ -2,6 +2,7 @@ import type { EntityKind } from '../../engines/mockDataEngine';
 import type { JourneyAccountType } from '../../engines/creditLimit';
 import { creditLimitAuditRecord, creditLimitOptions, creditLimitPolicy, creditSegmentOf } from '../../engines/creditLimit';
 import { isHrn } from '../../engines/hrnConfiguration';
+import { billingAddressLine } from '../../engines/billingAddress';
 import { DEFAULT_BILL_LANGUAGE, DEFAULT_BILL_TYPE, ordinal, profilePatchFromEdit } from '../../components/patterns/billingAccountModel';
 import type { BillingAccountValue } from '../../components/patterns/billingAccountModel';
 
@@ -98,7 +99,8 @@ export async function persistBillingAccount(
     billingCycle: fresh.billCycleDay ? `Monthly - Day ${fresh.billCycleDay}` : 'Monthly',
     billCycleLabel: fresh.billCycleDay ? ordinal(fresh.billCycleDay) : undefined,
     billingType: fresh.billingMode ?? 'Arrears',
-    billingAddress: ctx.addressLine,
+    // New Home Connection: the Installation Address unless the agent gave another; every other journey's new account takes the address line it was given.
+    billingAddress: fresh.sameAsInstallation === false ? billingAddressLine(fresh.billingAddress) ?? ctx.addressLine : ctx.addressLine,
     billMedium: fresh.billMedia ?? 'Email',
     billType: fresh.billType ?? DEFAULT_BILL_TYPE,
     billLanguage: fresh.billLanguage ?? DEFAULT_BILL_LANGUAGE,

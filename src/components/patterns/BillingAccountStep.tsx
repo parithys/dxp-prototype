@@ -9,6 +9,9 @@ import { BILL_LANGUAGES, BILL_TYPES, DEFAULT_BILL_LANGUAGE, DEFAULT_BILL_TYPE, c
 import { toLocalMsisdn } from '../domain/msisdnPickerModel';
 import type { AccountRecord, BillingProfileRecord, ContactRecord, CustomerRecord, NewBillingAccountValue, BillingAccountValue } from './billingAccountModel';
 import { listEntities } from '../../services/entityOps';
+import { useAppSelector } from '../../stores/hooks';
+import { canEditBillingAddress, type BillingAddressFields } from '../../engines/billingAddress';
+import { HomeBillingAddress } from '../../capabilities/Billing/HomeBillingAddress';
 
 // Form sections inside the Create New form: a bold heading, space below it, and space - no divider line - between sections.
 const SECTION = 'space-y-3';
@@ -49,6 +52,8 @@ interface BillingAccountStepProps {
   vatDocument?: AdditionalDocument;
   vatDocumentRequirement?: { id: string; label: string };
   onVatDocumentChange?: (document: AdditionalDocument | undefined) => void;
+  /** New Home Connection: the Installation Address the new account's bill goes to by default ("Same as Installation Address"), and the persona rule for who may change the billing address. */
+  homeBillingAddress?: { installation: BillingAddressFields | undefined };
 }
 
 // "Billing Profile" (2026-09-28 request) - Step 3 of New Postpaid Activation,
@@ -79,7 +84,11 @@ export function BillingAccountStep({
   vatDocument,
   vatDocumentRequirement,
   onVatDocumentChange,
+  homeBillingAddress,
 }: BillingAccountStepProps) {
+  const personaId = useAppSelector((s) => s.persona.activePersonaId);
+  // Home: only a persona that may edit the billing address can untick "Same as Installation Address" or edit an existing account's address.
+  const canEditAddress = !homeBillingAddress || canEditBillingAddress(personaId);
   const cached = customerId ? billingDataCache.get(customerId) : undefined;
   const [profiles, setProfiles] = useState<(BillingProfileRecord & { accountType: string })[]>(cached?.profiles ?? []);
   const [contacts, setContacts] = useState<ContactRecord[]>(cached?.contacts ?? []);
@@ -231,8 +240,8 @@ export function BillingAccountStep({
                     {(selected && value.editingProfileId === p.billingProfileId ? value.newAccount?.editAddressLine : undefined) ?? (p.billingAddress || 'No billing address on file')} · {customerEmail ?? p.billingContactEmail}
                   </p>
                 </button>
-                {/* Edit opens the form below with this account's details pre-filled. */}
-                <Button
+                {/* Edit opens the form below with this account's details pre-filled. A home order leaves it to the personas that may edit the billing address. */}
+                {canEditAddress && <Button
                   variant="tertiary"
                   size="sm"
                   className="mt-2"
@@ -241,7 +250,7 @@ export function BillingAccountStep({
                   onClick={() => startEdit(p)}
                 >
                   Edit
-                </Button>
+                </Button>}
               </div>
             );
           })}
@@ -359,9 +368,19 @@ export function BillingAccountStep({
                   />
                 ) : (
                   // The same rows as the Credit Limit block below (CreditLimitCard): label on the left, value on the right.
+                  <>
+                  {homeBillingAddress && (
+                    <HomeBillingAddress
+                      installation={homeBillingAddress.installation}
+                      same={newAccount.sameAsInstallation}
+                      given={newAccount.billingAddress}
+                      canEdit={canEditAddress}
+                      onChange={(next) => setNewAccount({ sameAsInstallation: next.same, billingAddress: next.given })}
+                    />
+                  )}
                   <dl className="text-[length:var(--fs-body)]">
                     {[
-                      { label: 'Billing Address', value: defaultAddressLine || 'No communication address on file yet.' },
+                      ...(homeBillingAddress ? [] : [{ label: 'Billing Address', value: defaultAddressLine || 'No communication address on file yet.' }]),
                       { label: 'Billing Email', value: (newAccount.primaryContactEmail !== undefined ? newAccount.primaryContactEmail : customerEmail) || '-' },
                       { label: 'Billing Mobile Number', value: (newAccount.primaryContactPhone !== undefined ? (newAccount.primaryContactPhone ? toLocalMsisdn(newAccount.primaryContactPhone) : '') : customerMobile) || '-' },
                     ].map((row) => (
@@ -371,6 +390,7 @@ export function BillingAccountStep({
                       </div>
                     ))}
                   </dl>
+                  </>
                 )}
                 {/* Bill cycle: the same field as Bill Type and Bill Language, but disabled - it follows from the activation date and is not the agent's to change. */}
                 <div className="grid-2-up-sm pt-3">

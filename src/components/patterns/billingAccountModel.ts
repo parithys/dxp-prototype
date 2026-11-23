@@ -54,6 +54,9 @@ export interface NewBillingAccountValue {
   billCycleDay?: number;
   /** How the profile is billed: the billing-profiles records carry 'Arrears' (every profile but one) or 'Hybrid (PIA + Arrears)'. */
   billingMode?: string;
+  /** New Home Connection: whether the new account's billing address is the Installation Address (ticked, the default) or another the agent gave in `billingAddress`. */
+  sameAsInstallation?: boolean;
+  billingAddress?: { zone?: string; streetNo?: string; buildingNo?: string; aptFlatUnit?: string; floor?: string; area?: string; city?: string; country?: string; poBox?: string; addressLine?: string };
   /** Editing an existing account: its billing address as one line (the profile on file holds one line, not street / building / area). */
   editAddressLine?: string;
   /** Editing an existing account: the name of the contact picked as primary, written to the profile's contact. */

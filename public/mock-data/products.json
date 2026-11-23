@@ -87,7 +87,8 @@
     "speedTierMbps": 300,
     "fupGB": 1000,
     "lockInMonths": 12,
-    "disconnectionFeeQAR": 800
+    "disconnectionFeeQAR": 800,
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-201",
@@ -98,7 +99,8 @@
     "speedTierMbps": 500,
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR80 x remaining months of 12",
-    "offer": true
+    "offer": true,
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-300",
@@ -1262,7 +1264,12 @@
     "description": "Multi SIM - Local Benefits",
     "multiSimCount": 4,
     "exclusiveGroup": "free-multi-sim",
-    "multiSimCoverage": ["Local", "Local", "Local", "Local"],
+    "multiSimCoverage": [
+      "Local",
+      "Local",
+      "Local",
+      "Local"
+    ],
     "_multiSimCountNote": "Multi-SIMs this add-on provides (2026-11-03). Seeded from the catalogue's own wording and needs the business's confirmation; the journey reads only this field, never the name or description. PROD-195 (Multi SIM, paid) states no count and so provides none until one is given. No plan states a count yet.",
     "addonCategory": "Others",
     "addonStatus": "Confirmed",
@@ -1277,7 +1284,12 @@
     "description": "Multi SIM - GCC Benefits",
     "multiSimCount": 4,
     "exclusiveGroup": "free-multi-sim",
-    "multiSimCoverage": ["GCC", "GCC", "GCC", "GCC"],
+    "multiSimCoverage": [
+      "GCC",
+      "GCC",
+      "GCC",
+      "GCC"
+    ],
     "_multiSimCountNote": "Multi-SIMs this add-on provides (2026-11-03). Seeded from the catalogue's own wording and needs the business's confirmation; the journey reads only this field, never the name or description. PROD-195 (Multi SIM, paid) states no count and so provides none until one is given. No plan states a count yet.",
     "addonCategory": "Others",
     "addonStatus": "Confirmed",
@@ -1726,7 +1738,8 @@
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR60 x remaining months of 12",
     "offer": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-411",
@@ -1737,7 +1750,8 @@
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR60 x remaining months of 12",
     "offer": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-412",
@@ -1749,7 +1763,8 @@
     "disconnectionFeeSchedule": "QR80 x remaining months of 12",
     "iptvIncluded": true,
     "offer": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-413",
@@ -1760,7 +1775,8 @@
     "lockInMonths": 24,
     "disconnectionFeeSchedule": "QR80 x remaining months of 24",
     "offer": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-414",
@@ -1772,7 +1788,8 @@
     "disconnectionFeeSchedule": "QR80 x remaining months of 24",
     "iptvIncluded": true,
     "offer": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-420",
@@ -1782,7 +1799,8 @@
     "speedTierMbps": 50,
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR60 x remaining months of 12",
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-421",
@@ -1792,7 +1810,8 @@
     "speedTierMbps": 100,
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR60 x remaining months of 12",
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-422",
@@ -1803,7 +1822,8 @@
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR60 x remaining months of 12",
     "iptvIncluded": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-423",
@@ -1813,7 +1833,8 @@
     "speedTierMbps": 200,
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR60 x remaining months of 12",
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-424",
@@ -1824,7 +1845,8 @@
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR60 x remaining months of 12",
     "iptvIncluded": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-425",
@@ -1834,7 +1856,8 @@
     "speedTierMbps": 300,
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR80 x remaining months of 12",
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-426",
@@ -1845,7 +1868,8 @@
     "lockInMonths": 12,
     "disconnectionFeeSchedule": "QR80 x remaining months of 12",
     "iptvIncluded": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-427",
@@ -1855,7 +1879,8 @@
     "speedTierMbps": 500,
     "lockInMonths": 24,
     "disconnectionFeeSchedule": "QR80 x remaining months of 24",
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-428",
@@ -1866,7 +1891,8 @@
     "lockInMonths": 24,
     "disconnectionFeeSchedule": "QR80 x remaining months of 24",
     "iptvIncluded": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-429",
@@ -1876,7 +1902,8 @@
     "speedTierMbps": 750,
     "lockInMonths": 24,
     "disconnectionFeeSchedule": "QR80 x remaining months of 24",
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-430",
@@ -1887,7 +1914,8 @@
     "lockInMonths": 24,
     "disconnectionFeeSchedule": "QR80 x remaining months of 24",
     "iptvIncluded": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-431",
@@ -1897,7 +1925,8 @@
     "speedTierMbps": 1000,
     "lockInMonths": 24,
     "disconnectionFeeSchedule": "QR80 x remaining months of 24",
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-432",
@@ -1908,7 +1937,8 @@
     "lockInMonths": 24,
     "disconnectionFeeSchedule": "QR80 x remaining months of 24",
     "iptvIncluded": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-433",
@@ -1919,7 +1949,8 @@
     "lockInMonths": 24,
     "disconnectionFeeSchedule": "QR80 x remaining months of 24",
     "iptvIncluded": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-440",
@@ -1931,7 +1962,8 @@
     "lockInMonths": 12,
     "disconnectionFeeQAR": 600,
     "offer": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-441",
@@ -1943,7 +1975,8 @@
     "lockInMonths": 12,
     "disconnectionFeeQAR": 600,
     "offer": true,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-450",
@@ -1954,7 +1987,8 @@
     "fupGB": 300,
     "lockInMonths": 12,
     "disconnectionFeeQAR": 600,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-451",
@@ -1965,7 +1999,8 @@
     "fupGB": 600,
     "lockInMonths": 12,
     "disconnectionFeeQAR": 600,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-452",
@@ -1976,7 +2011,8 @@
     "fupGB": 800,
     "lockInMonths": 12,
     "disconnectionFeeQAR": 600,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-453",
@@ -1987,7 +2023,8 @@
     "fupGB": 1000,
     "lockInMonths": 24,
     "disconnectionFeeQAR": 800,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 2
   },
   {
     "productId": "PROD-454",
@@ -1998,7 +2035,8 @@
     "fupGB": 1500,
     "lockInMonths": 24,
     "disconnectionFeeQAR": 800,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   },
   {
     "productId": "PROD-455",
@@ -2009,6 +2047,7 @@
     "fupGB": 2000,
     "lockInMonths": 24,
     "disconnectionFeeQAR": 800,
-    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks."
+    "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
+    "freeExtenders": 4
   }
 ]

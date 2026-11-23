@@ -227,7 +227,7 @@ export function homeAddonsStep(): WizardStep {
     render: ({ values, setValue }) => (
       <>
         <SpendFlag active={Boolean(values.customiseAddons)} onSpend={() => setValue('customiseAddons', undefined)} />
-        <AddonsSelection kind="home" planId={values.productId as string | undefined} addonIds={(values.addonIds as string[] | undefined) ?? []} onAddonsChange={(ids) => setValue('addonIds', ids)} addonBilling={values.addonBilling as Record<string, import('../../engines/addonCategories').AddonBillingFrequency> | undefined} onBillingChange={(next) => setValue('addonBilling', next)} addonTerms={values.addonTerms as Record<string, number> | undefined} onTermsChange={(next) => setValue('addonTerms', next)} iptv={values.iptv as HomeIptvSelection | undefined} onIptvChange={(next) => setValue('iptv', next)} />
+        <AddonsSelection kind="home" planId={values.productId as string | undefined} addonIds={(values.addonIds as string[] | undefined) ?? []} onAddonsChange={(ids) => setValue('addonIds', ids)} addonBilling={values.addonBilling as Record<string, import('../../engines/addonCategories').AddonBillingFrequency> | undefined} onBillingChange={(next) => setValue('addonBilling', next)} addonTerms={values.addonTerms as Record<string, number> | undefined} onTermsChange={(next) => setValue('addonTerms', next)} iptv={values.iptv as HomeIptvSelection | undefined} onIptvChange={(next) => setValue('iptv', next)} extenders={values.extenders as import('../../engines/homeExtenders').HomeExtendersSelection | undefined} onExtendersChange={(next) => setValue('extenders', next)} />
       </>
     ),
     // IPTV, once enabled, needs its bundle, the set-top box choice and an answer on additional boxes.

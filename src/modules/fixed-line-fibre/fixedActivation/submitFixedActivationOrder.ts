@@ -25,6 +25,8 @@ import type { ConfirmedOrder } from '../../../capabilities';
 import { isB2B2COrder } from '../../new-connection/approvalRouting';
 import { homeProductLabel } from '../../new-connection/products';
 import type { HomeProduct } from '../../new-connection/products';
+import { billingAddressLine } from '../../../engines/billingAddress';
+import { extenderCharge, type HomeExtendersSelection } from '../../../engines/homeExtenders';
 import { FIXED_JOURNEY_LABEL, isFwaService, serviceTypeLabel, type FixedInstallationValue } from './fixedActivationModel';
 import { currentAgentId } from '../../../stores/currentAgent';
 import { orderInProgressForKid, type ExistingConnection, type ExistingService } from '../../../engines/kidInUse';
@@ -92,7 +94,8 @@ export async function submitFixedActivationOrder(
     nationality: eligibility?.nationality,
     segment: eligibility?.segment,
     agentId: currentAgentId() ?? undefined,
-    addressLine: storedAddressLine(address),
+    // A new account's bill goes to the Installation Address (in full) unless the agent gave another.
+    addressLine: billingAddressLine(address) ?? storedAddressLine(address),
   });
 
   const orderId = `ORD-${Date.now().toString().slice(-6)}`;
@@ -133,6 +136,8 @@ export async function submitFixedActivationOrder(
     ...(values.iptv && (values.iptv as { enabled?: boolean }).enabled ? { iptv: values.iptv } : {}),
     msisdn: values.msisdn,
     devices: values.devices,
+    // Wi-Fi Extenders the customer asked for: the quantity, how many the plan included free, and the chargeable units with how they are billed.
+    ...(extendersOf(values) ? { extenders: extendersOf(values) } : {}),
     // 5G Home (FWA): the Physical SIM allocated to the order and the Indoor Unit's serial number the agent captured.
     ...(isFwaService(values)
       ? {
@@ -209,4 +214,12 @@ export async function submitFixedActivationOrder(
     terms: orderTerms(values, 'postpaid'),
     service: 'fixed',
   };
+}
+
+/** The Wi-Fi Extenders on the order: the quantity, how many the plan included free, the chargeable units and how they are billed; none when the customer asked for none. */
+function extendersOf(values: Record<string, unknown>) {
+  const e = values.extenders as HomeExtendersSelection | undefined;
+  if (!e || !(e.quantity > 0)) return undefined;
+  const c = extenderCharge(e);
+  return { quantity: e.quantity, free: c.free, chargeable: c.chargeable, billing: c.billing, unitPriceQAR: c.unitQAR };
 }

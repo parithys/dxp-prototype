@@ -242,7 +242,7 @@ const homeKeys = (values) => conn.buildConnectionSteps({ ...ctx, journey: 'home'
 
 test('New Home Connection: Identification, Address, Product Selection, then the home steps - and nothing of the mobile products', () => {
   assert.deepEqual(homeKeys({}), ['contact', 'address', 'productSelection']);
-  assert.deepEqual(homeKeys({ product: 'fixed-line', homeProduct: 'fibre' }), ['contact', 'address', 'productSelection', 'billingAccount', 'plan', 'planExtras', 'number', 'checkout', 'caf', 'payment', 'appointment']);
+  assert.deepEqual(homeKeys({ product: 'fixed-line', homeProduct: 'fibre' }), ['contact', 'address', 'productSelection', 'plan', 'planExtras', 'number', 'billingAccount', 'checkout', 'caf', 'payment', 'appointment']);
   assert.ok(!homeKeys({ product: 'postpaid' }).includes('simType'), 'a mobile product is not part of the home journey');
   assert.deepEqual(homeKeys({ product: 'postpaid' }), ['contact', 'address', 'productSelection']);
 });

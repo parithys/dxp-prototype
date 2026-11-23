@@ -55,6 +55,8 @@ export interface AddonProduct {
   lockInMonths?: number;
   /** Fixed terms a home Speed Booster can be taken for instead of the lifetime charge. */
   termOptions?: AddonTermOption[];
+  /** The home plan's Wi-Fi Extender add-on: not listed as a card; the Mesh tab's Extenders card sets its quantity (see engines/homeExtenders.ts). */
+  extender?: boolean;
 }
 
 /** What a page puts around one tab's add-on lists: before them, after them, or in place of them (the home IPTV tab: its enable switch, its set-top box questions). */
@@ -62,6 +64,8 @@ export interface AddonTabSlot {
   before?: ReactNode;
   after?: ReactNode;
   hideList?: boolean;
+  /** Add-ons the page shows its own way, left out of the list. */
+  hide?: (addon: AddonProduct) => boolean;
 }
 
 interface AddonsPickerProps {
@@ -180,11 +184,11 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
     let cancelled = false;
     const load: Promise<AddonProduct[]> =
       source === 'prepaid' || source === 'plan'
-        ? listEntities<{ addonDiscountId: string; name: string; addonType: string; price: number; category: string; description?: string; planId?: string; isMandatory?: boolean; addonCategory?: string; frequentlyUsedFor?: FrequentlyUsedRule; exclusiveGroup?: string; stb?: IptvStbTerms; extraStbPriceQAR?: number; lockInMonths?: number; billingOptions?: AddonBillingOption[]; termOptions?: AddonTermOption[] }>('addons-discounts')
+        ? listEntities<{ addonDiscountId: string; name: string; addonType: string; price: number; category: string; description?: string; planId?: string; isMandatory?: boolean; addonCategory?: string; frequentlyUsedFor?: FrequentlyUsedRule; exclusiveGroup?: string; stb?: IptvStbTerms; extraStbPriceQAR?: number; lockInMonths?: number; billingOptions?: AddonBillingOption[]; termOptions?: AddonTermOption[]; extender?: boolean }>('addons-discounts')
             .then((all) =>
               all
                 .filter((d) => d.category === 'Paid Add-on' && d.planId === eligibilityContext?.planId)
-                .map((d) => ({ productId: d.addonDiscountId, name: d.name, type: d.addonType, mrcQAR: d.price, description: d.description, addonCategory: d.addonCategory, mandatory: mandatoryProducts && d.isMandatory === true, ...(homeTabs ? { frequentlyUsedFor: d.frequentlyUsedFor, exclusiveGroup: d.exclusiveGroup, stb: d.stb, extraStbPriceQAR: d.extraStbPriceQAR, lockInMonths: d.lockInMonths, billingOptions: d.billingOptions, termOptions: d.termOptions } : {}) }))
+                .map((d) => ({ productId: d.addonDiscountId, name: d.name, type: d.addonType, mrcQAR: d.price, description: d.description, addonCategory: d.addonCategory, mandatory: mandatoryProducts && d.isMandatory === true, ...(homeTabs ? { frequentlyUsedFor: d.frequentlyUsedFor, exclusiveGroup: d.exclusiveGroup, stb: d.stb, extraStbPriceQAR: d.extraStbPriceQAR, lockInMonths: d.lockInMonths, billingOptions: d.billingOptions, termOptions: d.termOptions, extender: d.extender } : {}) }))
             )
         : listEntities<AddonProduct>('products').then((all) => all.filter((p) => p.type === 'Add-on'));
     load
@@ -278,8 +282,9 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
     activeTab === FREQUENTLY_USED_TAB
       ? frequent.filter((a) => isFreeAddon(a) === (pricing === 'free'))
       : addons.filter((a) => categoryOf(a) === activeTab && isFreeAddon(a) === (pricing === 'free'));
-  const paid = useTabs ? inTab('paid').filter(matchesSearch) : [];
-  const free = useTabs ? inTab('free').filter(matchesSearch) : [];
+  const shownHere = (a: AddonProduct) => !slot?.hide?.(a);
+  const paid = useTabs ? inTab('paid').filter(matchesSearch).filter(shownHere) : [];
+  const free = useTabs ? inTab('free').filter(matchesSearch).filter(shownHere) : [];
   const shown = useTabs ? [...paid, ...free] : addons;
   const perCategory: Record<string, number> = homeTabs
     ? Object.fromEntries(homeTabs.map((c) => [c, addons.filter((a) => categoryOf(a) === c && selectedIds.includes(a.productId)).length]))
@@ -402,15 +407,19 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
                         chooseBilling('monthly');
                       }}
                     />
-                    <Select
-                      aria-label={`Fixed term for ${a.name}`}
-                      options={listed.termOptions.map((t) => ({ value: String(t.months), label: `${t.months} ${t.months === 1 ? 'Month' : 'Months'}` }))}
-                      value={term ? String(term.months) : ''}
-                      onChange={(e) => {
-                        onTermChange?.({ ...selectedTerms, [a.productId]: Number(e.target.value) });
-                        chooseBilling('one-time');
-                      }}
-                    />
+                    {/* The Select has no watermark of its own (LIBRARY_GAPS.md): the label shows inside the field, dull, until a term is chosen. */}
+                    <div className="relative">
+                      <Select
+                        aria-label={`Fixed term for ${a.name}`}
+                        options={listed.termOptions.map((t) => ({ value: String(t.months), label: `${t.months} ${t.months === 1 ? 'Month' : 'Months'}` }))}
+                        value={term ? String(term.months) : ''}
+                        onChange={(e) => {
+                          onTermChange?.({ ...selectedTerms, [a.productId]: Number(e.target.value) });
+                          chooseBilling('one-time');
+                        }}
+                      />
+                      {!term && <span aria-hidden="true" className="select-watermark">Fixed Term</span>}
+                    </div>
                   </div>
                 )}
                 {options.length > 1 && !(homeTabs && listed.termOptions) && (

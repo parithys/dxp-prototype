@@ -77,6 +77,7 @@ export function checkoutSummaryStep(
           familyRows={opts.familyRows?.(values)}
           planRentalIncluded={opts.planRentalIncluded?.(values)}
           iptv={values.iptv as import('../../engines/homeIptv').HomeIptvSelection | undefined}
+          extenders={values.extenders as import('../../engines/homeExtenders').HomeExtendersSelection | undefined}
           onEdit={() => goToStepKey(opts.editStepKey?.(values) ?? 'plan')}
         />
       );

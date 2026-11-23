@@ -73,3 +73,11 @@ test('the mobile pickers are unchanged: the pool defaults to the mobile numbers 
   assert.doesNotMatch(postpaid, /fixed-line-numbers|selectHeld/);
   assert.equal(model.FIXED_NUMBER_PICKER.selectHeld, false, 'opening the chooser does not replace the allocated number with a held one');
 });
+
+test('a number reserved for the customer is not replaced by an allocation: the selection opens on its Reserved tab for the agent to choose from', () => {
+  const view = fs.readFileSync('src/modules/fixed-line-fibre/fixedActivation/FixedStepViews.tsx', 'utf8');
+  assert.match(view, /if \(held\) return;/, 'no allocation while a number is held');
+  assert.match(view, /status === 'Reserved' && Boolean\(customerIdNumber\)/);
+  assert.match(view, /!msisdn && heldForCustomer/);
+  assert.match(view, /Select a Fixed Line Number/);
+});

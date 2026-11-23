@@ -1703,6 +1703,10 @@
   .card-static {
     @apply border-[var(--field-card-border)] bg-bg;
   }
+  /* A hint shown inside an empty Select (the library's Select has no watermark): dull, over the field's text area, never in the way of a click. */
+  .select-watermark {
+    @apply absolute inset-y-0 left-3 flex items-center text-muted pointer-events-none;
+  }
   .card-static-highlight {
     @apply border-[var(--signal-blue)] bg-[var(--tone-blue-bg-soft)];
   }

@@ -1,6 +1,6 @@
 /**
  * New Home Connection's IPTV add-on: the agent enables IPTV, picks a bundle plan, and - when the bundle carries a set-top box (STB) - chooses Premium, Lite or none (the box
- * may be free or chargeable depending on the bundle); either way the agent is asked about additional physical STBs, which are always chargeable. The terms are stated on the bundle's
+ * may be free or chargeable depending on the bundle); once a Premium or Lite STB is chosen the agent is asked about additional physical STBs, which are always chargeable. The terms are stated on the bundle's
  * add-ons/discounts record (`stb`, `extraStbPriceQAR`); nothing here is inferred from a name. STB charges are one-time, paid at activation; the bundle itself is monthly.
  */
 export type StbChoice = 'premium' | 'lite' | 'none';
@@ -36,7 +36,9 @@ export function includedStbChargeQar(bundle: IptvBundleTerms | undefined, sel: H
   if (!bundle?.stb?.included || !sel?.stb || sel.stb === 'none') return 0;
   return sel.stb === 'premium' ? bundle.stb.premiumPriceQAR : bundle.stb.litePriceQAR;
 }
-export const extraStbCount = (sel: HomeIptvSelection | undefined): number => Math.min(MAX_EXTRA_STBS, Math.max(0, Math.floor(sel?.extraStbs ?? 0)));
+/** Whether the customer is asked about additional boxes: only once a Premium or Lite STB is chosen (no STB, no question). */
+export const asksAdditionalStbs = (sel: HomeIptvSelection | undefined): boolean => sel?.stb === 'premium' || sel?.stb === 'lite';
+export const extraStbCount = (sel: HomeIptvSelection | undefined): number => (asksAdditionalStbs(sel) ? Math.min(MAX_EXTRA_STBS, Math.max(0, Math.floor(sel?.extraStbs ?? 0))) : 0);
 export const extraStbChargeQar = (bundle: IptvBundleTerms | undefined, sel: HomeIptvSelection | undefined): number => extraStbCount(sel) * (bundle?.extraStbPriceQAR ?? 0);
 
 /** The one-time charges the IPTV choice adds to the order, each a line (a free STB adds none). */
@@ -50,10 +52,11 @@ export function iptvOneTimeLines(bundle: IptvBundleTerms | undefined, sel: HomeI
   return lines;
 }
 
-/** Disabled needs nothing; enabled needs a bundle, the STB choice when the bundle offers one, and an answer on additional STBs. */
+/** Disabled needs nothing; enabled needs a bundle, the STB choice when the bundle offers one, and and - after a Premium or Lite STB - an answer on additional STBs. */
 export function isIptvComplete(sel: HomeIptvSelection | undefined): boolean {
   if (!sel?.enabled) return true;
   if (!sel.bundleId) return sel.planIncluded === true;
   if (sel.stbOffered && !sel.stb) return false;
-  return sel.extraStbs !== undefined;
+  // Additional boxes are asked only after a Premium or Lite STB; with no STB there is nothing to answer.
+  return asksAdditionalStbs(sel) ? sel.extraStbs !== undefined : true;
 }

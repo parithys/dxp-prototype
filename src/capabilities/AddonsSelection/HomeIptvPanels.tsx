@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Button, Drawer, Switch } from 'dxp-ui';
 import { CARD_IDLE, CARD_SELECTED, SelectedTick } from '../../components/primitives/offerCardParts';
-import { MAX_EXTRA_STBS, extraStbChargeQar, extraStbCount, iptvOneTimeLines, isIptvComplete, stbLabel, type HomeIptvSelection, type StbChoice } from '../../engines/homeIptv';
+import { MAX_EXTRA_STBS, extraStbChargeQar, asksAdditionalStbs, extraStbCount, iptvOneTimeLines, isIptvComplete, stbLabel, type HomeIptvSelection, type StbChoice } from '../../engines/homeIptv';
 import { formatAmount } from '../../lib/format';
 import type { AddonProduct } from './AddonsPicker';
 
@@ -50,7 +50,7 @@ export function IptvStbPanel({ bundle, selection, onChange }: { bundle: AddonPro
     : [];
   const oneTime = iptvOneTimeLines(bundle, selection);
   const oneTimeTotal = oneTime.reduce((sum, l) => sum + l.amountQAR, 0);
-  const readBack = [selection.stb ? stbLabel(selection.stb) : terms?.included ? 'Set-top box not chosen' : undefined, asked ? (count > 0 ? `${count} additional STB${count > 1 ? 's' : ''}` : 'No additional STBs') : 'Additional STBs not answered'].filter(Boolean).join(' · ');
+  const readBack = [selection.stb ? stbLabel(selection.stb) : terms?.included ? 'Set-top box not chosen' : undefined, asksAdditionalStbs(selection) ? (asked ? (count > 0 ? `${count} additional STB${count > 1 ? 's' : ''}` : 'No additional STBs') : 'Additional STBs not answered') : undefined].filter(Boolean).join(' · ');
   return (
     <>
       <div className="card p-4">
@@ -70,7 +70,7 @@ export function IptvStbPanel({ bundle, selection, onChange }: { bundle: AddonPro
         title="Set-Top Box"
         footer={
           <>
-            <p className="caption-secondary flex-1">{oneTimeTotal > 0 ? `One-time charges today: QAR ${formatAmount(oneTimeTotal)}` : 'No one-time charges'}</p>
+            <p className="caption-secondary flex-1">{oneTimeTotal > 0 ? `One-time charges today: QAR ${formatAmount(oneTimeTotal)}` : null}</p>
             <Button disabled={!isIptvComplete(selection)} onClick={() => setOpen(false)}>
               Done
             </Button>
@@ -89,40 +89,43 @@ export function IptvStbPanel({ bundle, selection, onChange }: { bundle: AddonPro
               </div>
               <div role="radiogroup" aria-label="Set-Top Box" className="stack gap-3">
                 {options.map((o) => (
-                  <ChoiceRow key={o.key} selected={selection.stb === o.key} title={o.title} note={o.note} aside={o.price} onSelect={() => onChange({ ...selection, stb: o.key })} />
+                  <ChoiceRow key={o.key} selected={selection.stb === o.key} title={o.title} note={o.note} aside={o.price} onSelect={() => onChange({ ...selection, stb: o.key, ...(o.key === 'none' ? { extraStbs: undefined } : {}) })} />
                 ))}
               </div>
             </section>
           )}
-          <section aria-label="Additional Set-Top Boxes" className="stack gap-3">
-            <div>
-              <h3 className="title title-lg">Additional Set-Top Boxes</h3>
-              <p className="caption-secondary">Extra physical boxes for other TVs. Always chargeable: QAR {formatAmount(bundle.extraStbPriceQAR ?? 0)} each, one-time.</p>
-            </div>
-            <div role="radiogroup" aria-label="Additional Set-Top Boxes" className="stack gap-3">
-              <ChoiceRow selected={asked && count === 0} title="No Additional STBs" note="The customer needs no extra boxes" onSelect={() => onChange({ ...selection, extraStbs: 0 })} />
-              <ChoiceRow
-                selected={count > 0}
-                title="Add Additional STBs"
-                note="Choose how many"
-                aside={count > 0 ? `QAR ${formatAmount(extraStbChargeQar(bundle, selection))}` : undefined}
-                onSelect={() => onChange({ ...selection, extraStbs: Math.max(1, count) })}
-              >
-                {count > 0 && (
-                  <div className="row gap-3 divider-top pt-3">
-                    <span className="caption-secondary flex-1">Quantity</span>
-                    <Button variant="secondary" size="icon-sm" aria-label="Fewer additional STBs" disabled={count <= 1} onClick={() => onChange({ ...selection, extraStbs: count - 1 })}>
-                      -
-                    </Button>
-                    <span aria-live="polite" className="title title-lg">{count}</span>
-                    <Button variant="secondary" size="icon-sm" aria-label="More additional STBs" disabled={count >= MAX_EXTRA_STBS} onClick={() => onChange({ ...selection, extraStbs: count + 1 })}>
-                      +
-                    </Button>
-                  </div>
-                )}
-              </ChoiceRow>
-            </div>
-          </section>
+          {/* Asked only once a Premium or Lite STB is chosen: with No STB the section stays hidden. */}
+          {asksAdditionalStbs(selection) && (
+            <section aria-label="Additional Set-Top Boxes" className="stack gap-3">
+              <div>
+                <h3 className="title title-lg">Additional Set-Top Boxes</h3>
+                <p className="caption-secondary">Extra physical boxes for other TVs. Always chargeable: QAR {formatAmount(bundle.extraStbPriceQAR ?? 0)} each, one-time.</p>
+              </div>
+              <div role="radiogroup" aria-label="Additional Set-Top Boxes" className="stack gap-3">
+                <ChoiceRow
+                  selected={count > 0}
+                  title="Add Additional STBs"
+                  note="Choose how many"
+                  aside={count > 0 ? `QAR ${formatAmount(extraStbChargeQar(bundle, selection))}` : undefined}
+                  onSelect={() => onChange({ ...selection, extraStbs: Math.max(1, count) })}
+                >
+                  {count > 0 && (
+                    <div className="row gap-3 divider-top pt-3">
+                      <span className="caption-secondary flex-1">Quantity</span>
+                      <Button variant="secondary" size="icon-sm" aria-label="Fewer additional STBs" disabled={count <= 1} onClick={() => onChange({ ...selection, extraStbs: count - 1 })}>
+                        -
+                      </Button>
+                      <span aria-live="polite" className="title title-lg">{count}</span>
+                      <Button variant="secondary" size="icon-sm" aria-label="More additional STBs" disabled={count >= MAX_EXTRA_STBS} onClick={() => onChange({ ...selection, extraStbs: count + 1 })}>
+                        +
+                      </Button>
+                    </div>
+                  )}
+                </ChoiceRow>
+                <ChoiceRow selected={asked && count === 0} title="No Additional STBs" note="The customer needs no extra boxes" onSelect={() => onChange({ ...selection, extraStbs: 0 })} />
+              </div>
+            </section>
+          )}
         </div>
       </Drawer>
     </>

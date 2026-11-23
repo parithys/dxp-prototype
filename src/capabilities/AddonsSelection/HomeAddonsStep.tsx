@@ -6,6 +6,8 @@ import { IptvEnable, IptvStbPanel } from './HomeIptvPanels';
 import { HOME_ADDON_TABS } from '../../engines/addonCategories';
 import type { AddonBillingFrequency } from '../../engines/addonCategories';
 import type { HomeIptvSelection } from '../../engines/homeIptv';
+import type { HomeExtendersSelection } from '../../engines/homeExtenders';
+import { HomeExtendersCard } from './HomeExtendersCard';
 
 export interface HomeAddonsStepProps {
   /** The home plan (fixed line, fibre, FWA, 5G Home) the add-ons are for: the only thing the Add-ons page takes from the plan page. */
@@ -21,16 +23,20 @@ export interface HomeAddonsStepProps {
   /** The IPTV add-on's choices (enabled, bundle, set-top box, additional boxes). */
   iptv?: HomeIptvSelection;
   onIptvChange?: (next: HomeIptvSelection) => void;
+  /** The Wi-Fi Extenders the customer asks for (quantity; the plan's free allowance is applied). */
+  extenders?: HomeExtendersSelection;
+  onExtendersChange?: (next: HomeExtendersSelection | undefined) => void;
   emptyMessage?: string;
 }
 
 // The Add-ons page of a home journey, the same page as the postpaid one - the plan's add-ons under category tabs with a search, Paid and Free side by side - over the add-ons the home
 // plan carries (addons-discounts for the plan), charged monthly. A bill limit and service options are mobile line settings: a home connection has neither. The IPTV tab adds an enable
 // switch, then the bundle plans, then the set-top box questions (engines/homeIptv.ts).
-export function HomeAddonsStep({ planId, addonIds = [], onAddonsChange, addonBilling, onBillingChange, addonTerms, onTermsChange, iptv, onIptvChange, emptyMessage = 'No add-ons available for this plan' }: HomeAddonsStepProps) {
-  const products = useEntityRecords<{ productId: string; type?: string; iptvIncluded?: boolean }>('products');
+export function HomeAddonsStep({ planId, addonIds = [], onAddonsChange, addonBilling, onBillingChange, addonTerms, onTermsChange, iptv, onIptvChange, extenders, onExtendersChange, emptyMessage = 'No add-ons available for this plan' }: HomeAddonsStepProps) {
+  const products = useEntityRecords<{ productId: string; type?: string; iptvIncluded?: boolean; freeExtenders?: number }>('products');
+  const plan = products?.find((p) => p.productId === planId);
   // A Triple Play plan already includes IPTV: its bundles are listed straight away, with no switch. Only a Double Play plan has IPTV to enable.
-  const triple = homePlayOf(products?.find((p) => p.productId === planId)) === 'triple';
+  const triple = homePlayOf(plan) === 'triple';
   const needsFlag = triple && (!iptv?.enabled || !iptv.planIncluded);
   useEffect(() => {
     if (needsFlag) onIptvChange?.({ ...iptv, enabled: true, planIncluded: true });
@@ -39,6 +45,17 @@ export function HomeAddonsStep({ planId, addonIds = [], onAddonsChange, addonBil
   if (!planId) return <p className="muted-body">Select a plan first - its add-ons appear here.</p>;
   const selection: HomeIptvSelection = triple ? { ...iptv, enabled: true, planIncluded: true } : iptv ?? { enabled: false };
   const tabSlot = (tab: string, addons: AddonProduct[]): AddonTabSlot | undefined => {
+    if (tab === 'Mesh') {
+      // The plan's Wi-Fi Extender add-on is set by quantity here (the plan's free allowance applied), not listed as a card.
+      const extender = addons.find((a) => a.extender === true);
+      if (!extender || !onExtendersChange) return undefined;
+      const monthly = extender.billingOptions?.find((o) => o.frequency === 'monthly')?.priceQAR ?? extender.mrcQAR;
+      const oneTime = extender.billingOptions?.find((o) => o.frequency === 'one-time')?.priceQAR;
+      return {
+        before: <HomeExtendersCard terms={{ freeAllowance: plan?.freeExtenders ?? 0, monthlyQAR: monthly, oneTimeQAR: oneTime }} selection={extenders} onChange={onExtendersChange} />,
+        hide: (a) => a.extender === true,
+      };
+    }
     if (tab !== 'IPTV') return undefined;
     const bundles = addons.filter((a) => a.addonCategory === 'IPTV');
     const chosen = bundles.find((a) => addonIds.includes(a.productId));
