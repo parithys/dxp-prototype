@@ -19,7 +19,7 @@ export function HomeExtendersCard({ terms, selection, onChange }: { terms: Exten
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection === undefined, included]);
   return (
-    <section aria-label="Wi-Fi Extenders" className="card-static-highlight p-6 stack gap-4">
+    <section aria-label="Wi-Fi Extenders" className="card card-static-highlight p-6 stack gap-4">
       {/* Singled out at the top of the Mesh tab: what the plan includes, and the quantity the customer asks for. */}
       <div className="row gap-4">
         <span className="option-glyph option-glyph-lg glyph-chosen">
