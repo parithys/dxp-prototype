@@ -198,9 +198,9 @@ function DeviceSerialField({ row, values, setValue, retail, cpeStock }: { row: S
       )}
       {/* Demo only: fill the field with a serial that behaves as named, so each state can be shown in a review. */}
       <div className={`cluster gap-x-4 gap-y-1 ${SYNTHETIC_CLASS}`}>
-        <span className="caption-muted text-[var(--info)]">Demo:</span>
+        <span className="demo-link-label">Demo:</span>
         {demo.map((d) => (
-          <Button key={d.which} variant="link" className="link text-[var(--info)]" disabled={busy} onClick={() => { const s = sampleFor(d.which); if (s) void validate(s); }}>
+          <Button key={d.which} variant="link" className="demo-link" disabled={busy} onClick={() => { const s = sampleFor(d.which); if (s) void validate(s); }}>
             {d.label}
           </Button>
         ))}

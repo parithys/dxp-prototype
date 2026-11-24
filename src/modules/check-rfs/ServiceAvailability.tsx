@@ -435,9 +435,9 @@ export function ServiceAvailability() {
       <div className="split mt-5">
         {/* Demo only: shortcuts that fill the fields for each result category, on every tab. */}
         <div className={`cluster gap-x-4 gap-y-1 ${SYNTHETIC_CLASS}`}>
-          <span className="caption-muted text-[var(--info)]">Demo:</span>
+          <span className="demo-link-label">Demo:</span>
           {DEMO_SCENARIOS.map((d) => (
-            <Button key={d.label} variant="link" className="link text-[var(--info)]" onClick={() => fillScenario(d.status)}>
+            <Button key={d.label} variant="link" className="demo-link" onClick={() => fillScenario(d.status)}>
               {d.label}
             </Button>
           ))}

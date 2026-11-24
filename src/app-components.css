@@ -169,6 +169,14 @@
   .toggle-option {
     @apply px-4 py-2 text-[length:var(--fs-caption)];
   }
+  /* Demo-only text links (the shortcuts that fill a form or start a simulation) and their "Demo:" label: the info purple, as plain links, so a demo control reads as one wherever it appears. The element
+     also carries the .demo-only marker, which hides it when demo content is switched off. */
+  .demo-link {
+    @apply text-[var(--info)] hover:underline;
+  }
+  .demo-link-label {
+    @apply text-[length:var(--fs-caption)] text-[var(--info)];
+  }
   /* A row of the menu while it is searched: the hover fill the rail's other controls use (--nav-hover-bg), as the rows carry no hover of their own. */
   .nav-hit {
     @apply hover:bg-[var(--nav-hover-bg)] hover:text-[var(--nav-fg)];

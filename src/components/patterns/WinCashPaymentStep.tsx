@@ -276,7 +276,7 @@ export function WinCashPaymentStep({ amountDueQAR, value, onChange, onProceedWit
             type="button"
             onClick={simulateSessionExpiry}
             disabled={processing}
-            className={`caption-muted hover:text-danger transition-colors ${SYNTHETIC_CLASS}`}
+            className={`demo-link ${SYNTHETIC_CLASS}`}
           >
             Simulate Session Expiry (Demo)
           </button>

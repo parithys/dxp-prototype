@@ -202,7 +202,7 @@ export function QidImageUpload({
                 canScan ? (
                   <>
                   {demoVariant && SHOW_DEMO_CONTENT && (
-                    <Button variant="link" type="button" className={`link-action ${SYNTHETIC_CLASS}`} disabled={scanning} onClick={() => startWithVariant(true)}>
+                    <Button variant="link" type="button" className={`demo-link ${SYNTHETIC_CLASS}`} disabled={scanning} onClick={() => startWithVariant(true)}>
                       {demoVariant.label}
                     </Button>
                   )}
