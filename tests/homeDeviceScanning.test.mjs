@@ -197,3 +197,18 @@ test('Mesh extenders are not on the scan step: their serials are captured with t
   assert.deepEqual(mode.scanRowsFor(values).map((r) => r.key), ['ont']);
   assert.equal(mode.isDeviceScanComplete(values), true, 'the step does not wait for the Mesh');
 });
+
+test('the plan\'s free add-ons are put on the order even when the Add-ons page is passed over; alternatives and IPTV are the agent\'s choice', () => {
+  const step = steps.fixedLineSteps().find((s) => s.key === 'planExtras');
+  assert.equal(typeof step.headless, 'function', 'the free add-ons are applied headlessly');
+  assert.equal(step.autoPass({}), true, 'the page itself is still passed over unless asked for');
+  const rows = JSON.parse(fs.readFileSync('public/mock-data/addons-discounts.json', 'utf8'));
+  const free = rows.filter((d) => d.category === 'Paid Add-on' && d.planId && d.price === 0);
+  assert.ok(free.length > 0, 'the catalogue has free add-ons');
+  const defaulted = free.filter((d) => !d.exclusiveGroup && d.addonCategory !== 'IPTV');
+  assert.ok(defaulted.some((d) => d.name === 'Speed Boost Trial'), 'Speed Boost Trial is defaulted');
+  assert.ok(defaulted.every((d) => d.price === 0 && !d.exclusiveGroup), 'only free, non-exclusive ones');
+  const src = fs.readFileSync('src/capabilities/AddonsSelection/HomeFreeAddonsApplier.tsx', 'utf8');
+  assert.match(src, /!d\.exclusiveGroup && d\.addonCategory !== 'IPTV'/);
+  assert.match(fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8'), /!a\.exclusiveGroup && a\.addonCategory !== 'IPTV'/, 'the page applies the same rule');
+});

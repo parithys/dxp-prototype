@@ -28,13 +28,15 @@ export interface HomeAddonsStepProps {
   onExtendersChange?: (next: HomeExtendersSelection | undefined) => void;
   /** The set-top boxes' and Mesh extenders' serial numbers are captured here (default). False for a Field Engineer order: the field engineer scans them. */
   deviceSerials?: boolean;
+  /** The plan's free add-ons are selected for the agent once per plan: the plan already done, and how to record it. */
+  freeByDefault?: { doneFor: string | undefined; onDone: (planId: string) => void };
   emptyMessage?: string;
 }
 
 // The Add-ons page of a home journey, the same page as the postpaid one - the plan's add-ons under category tabs with a search, Paid and Free side by side - over the add-ons the home
 // plan carries (addons-discounts for the plan), charged monthly. A bill limit and service options are mobile line settings: a home connection has neither. The IPTV tab adds an enable
 // switch, then the bundle plans, then the set-top box questions (engines/homeIptv.ts).
-export function HomeAddonsStep({ planId, addonIds = [], onAddonsChange, addonBilling, onBillingChange, addonTerms, onTermsChange, iptv, onIptvChange, extenders, onExtendersChange, deviceSerials = true, emptyMessage = 'No add-ons available for this plan' }: HomeAddonsStepProps) {
+export function HomeAddonsStep({ planId, addonIds = [], onAddonsChange, addonBilling, onBillingChange, addonTerms, onTermsChange, iptv, onIptvChange, extenders, onExtendersChange, deviceSerials = true, freeByDefault, emptyMessage = 'No add-ons available for this plan' }: HomeAddonsStepProps) {
   const products = useEntityRecords<{ productId: string; type?: string; iptvIncluded?: boolean; freeExtenders?: number }>('products');
   const plan = products?.find((p) => p.productId === planId);
   // A Triple Play plan already includes IPTV: its bundles are listed straight away, with no switch. Only a Double Play plan has IPTV to enable.
@@ -74,7 +76,7 @@ export function HomeAddonsStep({ planId, addonIds = [], onAddonsChange, addonBil
   };
   return (
     <section aria-label="Add-ons" className="space-y-3 min-w-0">
-      <AddonsPicker selectedIds={addonIds} onChange={onAddonsChange} hideHeader layout="rows" categorized homeTabs={HOME_ADDON_TABS} tabSlot={tabSlot} tabExtraCounts={{ Mesh: Math.max(0, Math.floor(extenders?.quantity ?? plan?.freeExtenders ?? 0)) }} selectedBilling={addonBilling} onBillingChange={onBillingChange} selectedTerms={addonTerms} onTermChange={onTermsChange} source="plan" emptyMessage={emptyMessage} eligibilityContext={{ planId }} />
+      <AddonsPicker selectedIds={addonIds} onChange={onAddonsChange} hideHeader layout="rows" categorized homeTabs={HOME_ADDON_TABS} tabSlot={tabSlot} freeByDefault={freeByDefault} tabExtraCounts={{ Mesh: Math.max(0, Math.floor(extenders?.quantity ?? plan?.freeExtenders ?? 0)) }} selectedBilling={addonBilling} onBillingChange={onBillingChange} selectedTerms={addonTerms} onTermChange={onTermsChange} source="plan" emptyMessage={emptyMessage} eligibilityContext={{ planId }} />
     </section>
   );
 }

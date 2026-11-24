@@ -135,6 +135,8 @@ interface AddonsPickerProps {
   multiSimWanted?: Record<string, number>;
   /** With homeTabs: items a tab holds that are not cards in it (the Wi-Fi Extenders' units on Mesh, set by quantity), added to that tab's count. */
   tabExtraCounts?: Record<string, number>;
+  /** With homeTabs: the plan's free add-ons are selected for the agent once per plan (`doneFor` is the plan already done; `onDone` records it), and stay the agent's to deselect. */
+  freeByDefault?: { doneFor: string | undefined; onDone: (planId: string) => void };
 }
 
 // "Plan & Add-ons" (reference flow step 5) - optional, non-gating multi-select
@@ -149,7 +151,7 @@ export interface AddonStatus {
   lines?: string[];
 }
 
-export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, selectedTerms = {}, onTermChange, onBillingChange, hideHeader, eligibilityContext, emptyMessage, layout = 'cards', mandatoryProducts = false, source = 'catalogue', categorized = false, homeTabs, tabSlot, appliedDiscounts, addonStatus, onOpenMultiSim, multiSimWanted, tabExtraCounts }: AddonsPickerProps) {
+export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, selectedTerms = {}, onTermChange, onBillingChange, hideHeader, eligibilityContext, emptyMessage, layout = 'cards', mandatoryProducts = false, source = 'catalogue', categorized = false, homeTabs, tabSlot, appliedDiscounts, addonStatus, onOpenMultiSim, multiSimWanted, tabExtraCounts, freeByDefault }: AddonsPickerProps) {
   const [discountRecords, setDiscountRecords] = useState<AddonDiscount[]>([]);
   const wantsDiscounts = appliedDiscounts !== undefined;
   useEffect(() => {
@@ -205,6 +207,17 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attempt, source, mandatoryProducts, eligibilityContext?.planId]);
+
+  // The plan's free add-ons are on the order from the start (once per plan, so one the agent takes off stays off). An add-on that is one of several alternatives (an exclusive group - the IPTV bundles) is
+  // the agent's choice, not defaulted; nor is IPTV, which is switched on first.
+  const planKey = eligibilityContext?.planId;
+  useEffect(() => {
+    if (!freeByDefault || !homeTabs || status !== 'ready' || !planKey || freeByDefault.doneFor === planKey) return;
+    const free = addons.filter((a) => isFreeAddon(a) && !a.exclusiveGroup && a.addonCategory !== 'IPTV' && !selectedIds.includes(a.productId)).map((a) => a.productId);
+    if (free.length > 0) onChange([...selectedIds, ...free]);
+    freeByDefault.onDone(planKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, planKey, freeByDefault?.doneFor, addons.length]);
 
   // A selection that stopped being eligible (the plan or customer type changed) is dropped.
   const eligibleIds = addons.map((a) => a.productId).join(',');

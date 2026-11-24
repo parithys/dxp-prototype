@@ -1,4 +1,5 @@
 import { isIptvComplete, type HomeIptvSelection } from '../../engines/homeIptv';
+import { HomeFreeAddonsApplier } from './HomeFreeAddonsApplier';
 import { extenderSerialsComplete, type HomeExtendersSelection } from '../../engines/homeExtenders';
 import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
@@ -225,10 +226,12 @@ export function homeAddonsStep(opts: { deviceSerials?: (values: Record<string, u
     label: ADDONS_DISCOUNTS_LABEL,
     subheading: 'Choose optional services for the plan.',
     autoPass: (values) => !values.customiseAddons,
+    // The plan's free add-ons are on the order even when this page is passed over.
+    headless: ({ values, setValue }) => <HomeFreeAddonsApplier values={values} setValue={setValue} />,
     render: ({ values, setValue }) => (
       <>
         <SpendFlag active={Boolean(values.customiseAddons)} onSpend={() => setValue('customiseAddons', undefined)} />
-        <AddonsSelection kind="home" planId={values.productId as string | undefined} addonIds={(values.addonIds as string[] | undefined) ?? []} onAddonsChange={(ids) => setValue('addonIds', ids)} addonBilling={values.addonBilling as Record<string, import('../../engines/addonCategories').AddonBillingFrequency> | undefined} onBillingChange={(next) => setValue('addonBilling', next)} addonTerms={values.addonTerms as Record<string, number> | undefined} onTermsChange={(next) => setValue('addonTerms', next)} iptv={values.iptv as HomeIptvSelection | undefined} onIptvChange={(next) => setValue('iptv', next)} extenders={values.extenders as import('../../engines/homeExtenders').HomeExtendersSelection | undefined} onExtendersChange={(next) => setValue('extenders', next)} deviceSerials={opts.deviceSerials?.(values) ?? true} />
+        <AddonsSelection kind="home" planId={values.productId as string | undefined} addonIds={(values.addonIds as string[] | undefined) ?? []} onAddonsChange={(ids) => setValue('addonIds', ids)} addonBilling={values.addonBilling as Record<string, import('../../engines/addonCategories').AddonBillingFrequency> | undefined} onBillingChange={(next) => setValue('addonBilling', next)} addonTerms={values.addonTerms as Record<string, number> | undefined} onTermsChange={(next) => setValue('addonTerms', next)} iptv={values.iptv as HomeIptvSelection | undefined} onIptvChange={(next) => setValue('iptv', next)} extenders={values.extenders as import('../../engines/homeExtenders').HomeExtendersSelection | undefined} onExtendersChange={(next) => setValue('extenders', next)} deviceSerials={opts.deviceSerials?.(values) ?? true} freeByDefault={{ doneFor: values.freeAddonsFor as string | undefined, onDone: (planId) => setValue('freeAddonsFor', planId) }} />
       </>
     ),
     // IPTV, once enabled, needs its bundle, the set-top box choice (and its serial number, unless the field engineer scans it) and an answer on additional boxes.

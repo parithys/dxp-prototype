@@ -80,7 +80,7 @@ export const hasBillingAccount = (values: Record<string, unknown>): boolean =>
  * billing profile and the offers decision are collected before or at the product step, so they stay.
  */
 export const PRODUCT_OWNED_KEYS = [
-  'productId', 'planTab', 'discountId', 'addonIds', 'addonBilling', 'selectionSource', 'bundledItems',
+  'productId', 'planTab', 'discountId', 'addonIds', 'freeAddonsFor', 'addonBilling', 'selectionSource', 'bundledItems',
   'msisdn', 'numberWaiver', 'numberPriceQAR', 'priceQAR', 'numberRefresh', 'prePaired',
   'simType', 'simSerial', 'simValid', 'cart',
   'billLimit', 'billLimitPass',

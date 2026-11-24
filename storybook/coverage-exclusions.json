@@ -35,5 +35,6 @@
   "src/capabilities/AddonsSelection/HomeExtendersCard.tsx": "Part of the home Add-ons step's Mesh tab (quantity and free / chargeable split): composed of components that have stories; not a separate reusable component.",
   "src/capabilities/AddonsSelection/HomeIptvPanels.tsx": "Parts of the home Add-ons step's IPTV tab (enable switch, set-top box questions): composed of components that have stories; not a separate reusable component.",
   "src/capabilities/AddonsSelection/HomeAddonsStep.tsx": "A whole journey step: composed of components that have stories (see Patterns and Application Examples); not a separate reusable component.",
-  "src/capabilities/AddonsSelection/SerialCaptureField.tsx": "Part of the home Add-ons step (a set-top box's or Mesh extender's serial number with the barcode icon): composed of components that have stories; not a separate reusable component."
+  "src/capabilities/AddonsSelection/SerialCaptureField.tsx": "Part of the home Add-ons step (a set-top box's or Mesh extender's serial number with the barcode icon): composed of components that have stories; not a separate reusable component.",
+  "src/capabilities/AddonsSelection/HomeFreeAddonsApplier.tsx": "Headless helper: renders no UI of its own."
 }
