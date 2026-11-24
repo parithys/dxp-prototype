@@ -33,10 +33,19 @@ interface OrderLike {
   existingConnection?: { kid?: string; state?: string };
 }
 
+/**
+ * DEMO KIDs, fixed so a design review always finds the same two situations whatever orders the session has created: the first is never held by an order (it can always be activated instantly), the
+ * second always is (the seeded order ORD-90090 stands in when none is on the books). Not a business rule - remove both once the prototype is past demos.
+ */
+export const DEMO_KID_ALWAYS_AVAILABLE = 'KID-55830120-101';
+export const DEMO_KID_ALWAYS_IN_PROGRESS = { kid: 'KID-55830120-102', orderId: 'ORD-90090' } as const;
+
 /** The order already in progress for this KID, whoever it is for (the same customer or another), or undefined. */
 export function orderInProgressForKid(orders: readonly OrderLike[], kid: string | undefined, exceptOrderId?: string): OrderLike | undefined {
-  if (!kid) return undefined;
-  return orders.find((o) => o.orderId !== exceptOrderId && o.kid === kid && ORDER_IN_PROGRESS_STATUSES.has(o.status ?? ''));
+  if (!kid || kid === DEMO_KID_ALWAYS_AVAILABLE) return undefined;
+  const held = orders.find((o) => o.orderId !== exceptOrderId && o.kid === kid && ORDER_IN_PROGRESS_STATUSES.has(o.status ?? ''));
+  if (held || kid !== DEMO_KID_ALWAYS_IN_PROGRESS.kid || exceptOrderId === DEMO_KID_ALWAYS_IN_PROGRESS.orderId) return held;
+  return { orderId: DEMO_KID_ALWAYS_IN_PROGRESS.orderId, kid, status: 'Submitted for Approval' };
 }
 
 /** The service still on this unit's KID: reported by the feasibility response and not yet disconnected by an approved order. */

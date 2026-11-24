@@ -16,3 +16,9 @@ Components and helpers the prototype still owns because they are NOT in `dxp-ui`
 | `lib/router.ts`, `routerHooks.ts`, `routerLinks.tsx` | The application's Next.js navigation layer. Not a design-system concern; the library receives its link through `LinkProvider`. | Nothing - stays in the application. |
 
 Also: `Select` in `dxp-ui` discards its `placeholder` prop, so the Check RFS "Area" dropdown cannot show a watermark. Needed: an opt-in `watermark` on `Select`, like `Input`'s.
+
+Also: the Check RFS result verdicts (the supplied layout) call for four glyphs `dxp-ui` does not have - an infinity (RFS Unlimited), a house with a signal (FWA Indoor & Outdoor), a building with a clock (Building Is RFA) and a magnifier with a cross (Not Found). The page uses the nearest existing icons (layers, installation wifi, building, search) until they are added to the library.
+
+Also: `dxp-ui`'s `.toggle-group` (OptionToggle) is full width with equal segments, while its filter tabs (`.tab-strip-filter`) are as wide as their tabs. The application overrides it to content width and a compact 36px height (14px text) in `src/app-components.css` (`.toggle-group`, `.toggle-option`); the library's own default should become that, and the override can then go.
+
+Also: `dxp-ui` has no thumbs-up icon. Check RFS's Interested icon button on a unit card shows the library's `STAR` until a `THUMBS_UP` is added to the library's `actions` icons (the app may not define an icon path of its own).

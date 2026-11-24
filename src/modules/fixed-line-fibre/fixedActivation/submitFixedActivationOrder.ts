@@ -32,6 +32,7 @@ import { currentAgentId } from '../../../stores/currentAgent';
 import { orderInProgressForKid, type ExistingConnection, type ExistingService } from '../../../engines/kidInUse';
 import type { EntityOps } from '../../../services/types';
 import { listEntities } from '../../../services/entityOps';
+import { activationModeOf, validatedDevices } from './activationMode';
 
 /** The team that decides an order replacing a connection on a KID in use (the job title the approval queue knows it by). */
 const FULFILMENT_TEAM_ROLE = 'Back Office Fulfilment';
@@ -60,7 +61,9 @@ export async function submitFixedActivationOrder(
   const eligibility = values.eligibility as EligibilityResult | undefined;
   const installation = values.installation as FixedInstallationValue | undefined;
   const address = values.address as ZsbAddressValue | undefined;
-  const appointment = values.appointment as AppointmentBookingValue;
+  // Instant Activation has no installation appointment (the devices are scanned in the journey); a Field Engineer order books one.
+  const appointment = values.appointment as AppointmentBookingValue | undefined;
+  const activationMode = activationModeOf(values);
   const billingAccount = values.billingAccount as BillingAccountValue | undefined;
   const payment = values.payment as WinCashPaymentValue | undefined;
   const totals = values.checkoutTotals as CheckoutTotals | undefined;
@@ -138,6 +141,9 @@ export async function submitFixedActivationOrder(
     devices: values.devices,
     // Wi-Fi Extenders the customer asked for: the quantity, how many the plan included free, and the chargeable units with how they are billed.
     ...(extendersOf(values) ? { extenders: extendersOf(values) } : {}),
+    activationMode,
+    // Instant Activation: the devices scanned and validated into the cart.
+    ...(activationMode === 'instant' ? { scannedDevices: validatedDevices(values).map(({ row, device }) => ({ device: row.label.replace(' Serial Number', ''), serial: device.serial, brand: device.brand, model: device.model })) } : {}),
     // 5G Home (FWA): the Physical SIM allocated to the order and the Indoor Unit's serial number the agent captured.
     ...(isFwaService(values)
       ? {
@@ -165,20 +171,22 @@ export async function submitFixedActivationOrder(
     createdBy: currentAgentId(),
     sourceChannel: 'Tablet',
   });
-  await createRecord('appointments', {
-    appointmentId: `APT-${Date.now().toString().slice(-6)}`,
-    orderId,
-    status: 'pending',
-    appointmentDate: appointment.date,
-    timeSlot: appointment.timeSlot,
-    cluster: appointment.cluster,
-    channel: 'Retail Store',
-    notes: appointment.comments,
-    // What the technician collects at the visit, and the customer's own request for a specific date and time (a later date than the
-    // earliest makes the order future-dated).
-    documentsToCollect: appointment.documents ?? [],
-    ...(appointment.requestSpecific ? { requestedDate: appointment.requestedDate, requestedTime: appointment.requestedTime, futureDated: isFutureDated(appointment) } : {}),
-  });
+  if (appointment) {
+    await createRecord('appointments', {
+      appointmentId: `APT-${Date.now().toString().slice(-6)}`,
+      orderId,
+      status: 'pending',
+      appointmentDate: appointment.date,
+      timeSlot: appointment.timeSlot,
+      cluster: appointment.cluster,
+      channel: 'Retail Store',
+      notes: appointment.comments,
+      // What the technician collects at the visit, and the customer's own request for a specific date and time (a later date than the
+      // earliest makes the order future-dated).
+      documentsToCollect: appointment.documents ?? [],
+      ...(appointment.requestSpecific ? { requestedDate: appointment.requestedDate, requestedTime: appointment.requestedTime, futureDated: isFutureDated(appointment) } : {}),
+    });
+  }
 
   const activityCtx = { journey: FIXED_JOURNEY_LABEL, orderId, customerId: eligibility?.customerId, customerName: contact.moiResult?.name, idNumber: contact.idNumber };
   // The Completed activity is automatic and carries no comments; it is recorded when the agent hits Done & Exit.
@@ -189,7 +197,9 @@ export async function submitFixedActivationOrder(
     trigger: 'completed',
     reason: pendingApproval
       ? `Order ${orderId} submitted and is awaiting approval.`
-      : `Order ${orderId} submitted - installation booked for ${appointment.date} (${appointment.timeSlot})${payment?.reference ? `, WinCash ref ${payment.reference}` : ''}.`,
+      : appointment
+        ? `Order ${orderId} submitted - installation booked for ${appointment.date} (${appointment.timeSlot})${payment?.reference ? `, WinCash ref ${payment.reference}` : ''}.`
+        : `Order ${orderId} submitted - activated instantly, devices scanned in the journey${payment?.reference ? `, WinCash ref ${payment.reference}` : ''}.`,
   };
   if (pendingApproval) {
     await logActivity({ ...activityCtx, trigger: 'workflow-event', name: 'Order Routed for Approval', reason: 'Order requires approval before it can complete.' });

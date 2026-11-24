@@ -1,4 +1,5 @@
 import { isIptvComplete, type HomeIptvSelection } from '../../engines/homeIptv';
+import { extenderSerialsComplete, type HomeExtendersSelection } from '../../engines/homeExtenders';
 import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
@@ -217,7 +218,7 @@ export function addonsSelectionStep(opts: {
  * The Add-ons step of a home journey (fixed line, fibre, FWA, 5G Home), the step after Offers & Plans: the chosen plan's add-ons, as on the postpaid page. Continue from the plan page passes over
  * it; "Customise Add-ons" there is the way here (it sets `customiseAddons`, spent on arrival). An Offers-tab plan is pre-bundled and takes none. Add-ons never block.
  */
-export function homeAddonsStep(): WizardStep {
+export function homeAddonsStep(opts: { deviceSerials?: (values: Record<string, unknown>) => boolean } = {}): WizardStep {
   return {
     key: 'planExtras',
     summary: homeAddonsSummary,
@@ -227,10 +228,13 @@ export function homeAddonsStep(): WizardStep {
     render: ({ values, setValue }) => (
       <>
         <SpendFlag active={Boolean(values.customiseAddons)} onSpend={() => setValue('customiseAddons', undefined)} />
-        <AddonsSelection kind="home" planId={values.productId as string | undefined} addonIds={(values.addonIds as string[] | undefined) ?? []} onAddonsChange={(ids) => setValue('addonIds', ids)} addonBilling={values.addonBilling as Record<string, import('../../engines/addonCategories').AddonBillingFrequency> | undefined} onBillingChange={(next) => setValue('addonBilling', next)} addonTerms={values.addonTerms as Record<string, number> | undefined} onTermsChange={(next) => setValue('addonTerms', next)} iptv={values.iptv as HomeIptvSelection | undefined} onIptvChange={(next) => setValue('iptv', next)} extenders={values.extenders as import('../../engines/homeExtenders').HomeExtendersSelection | undefined} onExtendersChange={(next) => setValue('extenders', next)} />
+        <AddonsSelection kind="home" planId={values.productId as string | undefined} addonIds={(values.addonIds as string[] | undefined) ?? []} onAddonsChange={(ids) => setValue('addonIds', ids)} addonBilling={values.addonBilling as Record<string, import('../../engines/addonCategories').AddonBillingFrequency> | undefined} onBillingChange={(next) => setValue('addonBilling', next)} addonTerms={values.addonTerms as Record<string, number> | undefined} onTermsChange={(next) => setValue('addonTerms', next)} iptv={values.iptv as HomeIptvSelection | undefined} onIptvChange={(next) => setValue('iptv', next)} extenders={values.extenders as import('../../engines/homeExtenders').HomeExtendersSelection | undefined} onExtendersChange={(next) => setValue('extenders', next)} deviceSerials={opts.deviceSerials?.(values) ?? true} />
       </>
     ),
-    // IPTV, once enabled, needs its bundle, the set-top box choice and an answer on additional boxes.
-    isValid: (values) => isIptvComplete(values.iptv as HomeIptvSelection | undefined),
+    // IPTV, once enabled, needs its bundle, the set-top box choice (and its serial number, unless the field engineer scans it) and an answer on additional boxes.
+    isValid: (values) => {
+      const serials = opts.deviceSerials?.(values) ?? true;
+      return isIptvComplete(values.iptv as HomeIptvSelection | undefined, serials) && extenderSerialsComplete(values.extenders as HomeExtendersSelection | undefined, serials);
+    },
   };
 }

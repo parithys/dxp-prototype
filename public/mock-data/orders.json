@@ -2501,5 +2501,27 @@
     },
     "_note": "Draft Orders for the Mobile Postpaid Activation journey (2026-11-09): saved by the agent named in createdBy for the customer named in customerId, so the drafts offered after Customer Verification can be validated per agent and per customer.",
     "mrcTotalQAR": 0
+  },
+  {
+    "orderId": "ORD-90090",
+    "orderType": "New Home Connection - Fibre",
+    "orderSubType": "Consumer",
+    "status": "Submitted for Approval",
+    "customerId": "CUST-1003",
+    "accountId": "ACC-5003",
+    "billingProfileId": "BILL-7003",
+    "productIds": [
+      "PROD-201"
+    ],
+    "totalQAR": 199,
+    "approvalStatus": "Pending",
+    "createdBy": "AGENT-HALEEMI",
+    "sourceChannel": "Retail Store (Tablet)",
+    "kid": "KID-55830120-102",
+    "createdAt": "2026-11-20T11:05:00+03:00",
+    "customerName": "Fatima Saud Hamad Al-Kuwari",
+    "idNumber": "27798765432",
+    "demoTitle": "Home order in progress on a KID",
+    "demoDetail": "A Fibre order already placed on KID-55830120-102 (Check RFS shows 'Order In Progress For This KID' for it)."
   }
 ]

@@ -7,7 +7,8 @@ import { ICONS_HOME, Card } from 'dxp-ui';
 import { StartCards } from './StartCards';
 import { ProductSelection } from './ProductSelection';
 import type { ProductStepContext } from './ProductSelection';
-import { handOverHomeToRfs, productEligibilityClear, selectProduct } from './productChoice';
+import { handOverHomeToRfs, handOverToJourney, productEligibilityClear, selectProduct } from './productChoice';
+import type { EligibilityResult } from '../../../components/domain/eligibilityTypes';
 export { productEligibilityClear } from './productChoice';
 import { PRODUCT_OF_OFFER_JOURNEY, homeProductLabel, mnpTypeOfOffer, productLabel } from '../products';
 import type { ConnectionProduct, HomeProduct } from '../products';
@@ -43,6 +44,41 @@ export function homeOffersStep(ctx: ProductStepContext): WizardStep {
     heading: 'Recommended Offers',
     subheading: 'Personalised using the customer’s profile and eligibility.',
     summary: [...crossSalesSummary, ...productSummary, { key: 'serviceType', label: 'Service Type', type: 'text' as const, optional: true, value: (v: Record<string, unknown>) => serviceTypeLabel((v.installation as { serviceType?: string } | undefined)?.serviceType) }],
+    // The floating bar carries Start Another Journey here too (taller than the standard one); the way on is Select Offer, as on New Connection's page, so there is no Continue.
+    tallFooter: true,
+    primaryAction: ({ values }) => {
+      const personaId = store.getState().persona.activePersonaId;
+      const customerId = (values.eligibility as EligibilityResult | undefined)?.customerId;
+      const customer = customerId ? { customerId } : undefined;
+      // Another journey leaves for its own wizard for this customer (this draft has done its job); New Home restarts at Check RFS.
+      const leaveFor = (route: string | undefined) => route && handOverToJourney(ctx, route, customer);
+      return (
+          <div className="journey-bar-slot">
+            <div className="journey-bar">
+              <div className="journey-bar-heading">
+                <span className="eyebrow">Other Options</span>
+                <span className="title title-md font-bold">Start Another Journey</span>
+              </div>
+              {canUseFeature(personaId, HOME_CONNECTION_FEATURE) && (
+                <JourneyCardButton label="New Home" hint="Home broadband" tone="amber" icon={ICONS_HOME} onClick={() => handOverHomeToRfs(ctx, values)} />
+              )}
+              <NewJourneyButtons
+                variant="cards"
+                // Only the products this role holds a grant for; New Fixed Line has no button (New Home covers the home products).
+                allowed={(j) => {
+                  if (j === 'new-fixed-line') return false;
+                  const product = PRODUCT_OF_OFFER_JOURNEY[j];
+                  return product ? canStartProduct(personaId, product) : true;
+                }}
+                // New Postpaid is the journey's own button elsewhere; here, like the others, it leaves for its wizard.
+                onDecline={() => leaveFor(SERVICE_JOURNEYS.find((j) => j.key === 'new-postpaid')?.route)}
+                goNext={() => {}}
+                onHandOff={(route) => leaveFor(route)}
+              />
+            </div>
+          </div>
+      );
+    },
     render: ({ values, setValue, goNext }) => <ProductSelection values={values} setValue={setValue} goNext={goNext} ctx={ctx} variant="offers" />,
     isValid: (values) => Boolean(values.product) && productEligibilityClear(values, { requireHomeKind: true }) && homeInstallationReady(values),
     skip: (values) => !rfsStarted(values),

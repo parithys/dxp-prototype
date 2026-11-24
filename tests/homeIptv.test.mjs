@@ -35,13 +35,20 @@ test('one-time lines: the chargeable box and the additional boxes; nothing when 
   assert.deepEqual(iptvOneTimeLines(bundle, { enabled: false, stb: 'lite', extraStbs: 1 }), []);
 });
 
-test('IPTV is complete when off, or with a bundle, the box choice (if offered) and - after a Premium or Lite STB only - an answer on additional boxes', () => {
+test('IPTV is complete when off, or with a bundle, the box choice (if offered) and - after a Premium or Lite STB only - its serial number and an answer on additional boxes', () => {
   assert.equal(isIptvComplete(undefined), true);
   assert.equal(isIptvComplete({ enabled: false }), true);
   assert.equal(isIptvComplete({ enabled: true }), false);
   assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true }), false, 'no box choice');
-  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'lite' }), false, 'a box, additional boxes not answered');
-  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'lite', extraStbs: 0 }), true);
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'lite' }), false, 'a box with no serial number');
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'premium', stbSerial: '   ' }), false, 'a blank serial number is none');
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'lite', stbSerial: 'STB1' }), false, 'a box and its serial, additional boxes not answered');
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'lite', stbSerial: 'STB1', extraStbs: 0 }), true);
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'premium', stbSerial: 'STB2', extraStbs: 2 }), false, 'additional boxes need their serial numbers');
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'premium', stbSerial: 'STB2', extraStbs: 2, extraStbSerials: ['STB3'] }), false, 'one of two serials');
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'premium', stbSerial: 'STB2', extraStbs: 2, extraStbSerials: ['STB3', ' '] }), false, 'a blank serial is none');
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'premium', stbSerial: 'STB2', extraStbs: 2, extraStbSerials: ['STB3', 'STB4'] }), true);
+  assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'premium', stbSerial: 'STB2', extraStbs: 1, extraStbSerials: ['STB3', 'STB4'] }), true, 'only the first extraStbs are read');
   assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: true, stb: 'none' }), true, 'no STB: nothing more to ask');
   assert.equal(isIptvComplete({ enabled: true, bundleId: 'B', stbOffered: false }), true, 'a bundle with no STB');
 });

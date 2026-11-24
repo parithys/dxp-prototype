@@ -182,7 +182,7 @@ export const PRODUCT_LINES: readonly ProductLine[] = [
           { id: 'fib-fnp-change', title: 'FNP Number Change', description: 'Change to a number within Vodafone Qatar (fibre-to-fibre number portability)', status: 'available', featureKey: 'mnp.port-in-wizard', screenId: 'SCR-121' },
           { id: 'fib-change-plan', title: 'Change Plan', description: 'Move a customer to a different plan tier', status: 'planned' },
           { id: 'fib-upgrade', title: 'Upgrade Service', description: 'Upgrade speed tier or service type', status: 'planned' },
-          { id: 'fib-coverage-check', title: 'Check RFS', description: 'Check fibre or FWA availability at an address', status: 'partly', featureKey: 'fixedline.new-fixed-line-wizard', path: '/fibre-home/check-rfs' },
+          { id: 'fib-coverage-check', title: 'Check RFS', description: 'Check fibre or FWA availability at an address', status: 'available', featureKey: 'fixedline.new-fixed-line-wizard', path: '/fibre-home/check-rfs' },
           { id: 'fib-relocate', title: 'Relocate Fibre Service', description: 'Move an active fibre service to a new address', status: 'planned' },
           { id: 'fib-home-move', title: 'Home Move', description: 'Coordinate a full home move with service transfer', status: 'planned', featureKey: 'fwa.appointment-booking', screenId: 'SCR-115' },
           { id: 'fib-change-install-address', title: 'Change Installation Address', description: 'Update the registered installation address', status: 'planned' },

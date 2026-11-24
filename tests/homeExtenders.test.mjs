@@ -64,7 +64,7 @@ test('every home plan states its free Extenders: 4 on the Premium tier, 2 on the
 test('the quantity opens at the plan\'s free Extenders and a zero the agent sets is kept', () => {
   const card = fs.readFileSync('src/capabilities/AddonsSelection/HomeExtendersCard.tsx', 'utf8');
   assert.match(card, /if \(!selection && included > 0\) onChange\(\{ quantity: included, terms \}\)/);
-  assert.match(card, /const set = \(q: number\) => onChange\(\{ quantity: q, billing: selection\?\.billing, terms \}\)/, 'zero is an answer, not "unset"');
+  assert.match(card, /const set = \(q: number\) => onChange\(\{ quantity: q, billing: selection\?\.billing, terms, serials: selection\?\.serials\?\.slice\(0, q\) \}\)/, 'zero is an answer, not "unset"');
 });
 
 test('nothing is added for the agent and the Extender is not a list card; the plan change clears the choice; Postpaid and Prepaid are untouched', () => {

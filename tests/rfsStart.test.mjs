@@ -70,7 +70,7 @@ test('the journey asks neither the Address nor the product cards once Check RFS 
 test('Check RFS passes the result as start values and, from New Connection, the identity and the step to open at', async () => {
   const fs = await import('node:fs');
   const sa = fs.readFileSync('src/modules/check-rfs/ServiceAvailability.tsx', 'utf8');
-  assert.match(sa, /startValues: \{ \.\.\.homeStart\?\.values, \.\.\.rfsDraftValues\(handOff\) \}/);
+  assert.match(sa, /startValues: \{ \.\.\.homeStart\?\.values, \.\.\.rfsDraftValues\(\{ \.\.\.handOff, activation: mode \}\) \}/);
   assert.match(sa, /startProgressTo: homeStart\.progressTo/);
   const choice = fs.readFileSync('src/modules/new-connection/steps/productChoice.ts', 'utf8');
   assert.match(choice, /homeStart: \{[\s\S]*contact: values\.contact[\s\S]*offerCarried: true[\s\S]*\.\.\.\(offer && crossSales[\s\S]*progressTo:/, 'Recommended Offers was seen in New Connection: the home journey does not show it again, with or without an offer chosen');

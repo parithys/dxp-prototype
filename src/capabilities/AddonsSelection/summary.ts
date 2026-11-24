@@ -23,7 +23,7 @@ export const homeAddonsSummary: SummaryField[] = [
       const iptv = v.iptv as HomeIptvSelection | undefined;
       if (!iptv?.enabled || !iptv.bundleId) return undefined;
       const extra = extraStbCount(iptv);
-      return [iptv.stb ? stbLabel(iptv.stb) : undefined, extra > 0 ? `${extra} additional` : undefined].filter(Boolean).join(', ') || undefined;
+      return [iptv.stb ? stbLabel(iptv.stb) : undefined, iptv.stbSerial ? `Serial ${iptv.stbSerial}` : undefined, extra > 0 ? `${extra} additional` : undefined, extra > 0 && iptv.extraStbSerials?.some(Boolean) ? `Additional serials ${iptv.extraStbSerials.slice(0, extra).filter(Boolean).join(' / ')}` : undefined].filter(Boolean).join(', ') || undefined;
     },
   },
 ];

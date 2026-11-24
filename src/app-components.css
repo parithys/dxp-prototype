@@ -157,6 +157,22 @@
   .nav-idle {
     @apply transition-colors duration-[var(--motion-base)];
   }
+  /* The read-back of a scanned SIM or device on the Home journey's scanning step: a hairline between its rows (a mid green, as on the success panels). Scoped by the step's own wrapper, so the same
+     read-back on the other journeys is unchanged. */
+  .scan-rows dl > div + div {
+    @apply mt-1.5 border-t border-[color-mix(in_oklab,var(--success),var(--bg)_55%)] pt-1.5;
+  }
+  /* The toggle (OptionToggle: Recurring / One-Time, language and the like) is as wide as its options need, not the width of the card it sits in - the same as the filter tabs (.tab-strip-filter) - and a compact 36px tall. */
+  .toggle-group {
+    @apply w-fit max-w-full;
+  }
+  .toggle-option {
+    @apply px-4 py-2 text-[length:var(--fs-caption)];
+  }
+  /* A row of the menu while it is searched: the hover fill the rail's other controls use (--nav-hover-bg), as the rows carry no hover of their own. */
+  .nav-hit {
+    @apply hover:bg-[var(--nav-hover-bg)] hover:text-[var(--nav-fg)];
+  }
   /* Level 2: a category under a group, marked by a left rule. */
   .nav-child {
     @apply flex-1 min-w-0 flex items-center gap-2.5 h-9 -ml-px pl-4 pr-3 border-l-2 text-[length:var(--fs-caption)];
@@ -1055,6 +1071,18 @@
   .option-row {
     @apply min-h-28 p-4 sm:gap-5 sm:p-5;
   }
+  /* What sits under an option row's text (an add-on's billing toggle on the home Add-ons page): indented to start where the row's title starts, past the icon box (.option-glyph-lg: 14 units) and the row's own
+     padding and gap (.option-row: 4 + 3 units below sm, 5 + 5 above). */
+  .option-row-aside {
+    @apply py-3 pr-3 pl-[calc(var(--space-unit)*21)] sm:pl-[calc(var(--space-unit)*24)];
+  }
+  /* A short list of label / value rows (the Wi-Fi Extenders' Free / Chargeable split): a separator above the first row and below every row, in the card border colour so it shows on a tinted card. */
+  .rows-rule {
+    @apply border-t border-[var(--field-card-border)];
+  }
+  .rows-rule > div {
+    @apply border-b border-[var(--field-card-border)] py-2;
+  }
   .aside-value {
     @apply min-w-0 max-w-[50%] shrink-0 text-right;
   }
@@ -1362,7 +1390,8 @@
     @apply min-w-0 py-2 @lg:py-0;
   }
   .tone-success-panel {
-    @apply border-tone-success-border bg-[var(--tint-green-bg)] [&_dl_span]:bg-bg;
+    /* The border and the row separators are a mid green (the success colour mixed into the page colour): the pale tone border and the soft grey line do not show on this wash. */
+    @apply border-[color-mix(in_oklab,var(--success),var(--bg)_55%)] bg-[var(--tint-green-bg)] [&_.divider-top]:border-[color-mix(in_oklab,var(--success),var(--bg)_55%)] [&_dl_span]:bg-bg;
   }
   .toast-row-title {
     @apply text-[length:var(--fs-body)] font-semibold leading-snug;
@@ -1576,10 +1605,23 @@
   }
   /* The location half of the result: the matched building, its Area / Zone / Street / Building, then the unit's IDs, each group on its own hairline. */
   .avail-location {
-    @apply flex flex-col gap-4 bg-surface px-6 py-5;
+    @apply flex flex-col gap-3 bg-bg px-6 py-4;
+  }
+  /* A matched location: the light green wash of Identity Details on the Contact page (.tone-success-panel), with the same soft-grey separators (.divider-top). */
+  .avail-location-ok {
+    @apply bg-[var(--tint-green-bg)];
+  }
+  /* The lines on that wash are a mid green (the success colour mixed into the page colour): the soft grey and the pale tone border do not show on it. */
+  .avail-location-ok .avail-facts,
+  .avail-location-ok .avail-extras {
+    @apply border-[color-mix(in_oklab,var(--success),var(--bg)_55%)];
+  }
+  /* The device tags (left) and the unit's warning (right) on one row under the IDs, with one more separator above them like the others. */
+  .avail-extras {
+    @apply flex flex-wrap items-center justify-between gap-3 border-t border-border-soft pt-3;
   }
   .avail-facts {
-    @apply grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border-soft pt-4 sm:grid-cols-4;
+    @apply grid grid-cols-2 gap-x-6 gap-y-2 border-t border-border-soft pt-3 sm:grid-cols-4;
   }
   .avail-facts-2 {
     @apply sm:grid-cols-2;
@@ -1591,56 +1633,66 @@
   .avail-kv {
     @apply grid grid-cols-[3rem_1fr] gap-y-2 text-fg-2;
   }
+  /* The unit's state and SLA as a pill in the location's header row (top right, beside its name), with its patching under it. */
+  .avail-unit-tags {
+    @apply ml-auto flex flex-col items-end gap-1 self-start text-[length:var(--fs-caption)];
+  }
+  /* A unit card's state, patching and SLA: a wrapping row of small grey pills under its IDs. */
   .avail-tags {
-    @apply mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border-soft pt-3 text-[length:var(--fs-caption)] text-muted;
+    @apply mt-2 flex flex-wrap items-center gap-1.5 text-[length:var(--fs-caption)];
+  }
+  .avail-tags > span {
+    @apply rounded-full bg-surface px-3 py-1 text-fg-2;
+  }
+  .avail-pill {
+    @apply rounded-full bg-bg px-3 py-1 text-fg-2;
+  }
+  /* A warning on the unit (a splitter that is full or not mapped): a full-width amber bar. The order is not stopped. */
+  .avail-attention {
+    @apply flex items-center gap-2 rounded-[var(--radius-sm)] bg-[var(--tag-amber-bg)] px-3 py-2 text-[length:var(--fs-caption)] text-[var(--warn-text)];
   }
   .avail-result {
-    @apply mt-6 grid grid-cols-1 overflow-hidden rounded-[var(--radius-card)] border md:grid-cols-[minmax(14rem,1fr)_2.2fr];
+    @apply mt-6 grid grid-cols-1 overflow-hidden rounded-[var(--radius-card)] border border-border-soft md:grid-cols-[minmax(14rem,21%)_1fr];
   }
+  /* A matched location's result: the soft green border Identity Details has (.tone-success-panel), round the green verdict and the light-green details. */
   .avail-result-ok {
-    @apply border-success-border;
+    @apply border-[color-mix(in_oklab,var(--success),var(--bg)_55%)];
   }
-  .avail-result-no {
-    @apply border-border-soft;
-  }
-  /* The verdict half: a solid status colour with the title, the badge and the sentence. */
+  /* The verdict half: the status colour with the glyph, a small-caps line (Service Available / Unavailable), the result's name and its sentence. Deep green for a sellable location, deep red for
+     a building not open, a pale red for a search that matched nothing. */
   .avail-verdict {
-    @apply flex flex-col items-start justify-center gap-3 px-8 py-6 text-on-dark;
+    @apply flex flex-col items-start justify-center gap-2 px-6 py-5 text-on-dark;
   }
   .avail-verdict-ok {
-    @apply bg-[var(--success-solid)];
+    @apply bg-[color-mix(in_oklab,var(--success-solid),black_24%)];
   }
   .avail-verdict-no {
-    @apply bg-[var(--danger-solid)];
+    @apply bg-[color-mix(in_oklab,var(--danger-solid),black_20%)];
   }
-  /* A white disc with the service's glyph in the verdict colour, above the title. */
+  .avail-verdict-none {
+    @apply bg-tone-accent text-[var(--accent-text)];
+  }
+  .avail-verdict-eyebrow {
+    @apply text-[length:var(--fs-caption)] font-semibold uppercase tracking-wide opacity-90;
+  }
+  /* A white disc with the result's glyph in the verdict colour, above the name. */
   .avail-verdict-icon {
-    @apply flex size-14 items-center justify-center rounded-full bg-bg;
+    @apply flex size-11 items-center justify-center rounded-full bg-bg;
   }
   .avail-verdict-ok .avail-verdict-icon {
-    @apply text-[var(--success-solid)];
+    @apply text-[color-mix(in_oklab,var(--success-solid),black_24%)];
   }
   .avail-verdict-no .avail-verdict-icon {
-    @apply text-[var(--danger-solid)];
+    @apply text-[color-mix(in_oklab,var(--danger-solid),black_20%)];
+  }
+  .avail-verdict-none .avail-verdict-icon {
+    @apply text-[var(--accent-text)];
   }
   .avail-id {
     @apply flex flex-col items-start gap-1;
   }
-  .avail-hub {
-    @apply relative flex size-12 shrink-0 items-center justify-center rounded-full;
-  }
-  .avail-hub-ok {
-    @apply bg-[var(--success-solid)] text-on-dark;
-  }
-  /* The disc of a search that matched no location: dashed and neutral, not the matched building's solid one. */
-  .avail-hub-none {
-    @apply border-2 border-dashed border-border bg-bg text-muted;
-  }
-  .avail-hub-mark {
-    @apply absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full border-2 border-bg text-on-dark;
-  }
   .avail-offer {
-    @apply border-t-4 border-t-accent p-5 text-left;
+    @apply p-5 text-left;
   }
   .avail-units {
     @apply grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4;

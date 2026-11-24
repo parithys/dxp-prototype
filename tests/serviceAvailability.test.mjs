@@ -107,7 +107,7 @@ test('device reuse and Zero Touch: read from the feasibility response and UIM\'s
   const tags = (device) => model.deviceReuseTags(model.deviceReuseOf({ device })).map((t) => t.label);
   assert.deepEqual(tags({ model: 'ZTE F670L', reusable: true }), ['Reusable', 'Instant Activation']);
   assert.deepEqual(tags({ model: 'Nokia G-240W-C', reusable: true }), ['Reusable'], 'reusable, but the model does not support Zero Touch');
-  assert.deepEqual(tags({ model: 'Acme CPE X1', reusable: true }), ['Reusable', 'Instant Activation Unknown']);
+  assert.deepEqual(tags({ model: 'Acme CPE X1', reusable: true }), ['Reusable'], 'a model not mapped for Instant Activation says nothing about it');
   assert.deepEqual(tags({ model: 'ZTE F670L', reusable: false }), ['Not Reusable']);
   assert.deepEqual(tags(undefined), []);
   // Through the lookup: unit 101 of Al Waab has a reusable Zero Touch device, 202 none.
@@ -138,4 +138,29 @@ test('the unit cards carry an Interested button that raises a lead for the unit\
   assert.match(sa, /e\.stopPropagation\(\); onInterested\(\);/, 'the click is the button\'s own, not the card\'s selection');
   // The card holds a button, so it is not itself a button (no nested buttons).
   assert.match(sa, /<div\s+key=\{u\.kid\}\s+role="radio"/);
+});
+
+test('every demo shortcut, on every tab, fills a valid entry that reaches its own scenario', () => {
+  const expected = { 'Fiber Unlimited': 'RFS_UNLIMITED', 'Fiber Limited': 'RFS_LIMITED', 'FWA Indoor': 'FWA_INDOOR', 'FWA Outdoor': 'FWA_OUTDOOR', 'FWA Indoor & Outdoor': 'FWA_BOTH', RFA: 'RFA', 'Not Found': 'NOT_FOUND' };
+  assert.deepEqual(model.DEMO_SCENARIOS.map((d) => d.label), Object.keys(expected), 'the seven categories, in order');
+  for (const d of model.DEMO_SCENARIOS) {
+    for (const mode of model.SEARCH_MODES) {
+      const values = model.demoScenarioValues(mode.id, d.status);
+      assert.equal(model.isSearchValid(mode, values), true, `${d.label} on ${mode.id} fills every required field`);
+      assert.equal(look(mode.id, values).status, expected[d.label], `${d.label} on ${mode.id}`);
+    }
+  }
+});
+
+test('the KID and VFID fields take a barcode scan, and what a scan reads is an identifier the lookup finds', () => {
+  const scannable = model.SEARCH_MODES.flatMap((m) => m.fields).filter((f) => f.scan).map((f) => f.id);
+  assert.deepEqual(scannable, ['kid', 'vfid']);
+  for (let i = 0; i < 20; i++) {
+    for (const id of scannable) {
+      const read = model.scanSample(id);
+      const mode = model.modeById(id);
+      assert.equal(model.isSearchValid(mode, { [id]: read }), true, `${id} ${read} is a valid entry`);
+      assert.notEqual(look(id, { [id]: read }).status, 'NOT_FOUND', `${id} ${read} is in the inventory`);
+    }
+  }
 });

@@ -17,7 +17,8 @@
     "capabilities": [
       "agent-self-service",
       "edit-customer-records",
-      "view-bell-notifications"
+      "view-bell-notifications",
+      "device-scan"
     ],
     "features": [
       {

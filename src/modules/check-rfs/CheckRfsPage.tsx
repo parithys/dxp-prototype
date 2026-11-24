@@ -7,7 +7,7 @@ import { ServiceAvailability } from './ServiceAvailability';
 export function CheckRfsPage() {
   return (
     <div className="p-8">
-      <PageHeader title="Fibre or FWA Availability" description="Check fibre or FWA availability at an address." />
+      <PageHeader title="Check RFS" description="Check fibre or FWA availability at an address." />
       <ServiceAvailability />
     </div>
   );

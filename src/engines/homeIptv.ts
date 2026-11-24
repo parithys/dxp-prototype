@@ -25,8 +25,12 @@ export interface HomeIptvSelection {
   /** Whether the chosen bundle offers an STB, copied when it was chosen. */
   stbOffered?: boolean;
   stb?: StbChoice;
+  /** The serial number of the Premium or Lite box, captured by scanning its barcode; cleared when the box choice changes or the agent removes it. */
+  stbSerial?: string;
   /** Additional physical STBs: undefined until the agent answers, 0 for none. */
   extraStbs?: number;
+  /** The serial number of each additional box, in order (index 0 is the first additional STB), captured by scanning; only the first `extraStbs` are read. */
+  extraStbSerials?: string[];
 }
 
 export const stbLabel = (c: StbChoice) => (c === 'premium' ? 'Premium STB' : c === 'lite' ? 'Lite STB' : 'No STB');
@@ -52,11 +56,16 @@ export function iptvOneTimeLines(bundle: IptvBundleTerms | undefined, sel: HomeI
   return lines;
 }
 
-/** Disabled needs nothing; enabled needs a bundle, the STB choice when the bundle offers one, and and - after a Premium or Lite STB - an answer on additional STBs. */
-export function isIptvComplete(sel: HomeIptvSelection | undefined): boolean {
+/** `serials`: the boxes' serial numbers are captured on the Add-ons page (an Instant Activation order scans them in the journey; a Field Engineer order leaves them to the field engineer). Disabled needs nothing; enabled needs a bundle, the STB choice when the bundle offers one, the serial number of a Premium or Lite STB, and - after one - an answer on additional STBs, with a serial number for each additional box. */
+export function isIptvComplete(sel: HomeIptvSelection | undefined, serials = true): boolean {
   if (!sel?.enabled) return true;
   if (!sel.bundleId) return sel.planIncluded === true;
   if (sel.stbOffered && !sel.stb) return false;
+  // A Premium or Lite box is a physical unit: its serial number has to be scanned (or entered) before the choice is complete.
+  if (serials && asksAdditionalStbs(sel) && !sel.stbSerial?.trim()) return false;
   // Additional boxes are asked only after a Premium or Lite STB; with no STB there is nothing to answer.
-  return asksAdditionalStbs(sel) ? sel.extraStbs !== undefined : true;
+  if (!asksAdditionalStbs(sel)) return true;
+  if (sel.extraStbs === undefined) return false;
+  // Each additional box needs its own serial number, as the first box does.
+  return !serials || Array.from({ length: extraStbCount(sel) }).every((_, i) => Boolean(sel.extraStbSerials?.[i]?.trim()));
 }

@@ -18,11 +18,13 @@ export interface RfsHandOff {
   vfid?: string;
   /** The service the chosen KID still carries (Active or Suspended) when the agent proceeded: a Tenancy Document is then collected and the order is approved by the Fulfilment Team. */
   kidInUse?: ExistingService;
+  /** How the connection is activated, chosen on Check RFS (its Activate / Field Engineer buttons): kept in the draft as `activationMode`. Absent: Field Engineer. */
+  activation?: 'instant' | 'field';
   address: { zone: string; streetNo: string; buildingNo: string; aptFlatUnit?: string; city?: string };
 }
 
 /** What a result carries in the draft (values.rfsCheck): the journey's mark that Check RFS ran, and what it found. */
-export type RfsCheckValue = Omit<RfsHandOff, 'address'>;
+export type RfsCheckValue = Omit<RfsHandOff, 'address' | 'activation'>;
 
 /** What a page that sends the agent to Check RFS wants the connection to start with (router state `homeStart`): the draft values it already holds, and the step to open at. */
 export interface HomeStart {
@@ -50,13 +52,14 @@ export const homeProductOfRfs = (service: RfsHandOff['service']): HomeProduct =>
 /** The draft values a result sets: the address as given, the product and its service type, and the RFS verdict already in (so Fibre needs no second read). */
 export function rfsDraftValues(h: RfsHandOff): Record<string, unknown> {
   const installation: FixedInstallationValue = h.service === 'fibre' ? { serviceType: 'fiber', rfs: 'rfs' } : { serviceType: fwaServiceTypeOf(h) };
-  const { address: _address, ...check } = h;
+  const { address: _address, activation, ...check } = h;
   return {
     // The check's `city` is the building's area: it is the address's Area, not its (optional) City.
     address: { zone: h.address.zone, streetNo: h.address.streetNo, buildingNo: h.address.buildingNo, aptFlatUnit: h.address.aptFlatUnit, area: h.address.city },
     product: 'fixed-line',
     homeProduct: homeProductOfRfs(h.service),
     installation,
+    activationMode: activation ?? 'field',
     rfsCheck: check satisfies RfsCheckValue,
   };
 }

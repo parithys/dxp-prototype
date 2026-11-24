@@ -34,7 +34,7 @@ test('New Home Connection opened with nobody identified goes to the common page;
 test('Check RFS with nobody identified goes through the common page and keeps its result; Recommended Offers then opens the home journey without a second check', () => {
   const sa = fs.readFileSync('src/modules/check-rfs/ServiceAvailability.tsx', 'utf8');
   assert.match(sa, /'\/start-connection'/);
-  assert.match(sa, /startValues: \{ pendingHome: rfsDraftValues\(handOff\) \}/);
+  assert.match(sa, /startValues: \{ pendingHome: rfsDraftValues\(\{ \.\.\.handOff, activation: mode \}\) \}/);
   const choice = fs.readFileSync('src/modules/new-connection/steps/productChoice.ts', 'utf8');
   assert.match(choice, /const pendingHome = values\.pendingHome as Record<string, unknown> \| undefined;[\s\S]*ctx\.navigate\(homeConnectionRoute\(ctx\)[\s\S]*\.\.\.pendingHome/);
 });

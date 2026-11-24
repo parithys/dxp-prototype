@@ -85,7 +85,7 @@ export const PRODUCT_OWNED_KEYS = [
   'simType', 'simSerial', 'simValid', 'cart',
   'billLimit', 'billLimitPass',
   'creditCheckPass', 'creditCheckAcknowledged',
-  'installation', 'devices', 'appointment',
+  'installation', 'devices', 'deviceScan', 'indoorUnit', 'indoorUnitSerial', 'appointment',
   'donorDetails', 'donorAttachment', 'comments',
   'checkoutTotals', 'cafSummary', 'legalFacts', 'caf', 'payment',
   'homeProduct', 'actualUser', 'idTypeNotice',

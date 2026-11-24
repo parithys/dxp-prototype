@@ -47,6 +47,9 @@ export type PersonaCapability =
   | 'ticket-audit-trail'
   | 'task-assign'
   | 'agent-oversight'
+  // Scans (or keys in) the serial numbers of the devices and the SIM of a Home order inside the journey - New Home Connection's Instant Activation. A role without it goes the Field Engineer
+  // way: the device and SIM scanning are done by the field engineer (WFM), and the journey books the installation appointment instead.
+  | 'device-scan'
   // Who may see a customer of a protected segment (Safwa, Safwa+, Royal): one grant per segment, checked before any of the customer's
   // information is shown (see data/customerSegments.ts, engines/agentPrivilegeEngine.canViewCustomerSegment).
   | 'view-safwa-customers'

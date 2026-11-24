@@ -1,7 +1,9 @@
-import { HOME_ADDRESS_LABEL, SERVICE_ADDRESS_LABEL } from '../../../data/stepLabels';
+import { HOME_ADDRESS_LABEL, NUMBER_SELECTION_LABEL, SERVICE_ADDRESS_LABEL } from '../../../data/stepLabels';
 import { simTypeStep, addressSummary, billingStep, cafSignatureStep, checkoutSummaryStep, fixedPlanSelectionStep, homeAddonsStep, paymentStep } from '../../../capabilities';
-import { IndoorUnitSerial, InstallationAddressForm, InstallationAddressStep, NumberDevicesStep } from './FixedStepViews';
-import { isFwaService, isIndoorUnitValid, type IndoorUnitDetails } from './fixedActivationModel';
+import { InstallationAddressForm, InstallationAddressStep, NumberDevicesStep } from './FixedStepViews';
+import { DeviceScanPanel } from './DeviceScan';
+import { isDeviceScanComplete, scansInJourney, serviceTypeOfOrder, validatedDevices } from './activationMode';
+import { isFwaService, type IndoorUnitDetails } from './fixedActivationModel';
 import { InstallationAddressView } from './InstallationAddressView';
 import { isInstallationAddressValid } from './installationAddress';
 import type { ZsbAddressValue } from '../../../components/patterns/ZsbAddressStep';
@@ -65,12 +67,12 @@ export function homeAddressStep(): WizardStep {
 // ---- 3. Plan -------------------------------------------------------------------------------------------------
 export const fixedPlanStep = fixedPlanSelectionStep;
 
-// ---- 4. Number & Devices -------------------------------------------------------------------------------------
+// ---- 4. Number Selection -------------------------------------------------------------------------------------
 // The fixed line number is allocated by the system; the devices follow from the service type and plan.
 export function fixedNumberStep(): WizardStep {
   return {
     key: 'number',
-    label: 'Number & Devices',
+    label: NUMBER_SELECTION_LABEL,
     summary: [
       { key: 'msisdn', label: 'Fixed Line Number', type: 'text', value: (v) => at(v, 'msisdn') },
       { key: 'devices', label: 'Devices', type: 'text', optional: true, value: (v) => ((at(v, 'devices') as FixedDevice[] | undefined) ?? []).map((d) => d.name).join(', ') || undefined },
@@ -80,39 +82,54 @@ export function fixedNumberStep(): WizardStep {
   };
 }
 
-/** An FWA order's SIM Type and Indoor Unit read back on the Order Summary and the CAF, after the plan (the SIM's serial number is the summary's own row). */
-const fwaOrderRows = (values: Values): { label: string; value: string }[] => {
-  if (!isFwaService(values)) return [];
+/** An Instant Activation order's SIM Type (FWA) and the devices in its cart - ONT / CPE, set-top boxes, Mesh - read back on the Order Summary and the CAF. A Field Engineer order has none: the field engineer scans. */
+export const deviceOrderRows = (values: Values): { label: string; value: string }[] => {
+  if (!scansInJourney(values)) return [];
   const sim = values.simType as { simType?: string } | undefined;
   const unit = values.indoorUnit as IndoorUnitDetails | undefined;
   return [
-    { label: 'SIM Type', value: sim?.simType ?? 'Physical' },
-    { label: 'Indoor Unit Serial Number', value: unit?.serialNumber ?? '-' },
-    ...(unit?.brand || unit?.modelNumber ? [{ label: 'Indoor Unit', value: [unit.brand, unit.modelNumber].filter(Boolean).join(' ') }] : []),
+    ...(isFwaService(values) ? [{ label: 'SIM Type', value: sim?.simType ?? 'Physical' }] : []),
+    ...validatedDevices(values).map(({ row, device }) => ({ label: `${row.label}`, value: device.serial + (device.model ? ` (${[device.brand, device.model].filter(Boolean).join(' ')})` : '') })),
+    ...(unit?.macAddress ? [{ label: 'Indoor Unit MAC Address', value: unit.macAddress }] : []),
   ];
 };
 
-// ---- 4b. SIM Selection (5G Home / FWA only) -------------------------------------------------------------------
-// After the allocated Fixed Line Number: a Physical SIM only (scanned or typed, checked against inventory) and the Indoor Unit's serial number. Skipped for Fibre and fixed line.
+// ---- 4b. Device Scanning (Instant Activation) -----------------------------------------------------------------
+// Instant Activation only (the Check RFS Activate button, for a role that scans): a Fiber order scans its ONT; an FWA Indoor order scans its CPE and a Physical SIM. Either also scans the set-top boxes and Mesh
+// extenders it carries. A Field Engineer order has no scanning here - the field engineer does it (WFM) - and books the installation appointment instead.
+export function deviceScanStep(): WizardStep {
+  return {
+    key: 'deviceScan',
+    label: 'Optical Network Terminal (ONT) Device',
+    summary: [{ key: 'devices', label: 'Devices', type: 'text', optional: true, value: (v) => validatedDevices(v).map(({ row, device }) => `${row.label.replace(' Serial Number', '')} ${device.serial}`).join(', ') || undefined }],
+    skip: (values) => !scansInJourney(values) || serviceTypeOfOrder(values) !== 'fiber',
+    render: ({ values, setValue }) => <DeviceScanPanel values={values} setValue={setValue} />,
+    isValid: (values) => isDeviceScanComplete(values),
+  };
+}
+
+// ---- 4c. Device & SIM Scanning (FWA Indoor, Instant Activation) ------------------------------------------------
+// After the allocated Fixed Line Number: a Physical SIM only (scanned or typed, checked against inventory) and the devices - CPE, set-top boxes, Mesh - each scanned or entered and validated into the cart.
 export function fwaSimStep(): WizardStep {
   const base = simTypeStep({ physicalOnly: true });
   return {
     ...base,
     key: 'fwaSim',
-    skip: (values) => !isFwaService(values),
-    summary: [...(base.summary ?? []), { key: 'indoorUnitSerial', label: 'Indoor Unit Serial Number', type: 'text', optional: true, value: (v) => at(v, 'indoorUnit', 'serialNumber') }],
+    label: 'Device & SIM Scanning (CPE)',
+    skip: (values) => !isFwaService(values) || !scansInJourney(values),
+    summary: [...(base.summary ?? []), { key: 'devices', label: 'Devices', type: 'text', optional: true, value: (v) => validatedDevices(v).map(({ row, device }) => `${row.label.replace(' Serial Number', '')} ${device.serial}`).join(', ') || undefined }],
     render: (ctx) => (
-      <div className="space-y-6">
+      <div className="space-y-6 scan-rows">
         {base.render(ctx)}
-        <IndoorUnitSerial values={ctx.values} setValue={ctx.setValue} />
+        <DeviceScanPanel values={ctx.values} setValue={ctx.setValue} />
       </div>
     ),
-    // Physical only: a leftover eSIM choice does not satisfy it.
-    isValid: (values) => (values.simType as { simType?: string } | undefined)?.simType === 'Physical' && (base.isValid?.(values) ?? false) && isIndoorUnitValid(values),
+    // Physical only: a leftover eSIM choice does not satisfy it. And every device the order needs is in the cart.
+    isValid: (values) => (values.simType as { simType?: string } | undefined)?.simType === 'Physical' && (base.isValid?.(values) ?? false) && isDeviceScanComplete(values),
   };
 }
 
-// ---- 4c. Installation Address (after Number Selection for Fibre, after SIM Selection for FWA) ---------------------
+// ---- 4d. Installation Address (after Number Selection for Fibre, after SIM Selection for FWA) ---------------------
 // Populated from the RFS data (or UIM) for the selected KID and read-only; with no KID, captured manually (ZSB read-only, Area derived, Unit / Apartment / Flat mandatory). Only for an order that came
 // from Check RFS: the other entries to the journey ask for the address on their own page, first.
 const homeInstallationSummary: SummaryField[] = [
@@ -138,7 +155,8 @@ export function homeInstallationAddressStep(): WizardStep {
 
 // ---- 5. Appointment ------------------------------------------------------------------------------------------
 export function fixedAppointmentStep(): WizardStep {
-  return { ...appointmentBookingStep(), summary: appointmentSummary };
+  // Instant Activation has no installation visit: the devices are scanned in the journey. Field Engineer (and Outdoor, and any entry with no mode) books the appointment.
+  return { ...appointmentBookingStep(), summary: appointmentSummary, skip: (values) => scansInJourney(values) };
 }
 
 // ---- CAF & Signature -----------------------------------------------------------------------------------------
@@ -153,6 +171,10 @@ export function fixedCafStep(): WizardStep {
  * Devices, Checkout, CAF, Payment (which moves on once paid) and the installation Appointment, which submits. Covers fibre and
  * both 5G Home (FWA) service types.
  */
-export function fixedLineSteps(): WizardStep[] {
-  return [fixedAddressStep(), fixedPlanStep(), homeAddonsStep(), fixedNumberStep(), fwaSimStep(), homeInstallationAddressStep(), billingStep({ profileSuffix: 'Fixed Line', journey: 'fixed-line', homeBillingAddress: true }), checkoutSummaryStep({ familyRows: fwaOrderRows }), fixedCafStep(), paymentStep({ submitOnPaid: true }), fixedAppointmentStep()];
+export function fixedLineSteps(opts: { planSettled?: (values: Values) => boolean } = {}): WizardStep[] {
+  // `planSettled`: an accepted offer already settled the plan (and its credit check), so Offers & Plans is passed over, and the Order Summary's Edit returns to Number & Devices instead.
+  const { planSettled } = opts;
+  const plan = planSettled ? { ...fixedPlanStep(), skip: planSettled } : fixedPlanStep();
+  const checkout = checkoutSummaryStep({ familyRows: deviceOrderRows, ...(planSettled ? { editStepKey: (v: Values) => (planSettled(v) ? 'number' : 'plan') } : {}) });
+  return [fixedAddressStep(), plan, homeAddonsStep({ deviceSerials: scansInJourney }), fixedNumberStep(), deviceScanStep(), fwaSimStep(), homeInstallationAddressStep(), billingStep({ profileSuffix: 'Fixed Line', journey: 'fixed-line', homeBillingAddress: true }), checkout, fixedCafStep(), paymentStep({ submitOnPaid: true }), fixedAppointmentStep()];
 }

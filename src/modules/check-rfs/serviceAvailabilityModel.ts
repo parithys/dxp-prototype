@@ -17,6 +17,8 @@ export interface SearchField {
   numeric?: boolean;
   /** 'area' is the area choice, 'building' the building-name suggestions for that area. */
   kind?: 'area' | 'building';
+  /** The field takes a barcode scan: a reader's output lands in it (the KID and VFID are on the premises' labels). */
+  scan?: boolean;
 }
 
 export interface SearchMode {
@@ -38,10 +40,10 @@ export const SEARCH_MODES: SearchMode[] = [
     { id: 'unit', label: 'Unit / Flat (Optional)', required: false, watermark: 'e.g. 4B' },
   ] },
   { id: 'kid', title: 'KID', subtitle: 'Kahramaa ID', matchedOn: 'Kahramaa ID', columns: 1, fields: [
-    { id: 'kid', label: 'Kahramaa ID (KID)', required: true, watermark: 'e.g. KID-12345678-001', pattern: /^KID-\d{8}-\w{1,4}$/i, message: 'Use the format KID-########-###.' },
+    { id: 'kid', label: 'Kahramaa ID (KID)', required: true, watermark: 'e.g. KID-12345678-001', scan: true, pattern: /^KID-\d{8}-\w{1,4}$/i, message: 'Use the format KID-########-###.' },
   ] },
   { id: 'vfid', title: 'VFID', subtitle: 'Vodafone ID', matchedOn: 'Vodafone ID', columns: 1, fields: [
-    { id: 'vfid', label: 'Vodafone ID (VFID)', required: true, watermark: 'e.g. ABC-1234-A', pattern: /^[A-Z]{3}-\d{4}-[A-Z]$/i, message: 'Use the format AAA-####-A.' },
+    { id: 'vfid', label: 'Vodafone ID (VFID)', required: true, watermark: 'e.g. ABC-1234-A', scan: true, pattern: /^[A-Z]{3}-\d{4}-[A-Z]$/i, message: 'Use the format AAA-####-A.' },
   ] },
   { id: 'area', title: 'Area & Building', subtitle: 'Building name', matchedOn: 'Area & Building Name', columns: 2, fields: [
     { id: 'area', label: 'Area', required: true, kind: 'area' },
@@ -141,10 +143,48 @@ export function deviceReuseTags(r: DeviceReuse): { label: string; tone: 'success
     case 'not-reusable': return [{ label: 'Not Reusable', tone: 'neutral' }];
     case 'zero-touch': return [{ label: 'Reusable', tone: 'success' }, { label: 'Instant Activation', tone: 'info' }];
     case 'no-zero-touch': return [{ label: 'Reusable', tone: 'success' }];
-    case 'unknown-model': return [{ label: 'Reusable', tone: 'success' }, { label: 'Instant Activation Unknown', tone: 'neutral' }];
+    // The model is not mapped, so Instant Activation is unknown: nothing is said about it (only the tag for a model known to support it is shown).
+    case 'unknown-model': return [{ label: 'Reusable', tone: 'success' }];
   }
 }
 
 /** The warning the result shows when the feasibility response reports a problem with the splitter serving the unit; none when it reports nothing. */
 export const SPLITTER_WARNING: Record<NonNullable<AvailabilityUnit['splitter']>, string> = { full: 'Splitter Full', 'not-mapped': 'Splitter Not Mapped' };
 export const splitterWarningOf = (unit: Pick<AvailabilityUnit, 'splitter'>): string | undefined => (unit.splitter ? SPLITTER_WARNING[unit.splitter] : undefined);
+
+/**
+ * The demo shortcuts under the search fields: each names a scenario (one of the result categories) and, for the tab the agent is on, the entry that finds it in the inventory. A building is
+ * taken from the inventory by its status, so the entry is never typed here; "Not Found" is an entry that matches nothing.
+ */
+export const DEMO_SCENARIOS: { label: string; status: AvailabilityStatusKey }[] = [
+  { label: 'Fiber Unlimited', status: 'RFS_UNLIMITED' },
+  { label: 'Fiber Limited', status: 'RFS_LIMITED' },
+  { label: 'FWA Indoor', status: 'FWA_INDOOR' },
+  { label: 'FWA Outdoor', status: 'FWA_OUTDOOR' },
+  { label: 'FWA Indoor & Outdoor', status: 'FWA_BOTH' },
+  { label: 'RFA', status: 'RFA' },
+  { label: 'Not Found', status: 'NOT_FOUND' },
+];
+
+/** The search values that reach `status` on the given tab. */
+export function demoScenarioValues(modeId: SearchModeId, status: AvailabilityStatusKey): SearchValues {
+  const b = AVAILABILITY_BUILDINGS.find((x) => x.status === status);
+  if (!b) {
+    // Nothing in the inventory matches these (a building from another area for the Area tab).
+    const other = AVAILABILITY_BUILDINGS[0];
+    const another = AVAILABILITY_BUILDINGS.find((x) => x.area !== other.area) ?? other;
+    return { zsb: { zone: '12', street: '345', building: '6' }, kid: { kid: 'KID-99999999-1' }, vfid: { vfid: 'ZZZ-9999-Z' }, area: { area: another.area, bname: other.name } }[modeId];
+  }
+  switch (modeId) {
+    case 'zsb': return { zone: b.zone, street: b.street, building: b.building };
+    case 'kid': return { kid: b.units[0].kid };
+    case 'vfid': return { vfid: b.units[0].vfid };
+    case 'area': return { area: b.area, bname: b.name };
+  }
+}
+
+/** What a barcode reader would read into a KID or VFID field: an identifier from the inventory (simulated - there is no scanner hardware here). */
+export function scanSample(field: 'kid' | 'vfid'): string {
+  const all = AVAILABILITY_BUILDINGS.flatMap((b) => b.units.map((u) => u[field]));
+  return all[Math.floor(Math.random() * all.length)];
+}

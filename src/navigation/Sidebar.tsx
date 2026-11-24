@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { useSearchListNav, Icon, VodafoneMark, VodafoneWordmark, detectDeviceType, CHEVRON_DOWN, PANEL_TOGGLE_ICON, SEARCH_ICON, Button, Switch, CODE_ICON } from 'dxp-ui';
+import { useSearchListNav, Icon, VodafoneMark, VodafoneWordmark, detectDeviceType, CHEVRON_DOWN, PANEL_TOGGLE_ICON, SEARCH_ICON, CLEAR_ICON, Button, Switch, CODE_ICON } from 'dxp-ui';
 import { Link, NavLink, useLocation, useNavigate } from '../lib/router';
 
 import { resolveNavFor } from '../engines/navigationEngine';
@@ -12,6 +12,18 @@ import { canUseFeature } from '../engines/personaEngine';
 import { devModeActions } from '../stores/devModeSlice';
 // The row the keyboard has reached while searching the menu.
 const KBD_ACTIVE = 'nav-kbd-active';
+/** A label with the text the agent typed marked, so a search result shows what matched instead of lighting the whole row. */
+function Matched({ text, q }: { text: string; q: string }) {
+  const at = q ? text.toLowerCase().indexOf(q) : -1;
+  if (at < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, at)}
+      <mark className="highlight-mark">{text.slice(at, at + q.length)}</mark>
+      {text.slice(at + q.length)}
+    </>
+  );
+}
 const DESKTOP_QUERY = '(min-width: 768px)';
 const subscribeDesktop = (cb: () => void) => {
   const mq = window.matchMedia(DESKTOP_QUERY);
@@ -243,6 +255,20 @@ export function Sidebar() {
             aria-label="Search menu"
             className="nav-search-input"
           />
+          {q && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Clear search"
+              className="nav-icon-btn"
+              onClick={() => {
+                setQuery('');
+                searchInputRef.current?.focus();
+              }}
+            >
+              <Icon path={CLEAR_ICON} className="icon-xs" />
+            </Button>
+          )}
         </label>
       </div>
       {q && visibleItems.length === 0 && (
@@ -283,7 +309,7 @@ export function Sidebar() {
             const body = (
               <>
                 <Icon path={item.icon} className="size-4.5 shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate"><Matched text={item.label} q={q} /></span>
                 {hasChildren && (
                   <Icon
                     path={CHEVRON_DOWN}
@@ -304,7 +330,7 @@ export function Sidebar() {
                         // from a child's breadcrumb. Keep marking the row when
                         // you are standing on it so a deep link isn't orphaned
                         // in the rail.
-                        className={rowClass + (exactlyActive ? activeClass : childActive ? inGroupClass : idleClass)}
+                        className={rowClass + (q ? idleClass + ' nav-hit' : exactlyActive ? activeClass : childActive ? inGroupClass : idleClass)}
                       >
                         {body}
                       </button>
@@ -320,7 +346,7 @@ export function Sidebar() {
                         to={item.to}
                         end={parentEnd}
                         {...optProps(`item:${item.key}`)}
-                        className={rowClass + KBD_ACTIVE + ' ' + (exactlyActive ? activeClass : idleClass)}
+                        className={rowClass + KBD_ACTIVE + ' ' + (!q && exactlyActive ? activeClass : idleClass + (q ? ' nav-hit' : ''))}
                       >
                         {body}
                       </NavLink>
@@ -350,24 +376,19 @@ export function Sidebar() {
                         <div className="flex items-center">
                           <NavLink
                             to={child.to}
-                            // The whole row opens the sub-menu: a click on a category that is not the current page
-                            // navigates AND opens its journeys; a click on the current page toggles them.
-                            onClick={() => {
-                              if (!hasJourneys) return;
-                              if (child.to === activeNavPath) toggleNavGroup(child.key);
-                              else expandNavGroup(child.key);
-                            }}
+                            // The row only navigates: a category's journeys stay hidden until the chevron opens them or the
+                            // menu is searched (the journeys are on the category page itself).
                             {...optProps(`child:${child.key}`)}
                             className={() =>
                               `${KBD_ACTIVE} nav-child ${
-                                child.to === activeNavPath
+                                !q && child.to === activeNavPath
                                   ? 'nav-active font-medium border-accent'
-                                  : 'nav-child-idle'
+                                  : `nav-child-idle${q ? ' nav-hit' : ''}`
                               }`
                             }
                           >
                             <Icon path={child.icon} className="icon-sm" />
-                            <span className="truncate">{child.label}</span>
+                            <span className="truncate"><Matched text={child.label} q={q} /></span>
                           </NavLink>
                           {hasJourneys && (
                             <button
@@ -393,7 +414,7 @@ export function Sidebar() {
                                   const target = j.to ?? child.to;
                                   const path = target.split('?')[0];
                                   const onPage = location.pathname === path || location.pathname.startsWith(`${path}/`);
-                                  const active = onPage && Boolean(j.to) && isActiveJourney(child.journeys!, j, (location.state as { navJourney?: string } | null)?.navJourney);
+                                  const active = !q && onPage && Boolean(j.to) && isActiveJourney(child.journeys!, j, (location.state as { navJourney?: string } | null)?.navJourney);
                                   return (
                                     <Link
                                       to={target}
@@ -406,10 +427,10 @@ export function Sidebar() {
                                         // A planned journey has no page of its own (it links to its category), so it is never the active row.
                                         active
                                           ? 'nav-active font-medium'
-                                          : 'nav-idle'
+                                          : `nav-idle${q ? ' nav-hit' : ''}`
                                       }`}
                                     >
-                                      <span className="truncate">{j.label}</span>
+                                      <span className="truncate"><Matched text={j.label} q={q} /></span>
                                     </Link>
                                   );
                                 })()}

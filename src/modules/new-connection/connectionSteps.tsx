@@ -19,6 +19,8 @@ import type { EligibilityResult } from '../../components/domain/eligibilityTypes
 const SHARED_KEYS = ['address', 'billingAccount'];
 import { homeOffersStep, productStep } from './steps/productStep';
 import { rfsStarted } from './rfsStart';
+import { HomeOfferPlanSettler } from './steps/HomeOfferPlanSettler';
+import { planTypeOfHomeProduct } from '../../components/patterns/homePlanModel';
 import { IdTypeApprovalNotice } from './steps/IdTypeApprovalNotice';
 import { homeKindStep } from './steps/HomeKindStep';
 import type { ProductStepContext } from './steps/ProductSelection';
@@ -63,14 +65,21 @@ export function buildConnectionSteps(ctx: ConnectionStepContext): WizardStep[] {
   // New Home Connection is the same journey with only the home products: Identification, Address, Product Selection (Fibre, Fixed-Line,
   // FWA, 5G Home), then the home steps.
   if (ctx.journey === 'home') {
+    // A plan chosen from Recommended Offers (an accepted offer whose plan is one of this connection's home plans) is not asked for again on Offers & Plans: the agent goes on to the next step. A
+    // New Home picked from Start Another Journey carries no offer and still opens Offers & Plans. The page stays when the credit check has not passed (its panel is where the agent acknowledges a balance).
+    const offerPlanOf = (values: Record<string, unknown>) =>
+      (values.crossSales as { decision?: string } | undefined)?.decision === 'accepted'
+        ? ctx.products.find((p) => p.productId === values.productId && p.type === planTypeOfHomeProduct(values.homeProduct))
+        : undefined;
+    const offerPlanSettled = (values: Record<string, unknown>) => Boolean(offerPlanOf(values)) && values.creditCheckPass === true;
     // Identification, the installation Address, then Product Selection (the address comes first; the home steps after it carry no second copy of it).
     return [
       ...contactPages(customerQualificationStep({ ...ctx, productAgnostic: true, journeyChosenLater: true }), representativeContactStep({ ...ctx, productAgnostic: true, journeyChosenLater: true })),
       // Check RFS gave the address: from there the journey has no Address page, and Recommended Offers replaces the product cards (see rfsStart.ts).
       { ...homeAddressStep(), skip: rfsStarted },
       productStep(ctx),
-      homeOffersStep(ctx),
-      ...forProduct('fixed-line', withIdTypeNotice(fixedLineSteps().filter((s) => s.key !== 'address'))),
+      { ...homeOffersStep(ctx), headless: ({ values, setValue }) => (offerPlanOf(values) ? <HomeOfferPlanSettler values={values} setValue={setValue} /> : null) },
+      ...forProduct('fixed-line', withIdTypeNotice(fixedLineSteps({ planSettled: offerPlanSettled }).filter((s) => s.key !== 'address'))),
     ];
   }
   // The Address and the Billing Profile are collected once, after Customer Verification and BEFORE Recommended Offers, for every product:

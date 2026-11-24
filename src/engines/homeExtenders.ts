@@ -19,9 +19,15 @@ export interface HomeExtendersSelection {
   /** How the chargeable units are billed; monthly unless the agent chose one-time. */
   billing?: ExtenderBilling;
   terms: ExtenderTerms;
+  /** The serial number of each Mesh extender, in order (index 0 is the first), captured by scanning; only the first `quantity` are read. */
+  serials?: string[];
 }
 
 const whole = (n: number | undefined) => Math.max(0, Math.floor(Number.isFinite(n) ? (n as number) : 0));
+
+/** Every requested Mesh extender has its serial number (`required`: they are captured on the Add-ons page - an Instant Activation order - rather than left to the field engineer). */
+export const extenderSerialsComplete = (sel: HomeExtendersSelection | undefined, required = true): boolean =>
+  !required || Array.from({ length: Math.max(0, Math.floor(sel?.quantity ?? 0)) }).every((_, i) => Boolean(sel?.serials?.[i]?.trim()));
 
 /** How many of the requested units are free and how many are chargeable: 5 of an allowance of 4 is 4 free and 1 chargeable. */
 export function splitExtenders(quantity: number | undefined, freeAllowance: number | undefined): { free: number; chargeable: number } {

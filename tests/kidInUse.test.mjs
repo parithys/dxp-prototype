@@ -78,3 +78,12 @@ test('Check RFS shows the KID in Use warning with Proceed / Cancel, and stops a 
   assert.match(sa, /Order In Progress For This KID/);
   assert.ok(typeof model.lookupAvailability === 'function');
 });
+
+test('the two demo KIDs: ...101 is never held by an order, ...102 always is - whatever orders the session has created', () => {
+  const orders = [{ orderId: 'ORD-X', kid: 'KID-55830120-101', status: 'Submitted for Approval' }];
+  assert.equal(kid.orderInProgressForKid(orders, 'KID-55830120-101'), undefined, '...101 stays available even with an order on it');
+  assert.equal(kid.orderInProgressForKid([], 'KID-55830120-102')?.orderId, 'ORD-90090', '...102 is held with no order on the books');
+  assert.equal(kid.orderInProgressForKid([{ orderId: 'ORD-Y', kid: 'KID-55830120-102', status: 'Complete' }], 'KID-55830120-102')?.orderId, 'ORD-90090', 'a decided order does not free it');
+  assert.equal(kid.orderInProgressForKid([{ orderId: 'ORD-Z', kid: 'KID-55830120-102', status: 'Pending' }], 'KID-55830120-102')?.orderId, 'ORD-Z', 'a real order is reported as itself');
+  assert.equal(kid.orderInProgressForKid([], 'KID-55830120-102', 'ORD-90090'), undefined, 'the held order is not blocked by itself');
+});

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Button, ICON_CARD, ICON_SPEED, ICON_TV, Icon, Pagination, TabStrip } from 'dxp-ui';
 import { CreditCheckPanel } from '../domain/CreditCheckPanel';
-import { evaluateRule } from '../../engines/ruleEngine';
-import { outstandingBalance, type BillLike, type PaymentLike } from '../../engines/billingBalance';
 import { CARD_IDLE, CARD_SELECTED, SelectedTick } from '../primitives/offerCardParts';
 import { ConnectionTypeTag } from '../primitives/ConnectionTypeTag';
 import { formatQarAny, formatAmount } from '../../lib/format';
 import { listEntities } from '../../services/entityOps';
+import { useHomeCreditCheck } from './homeCreditCheck';
 import { STANDARD_PLANS_PAGE_SIZE } from './planPaging';
 import { HOME_PLAY_ROW, homePlanSourceOf, homePlayOf, planTypeOfHomeProduct } from './homePlanModel';
 import { OFFERS_TAB_LIMIT, SPECIAL_DISCOUNT_RATE, SPECIAL_DISCOUNT_TYPE, SPECIAL_OFFERS_TAB_LABEL, specialOfferPlanName } from './postpaidPlanModel';
@@ -60,11 +59,9 @@ interface SpecialDiscountRow {
  */
 export function FixedPlanStep({ values, setValue, specialDiscountType }: { values: Values; setValue: (f: string, v: unknown) => void; specialDiscountType?: 'mada' | 'b2b2c' | 'retired' | 'none' }) {
   const [plans, setPlans] = useState<FixedPlan[]>([]);
-  const [outstandingQar, setOutstandingQar] = useState<number | undefined>();
   const selectedId = values.productId as string | undefined;
   const planType = planTypeOfHomeProduct(values.homeProduct);
-  // What the identified customer owes (the one shared definition, billingBalance.ts); a customer who is new to the journey owes nothing.
-  const customerId = (values.eligibility as { customerId?: string } | undefined)?.customerId;
+  const outstandingQar = useHomeCreditCheck(values, setValue);
   useEffect(() => {
     void listEntities<FixedPlan>('products').then((all) => setPlans(all.filter((p) => p.type === planType).sort((a, b) => a.mrcQAR - b.mrcQAR)));
   }, [planType]);
@@ -111,21 +108,6 @@ export function FixedPlanStep({ values, setValue, specialDiscountType }: { value
     if (source !== (values.selectionSource as string | undefined)) setValue('selectionSource', source);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
-  useEffect(() => {
-    if (!customerId) {
-      setOutstandingQar(0);
-      return;
-    }
-    void Promise.all([listEntities<BillLike & { customerId?: string }>('bills'), listEntities<PaymentLike & { customerId?: string }>('payments')]).then(([bills, payments]) =>
-      setOutstandingQar(outstandingBalance(bills.filter((b) => b.customerId === customerId), payments.filter((p) => p.customerId === customerId)))
-    );
-  }, [customerId]);
-  useEffect(() => {
-    if (selectedId && outstandingQar !== undefined) {
-      setValue('creditCheckPass', evaluateRule('BR-FIBRE-OUTSTANDING-THRESHOLD', { outstandingQar }).pass);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, outstandingQar]);
 
   // Which tab the plan was chosen from rides with it: Edit Discount offers the plan's ordinary discounts from Standard Plans and the Special Discount from Special Offers, none for an Offers plan.
   useEffect(() => {

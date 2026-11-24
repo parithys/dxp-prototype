@@ -38,6 +38,12 @@ function has(personaId: string | undefined, capability: PersonaCapability): bool
   return getPersona(personaId)?.capabilities.includes(capability) ?? false;
 }
 
+/** Whether the role scans (or keys in) the device and SIM serial numbers of a Home order inside the journey - Instant Activation (capability `device-scan`). Others leave that to the field engineer. */
+export const canScanDevices = (personaId: string | undefined): boolean => has(personaId, 'device-scan');
+
+/** Whether the role works the Retail channel (a store): its Home orders are validated with WinCash as well (simulated in the prototype). Read from the role's own channel, never guessed from its name. */
+export const isRetailPersona = (personaId: string | undefined): boolean => /retail/i.test(getPersona(personaId ?? '')?.channel ?? '');
+
 /**
  * Whether the signed-in role may see a customer of this segment. Not protected -> yes. Protected (Safwa, Safwa+, Royal) -> only a role holding THAT
  * segment's grant. No role -> no. Call it on the loaded record BEFORE rendering anything about the customer.

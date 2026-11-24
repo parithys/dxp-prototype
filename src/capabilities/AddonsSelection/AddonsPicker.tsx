@@ -133,6 +133,8 @@ interface AddonsPickerProps {
   onOpenMultiSim?: (addonId: string) => void;
   /** How many SIMs the agent asked for from each Multi SIM add-on (see engines/multiSim.ts): the maximum of 4 is judged on these. */
   multiSimWanted?: Record<string, number>;
+  /** With homeTabs: items a tab holds that are not cards in it (the Wi-Fi Extenders' units on Mesh, set by quantity), added to that tab's count. */
+  tabExtraCounts?: Record<string, number>;
 }
 
 // "Plan & Add-ons" (reference flow step 5) - optional, non-gating multi-select
@@ -147,7 +149,7 @@ export interface AddonStatus {
   lines?: string[];
 }
 
-export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, selectedTerms = {}, onTermChange, onBillingChange, hideHeader, eligibilityContext, emptyMessage, layout = 'cards', mandatoryProducts = false, source = 'catalogue', categorized = false, homeTabs, tabSlot, appliedDiscounts, addonStatus, onOpenMultiSim, multiSimWanted }: AddonsPickerProps) {
+export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, selectedTerms = {}, onTermChange, onBillingChange, hideHeader, eligibilityContext, emptyMessage, layout = 'cards', mandatoryProducts = false, source = 'catalogue', categorized = false, homeTabs, tabSlot, appliedDiscounts, addonStatus, onOpenMultiSim, multiSimWanted, tabExtraCounts }: AddonsPickerProps) {
   const [discountRecords, setDiscountRecords] = useState<AddonDiscount[]>([]);
   const wantsDiscounts = appliedDiscounts !== undefined;
   useEffect(() => {
@@ -287,7 +289,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
   const free = useTabs ? inTab('free').filter(matchesSearch).filter(shownHere) : [];
   const shown = useTabs ? [...paid, ...free] : addons;
   const perCategory: Record<string, number> = homeTabs
-    ? Object.fromEntries(homeTabs.map((c) => [c, addons.filter((a) => categoryOf(a) === c && selectedIds.includes(a.productId)).length]))
+    ? Object.fromEntries(homeTabs.map((c) => [c, addons.filter((a) => categoryOf(a) === c && selectedIds.includes(a.productId)).length + (tabExtraCounts?.[c] ?? 0)]))
     : selectedPerCategory(addons, selectedIds);
   // Multi-SIM maximum: an unselected add-on that provides Multi-SIMs is blocked once what is already asked for, plus the one it starts with, would exceed the limit.
   // The add-on's alternatives (its exclusive group) are not counted: choosing it replaces them.
@@ -423,7 +425,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
                   </div>
                 )}
                 {options.length > 1 && !(homeTabs && listed.termOptions) && (
-                  <div className="divider-top p-3">
+                  <div className={homeTabs ? 'divider-top option-row-aside' : 'divider-top p-3'}>
                     <OptionToggle
                       label={`Billing frequency for ${a.description ?? a.name}`}
                       items={priced.billingOptions!.map((option) => ({

@@ -1,14 +1,16 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
-import { Button, Card, Modal, type Column, Icon, Input, PhoneNumberInput, Select, FILE, ARROW_RIGHT, BOLT, BUILDING, CHECK, CHEVRON_LEFT, HASH, HOUSE, LAYERS_ICON, PIN, SEARCH, SIGNAL_TOWER, WARNING_ALT, WIFI } from 'dxp-ui';
+import { Button, Card, Modal, type Column, Icon, Input, PhoneNumberInput, Select, FILE, ARROW_RIGHT, BARCODE_ICON, BOLT, BUILDING, CHEVRON_LEFT, HASH, HOUSE, INSTALLATION_WIFI, LAYERS_ICON, PIN, SEARCH, SIGNAL_TOWER, STAR, WARNING_ALT, WIFI } from 'dxp-ui';
 import { CARD_IDLE, CARD_SELECTED, SelectedTick } from '../../components/primitives/offerCardParts';
-import { AVAILABILITY_STATUS, MBB_OFFERS, type AvailabilityBuilding, type AvailabilityUnit } from '../../data/reference/serviceAvailabilityData';
+import { AVAILABILITY_STATUS, MBB_OFFERS, type AvailabilityBuilding, type AvailabilityStatusKey, type AvailabilityUnit } from '../../data/reference/serviceAvailabilityData';
 import { Link, useLocation, useNavigate } from '../../lib/router';
 import { returnToOf } from '../../lib/returnTo';
+import { SYNTHETIC_CLASS } from '../../data/synthetic/syntheticMarker';
 import { canUseFeature } from '../../engines/personaEngine';
+import { canScanDevices } from '../../engines/agentPrivilegeEngine';
 import { COMMON_CONTACT_FEATURE } from '../../engines/navigationEngine';
 import { serviceStart } from './serviceJourneys';
-import { homeStartOf, rfsDraftValues } from '../new-connection/rfsStart';
+import { fwaServiceTypeOf, homeStartOf, rfsDraftValues } from '../new-connection/rfsStart';
 import type { RfsHandOff } from '../new-connection/rfsStart';
 import { useAction, useAppSelector } from '../../stores/hooks';
 import { notificationActions } from '../../stores/notificationSlice';
@@ -18,7 +20,7 @@ import { useEntityRecords } from '../../services/entityHooks';
 import { isValidAltPhone } from '../../components/patterns/guidedContactModel';
 import { kidInUseOf, orderInProgressForKid } from '../../engines/kidInUse';
 import {
-  SEARCH_MODES, availabilityAreas, deviceReuseOf, deviceReuseTags, splitterWarningOf, buildingNames, fieldError, isSearchValid, lookupAvailability, modeById,
+  SEARCH_MODES, DEMO_SCENARIOS, scanSample, availabilityAreas, demoScenarioValues, deviceReuseOf, deviceReuseTags, splitterWarningOf, buildingNames, fieldError, isSearchValid, lookupAvailability, modeById,
   type AvailabilityResult, type SearchModeId, type SearchValues,
 } from './serviceAvailabilityModel';
 
@@ -28,6 +30,10 @@ import {
 
 // The service the verdict is about: fibre, 5G Home (FWA) or Mobile Broadband.
 const HUB_ICON = { layers: LAYERS_ICON, antenna: SIGNAL_TOWER, wifi: WIFI } as const;
+// The glyph on a verdict, by the result: fibre, the two 5G Home types, a building not yet open, nothing matched (EBU keeps its service glyph).
+const STATUS_ICON: Partial<Record<AvailabilityStatusKey, string>> = {
+  RFS_UNLIMITED: LAYERS_ICON, RFS_LIMITED: LAYERS_ICON, FWA_INDOOR: HOUSE, FWA_OUTDOOR: SIGNAL_TOWER, FWA_BOTH: INSTALLATION_WIFI, RFA: BUILDING, NOT_FOUND: SEARCH,
+};
 const MODE_ICON: Record<SearchModeId, string> = { zsb: PIN, kid: BOLT, vfid: HASH, area: BUILDING };
 const CHECK_DELAY_MS = 650;
 const LOCATION_COLUMNS: Column<AvailabilityBuilding>[] = [
@@ -40,31 +46,41 @@ const FIELDS_CLASS = { 1: 'avail-fields fields max-w-xl mt-6', 2: 'avail-fields 
 const FWA_TYPES = ['Indoor', 'Outdoor'] as const;
 
 // The filled tags (the plan-type tag family): a soft fill in the tag's colour, no outline.
-const TAG_CLASS = { success: 'badge-tag-green', info: 'badge-tag-violet', neutral: 'badge-filled-neutral' } as const;
+const TAG_CLASS = { success: 'badge-success-solid', info: 'badge-tag-primary', neutral: 'badge-filled-neutral' } as const;
 
 /** The splitter warning the feasibility response gave for the unit (Splitter Full, Splitter Not Mapped): a warning only, the order is not stopped. */
-function SplitterWarning({ unit }: { unit: AvailabilityUnit }) {
+function SplitterWarning({ unit, bar = false }: { unit: AvailabilityUnit; bar?: boolean }) {
   const warning = splitterWarningOf(unit);
   if (!warning) return null;
-  return (
-    <p role="alert" className="row gap-1.5 mt-2 caption-secondary text-[var(--warn-text)]">
+  // `bar`: the result panel's full-width amber bar ("Attention needed · ..."); on a unit card it is an amber tag with the warning icon.
+  return bar ? (
+    <p role="alert" className="avail-attention">
+      <Icon path={WARNING_ALT} className="size-3.5 shrink-0" />
+      <span>Attention needed · {warning}</span>
+    </p>
+  ) : (
+    <span role="alert" className="badge badge-tag-amber">
       <Icon path={WARNING_ALT} className="size-3.5 shrink-0" />
       {warning}
-    </p>
+    </span>
   );
 }
 
 /** The device already at the unit (the feasibility response), with whether it can be reused and, from UIM's model mapping, whether it supports Zero Touch activation. */
-function DeviceReuse({ unit }: { unit: AvailabilityUnit }) {
+function DeviceReuse({ unit, inline = false, extra }: { unit: AvailabilityUnit; inline?: boolean; extra?: ReactNode }) {
   const reuse = deviceReuseOf(unit);
-  if (reuse.status === 'none') return <p className="mt-2 caption-muted">No existing device at this location</p>;
+  // In the result panel (`inline`) the device is just its tags - Reusable, Instant Activation - and nothing at all where there is no device; a unit card names the model too.
+  if (inline) return reuse.status === 'none' ? null : <span className="cluster gap-1.5">{deviceReuseTags(reuse).map((t) => <span key={t.label} className={`badge ${TAG_CLASS[t.tone]}`}>{t.label}</span>)}</span>;
+  // `extra`: a tag that sits in the same row as the device's own (a unit's splitter warning).
+  if (reuse.status === 'none') return <div className="divider-top mt-3 pt-3 stack gap-1.5"><p className="caption-muted">No existing device at this location</p>{extra}</div>;
   return (
-    <div className="mt-2 stack gap-1.5">
+    <div className="divider-top mt-3 pt-3 stack gap-1.5">
       <span className="font-semibold text-fg">{reuse.model}</span>
       <span className="cluster gap-1.5">
         {deviceReuseTags(reuse).map((t) => (
           <span key={t.label} className={`badge ${TAG_CLASS[t.tone]}`}>{t.label}</span>
         ))}
+        {extra}
       </span>
     </div>
   );
@@ -78,6 +94,12 @@ function UnitBody({ unit, selectable, selected, onInterested, busy }: { unit: Av
         <Icon path={HOUSE} className="size-5 text-fg-2" />
         <span className="value-text-lg font-bold">{label}</span>
         <span className="caption-muted">Floor {unit.floor}</span>
+        {onInterested && (
+          // The same action as the Interested button at the foot of the card (it raises the same lead); an icon so it can sit in the header. It must not also select the unit.
+          <Button variant="ghost" size="icon-sm" className="ml-auto" aria-label={`Interested in ${label}`} title="Interested" disabled={busy} onClick={(e) => { e.stopPropagation(); onInterested(); }} onKeyDown={(e) => e.stopPropagation()}>
+            <Icon path={STAR} className="size-4" />
+          </Button>
+        )}
       </div>
       <dl className="avail-kv">
         <dt className="caption-muted">KID</dt>
@@ -90,8 +112,7 @@ function UnitBody({ unit, selectable, selected, onInterested, busy }: { unit: Av
         {unit.patch && <span>{unit.patch}</span>}
         {unit.sla && <span>SLA {unit.sla} Hours</span>}
       </div>
-      <DeviceReuse unit={unit} />
-      <SplitterWarning unit={unit} />
+      <DeviceReuse unit={unit} extra={<SplitterWarning unit={unit} />} />
       {onInterested && (
         <div className="row justify-end mt-auto pt-3">
           {/* The card is a control of its own (it selects the unit), so this button must not also select it. */}
@@ -129,13 +150,12 @@ export function ServiceAvailability() {
   const valid = isSearchValid(mode, values);
 
   useEffect(() => () => clearTimeout(timer.current), []);
-  // A result that has just been found is brought into view and focused (the page may be taller than the screen, and a keyboard or screen-reader user lands on it).
+  // A result that has just been found is scrolled into view (the page may be taller than the screen). It is not focused: focusing the container drew a focus border round the whole result.
   useEffect(() => {
     if (!result) return;
     const el = resultRef.current;
     if (!el) return;
     el.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-    el.focus({ preventScroll: true });
   }, [result]);
 
   const clearResult = () => {
@@ -169,6 +189,26 @@ export function ServiceAvailability() {
     // The building list follows the area, so a new area drops a building chosen under the old one.
     setValues((v) => ({ ...v, [id]: value, ...(id === 'area' ? { bname: '' } : {}) }));
     if (result) clearResult();
+  };
+
+  // Demo shortcut: fills the current tab's fields with an entry that reaches the scenario (nothing is searched until Check Availability).
+  const fillScenario = (status: (typeof DEMO_SCENARIOS)[number]['status']) => {
+    clearTimeout(timer.current);
+    setLoading(false);
+    clearResult();
+    setValues(demoScenarioValues(modeId, status));
+    setTouched({});
+  };
+
+  // The KID and VFID fields take a barcode scan (simulated: the reader's output - an identifier from the inventory - lands in the field after a moment).
+  const [scanningField, setScanningField] = useState<string | null>(null);
+  const scanInto = (id: 'kid' | 'vfid') => {
+    setScanningField(id);
+    window.setTimeout(() => {
+      setValue(id, scanSample(id));
+      setTouched((t) => ({ ...t, [id]: true }));
+      setScanningField(null);
+    }, 600);
   };
 
   const runCheck = () => {
@@ -211,17 +251,19 @@ export function ServiceAvailability() {
   const allowedMbb = Boolean(startMbb?.journey.featureKey && canUseFeature(personaId, startMbb.journey.featureKey));
   const waiting = proceed === 'fibre' ? !currentUnit : proceed === 'fwa' ? Boolean(status?.fwaChoice) && !fwaType : false;
   // Where Start New Home Connection leads (the same for the floating bar's button and the KID In Use dialog's Proceed).
-  const startTarget: { to: string; state: Record<string, unknown> } | undefined =
+  // `mode`: how the connection is activated - Field Engineer (the default, with an installation appointment) or Instant Activation (devices and SIM scanned in the journey). It travels in the draft values.
+  const startTargetFor = (mode: 'instant' | 'field'): { to: string; state: Record<string, unknown> } | undefined =>
     start && allowed && !waiting && handOff
       ? homeStart || !canUseCommon
         ? {
             to: startRoute ?? start.to,
-            state: { startFresh: true, navJourney: start.journey.id, startValues: { ...homeStart?.values, ...rfsDraftValues(handOff) }, ...(homeStart ? { startProgressTo: homeStart.progressTo } : {}) },
+            state: { startFresh: true, navJourney: start.journey.id, startValues: { ...homeStart?.values, ...rfsDraftValues({ ...handOff, activation: mode }) }, ...(homeStart ? { startProgressTo: homeStart.progressTo } : {}) },
           }
         // Nobody is identified yet: the common Contact page does that (and the customer-level checks) first. The Check RFS result waits in its draft (`pendingHome`) until the agent chooses New Home
         // on Recommended Offers, which then opens the home journey without a second Check RFS.
-        : { to: '/start-connection', state: { startFresh: true, startValues: { pendingHome: rfsDraftValues(handOff) } } }
+        : { to: '/start-connection', state: { startFresh: true, startValues: { pendingHome: rfsDraftValues({ ...handOff, activation: mode }) } } }
       : undefined;
+  const startTarget = startTargetFor('field');
 
   // The way forward for the outcome sits in the floating bar at the bottom of the screen (Back, where the agent came from another page, on its left): Start New Home Connection for a sellable
   // location, Continue to Mobile Postpaid Activation where neither fibre nor 5G Home is sold (RFA, not found, an EBU building).
@@ -276,13 +318,24 @@ export function ServiceAvailability() {
     navigate('/');
   };
   const back = returnToOf(routeState);
+  // The bar's two ways on, by the service found: Fibre (Unlimited / Limited) and FWA Indoor offer Activate (Instant Activation: the journey scans the devices and SIM and has no appointment) and Field
+  // Engineer (the Link below: the field engineer installs, and the journey books the appointment); FWA Outdoor only Field Engineer.
+  const instantActivationOffered = result
+    ? proceed === 'fibre' || (proceed === 'fwa' && fwaServiceTypeOf({ status: result.status, fwaType: (fwaType ?? undefined) as RfsHandOff['fwaType'] }) === 'fwa-indoor')
+    : false;
+  // ...and only where the unit's own device is reusable and its model supports Zero Touch: with no device at the location (or one that cannot be activated remotely) there is nothing to activate.
+  const unitForActivation = currentUnit ?? (result?.single ? result.units?.[0] : undefined);
+  // ...and only for a role that scans (`device-scan`): any other role goes the Field Engineer way.
+  const instantTarget = startTargetFor('instant');
+  const canActivate = Boolean(instantTarget && instantActivationOffered && !blockingOrder && !inUse && unitForActivation && deviceReuseOf(unitForActivation).status === 'zero-touch' && canScanDevices(personaId));
+  const activate = () => instantTarget && navigate(instantTarget.to, { state: instantTarget.state });
   let action: ReactNode = null;
   if (result && (proceed === 'fibre' || proceed === 'fwa') && blockingOrder) {
     action = <Button size="lg" disabled>Order In Progress For This KID</Button>;
   } else if (result && (proceed === 'fibre' || proceed === 'fwa')) {
     const startAction = startTarget ? (
       <Link to={startTarget.to} state={startTarget.state} className="btn btn-primary btn-lg">
-        {`Start ${start?.journey.title ?? ''}`}
+        Field Engineer
         <Icon path={ARROW_RIGHT} className="size-5" />
       </Link>
     ) : (
@@ -306,7 +359,7 @@ export function ServiceAvailability() {
   return (
     <>
     <Card className="p-8" role="region" aria-labelledby={titleId}>
-      <h2 id={titleId} className="title title-xl mb-6">Service Availability</h2>
+      <h2 id={titleId} className="title title-xl mb-6">Service Feasibility</h2>
 
       <div className="row-between mb-4">
         <h3 className="title title-sm">Search By</h3>
@@ -360,17 +413,35 @@ export function ServiceAvailability() {
                 value={values[f.id] ?? ''}
                 inputMode={f.numeric ? 'numeric' : undefined}
                 autoComplete="off"
+                // The scannable KID / VFID field takes focus when its tab is chosen (it remounts per tab), so the agent can scan or type at once.
+                autoFocus={f.scan}
                 watermark={f.watermark}
                 error={error}
                 onChange={(e) => setValue(f.id, e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, [f.id]: true }))}
+                trailingAddon={
+                  f.scan ? (
+                    <Button variant="ghost" size="icon" type="button" onClick={() => scanInto(f.id as 'kid' | 'vfid')} disabled={scanningField !== null} aria-label={`Scan ${f.label} barcode`} title={scanningField === f.id ? 'Scanning…' : `Scan ${f.label} barcode`} className="icon-button-inline icon-button-quiet size-auto -mr-1.5">
+                      <Icon path={BARCODE_ICON} className="size-4" />
+                    </Button>
+                  ) : undefined
+                }
               />
             </div>
           );
         })}
       </div>
 
-      <div className="actions-end mt-5">
+      <div className="split mt-5">
+        {/* Demo only: shortcuts that fill the fields for each result category, on every tab. */}
+        <div className={`cluster gap-x-4 gap-y-1 ${SYNTHETIC_CLASS}`}>
+          <span className="caption-muted text-[var(--info)]">Demo:</span>
+          {DEMO_SCENARIOS.map((d) => (
+            <Button key={d.label} variant="link" className="link text-[var(--info)]" onClick={() => fillScenario(d.status)}>
+              {d.label}
+            </Button>
+          ))}
+        </div>
         <Button size="lg" disabled={!valid || loading} onClick={runCheck}>
           {loading ? <span aria-hidden="true" className="spinner-ring" /> : <Icon path={SEARCH} className="size-5" />}
           {loading ? 'Checking…' : 'Check Availability'}
@@ -381,36 +452,36 @@ export function ServiceAvailability() {
       <div aria-live="polite">
         {result && status && (
           <>
-            <div ref={resultRef} tabIndex={-1} role="group" aria-label="Availability result" className={`avail-result scroll-mt-6 ${status.sellable ? 'avail-result-ok' : 'avail-result-no'}`}>
-              <div role="status" className={`avail-verdict ${status.sellable ? 'avail-verdict-ok' : 'avail-verdict-no'}`}>
+            <div ref={resultRef} role="group" aria-label="Availability result" className={`avail-result scroll-mt-6 ${result.building ? 'avail-result-ok' : ''}`}>
+              <div role="status" className={`avail-verdict ${status.sellable ? 'avail-verdict-ok' : result.status === 'NOT_FOUND' ? 'avail-verdict-none' : 'avail-verdict-no'}`}>
                 <span aria-hidden="true" className="avail-verdict-icon">
-                  <Icon path={HUB_ICON[status.hub]} className="size-7" />
+                  <Icon path={STATUS_ICON[result.status] ?? HUB_ICON[status.hub]} className="size-6" />
                 </span>
-                <h4 className="title-inherit title-xl">{status.title}</h4>
-                <span className={`badge ${status.sellable ? 'badge-success' : 'badge-danger'}`}>{status.label}</span>
+                <span className="avail-verdict-eyebrow">{status.title.replace('Not Available', 'Unavailable')}</span>
+                <h4 className="title-inherit title-xl">{status.label}</h4>
                 <p>{status.text}</p>
               </div>
 
               {result.building && (
-                <div className="avail-location">
+                <div className="avail-location avail-location-ok">
                   <div className="row gap-4">
-                    <span aria-hidden="true" className="avail-hub avail-hub-ok">
-                      <Icon path={BUILDING} className="size-6" />
-                      <span className="avail-hub-mark bg-[var(--success-solid)]">
-                        <Icon path={CHECK} className="size-3" strokeWidth={3.5} />
-                      </span>
-                    </span>
                     <div className="avail-id">
                       <span className="caption-strong text-[var(--success-on-tint)] uppercase">Location Matched</span>
-                      <h3 className="title title-xl">{result.building.name}</h3>
+                      <h3 className="title title-lg">{result.building.name}</h3>
                       <span className="caption-muted">Matched on {mode.matchedOn}</span>
                     </div>
+                    {status.sellable && result.units && result.single && (
+                      <div className="avail-unit-tags">
+                        <span className="avail-pill">{[result.units[0].state, result.units[0].sla ? `SLA ${result.units[0].sla} Hours` : undefined].filter(Boolean).join(' · ')}</span>
+                        {result.units[0].patch && <span className="caption-muted">{result.units[0].patch}</span>}
+                      </div>
+                    )}
                   </div>
                   <dl className="avail-facts">
                     {LOCATION_COLUMNS.map((c) => (
                       <div key={c.key}>
                         <dt className="caption-muted">{c.header}</dt>
-                        <dd className="title title-lg">{result.building?.[c.key as keyof AvailabilityBuilding] as string}</dd>
+                        <dd className="title title-md">{result.building?.[c.key as keyof AvailabilityBuilding] as string}</dd>
                       </div>
                     ))}
                   </dl>
@@ -426,13 +497,13 @@ export function ServiceAvailability() {
                           <dd className="title title-md tabular-nums">{result.units[0].vfid}</dd>
                         </div>
                       </dl>
-                      <div className="avail-tags">
-                        <span>{result.units[0].state}</span>
-                        {result.units[0].patch && <span>{result.units[0].patch}</span>}
-                        {result.units[0].sla && <span>SLA {result.units[0].sla} Hours</span>}
-                      </div>
-                      <DeviceReuse unit={result.units[0]} />
-                      <SplitterWarning unit={result.units[0]} />
+                      {/* The device tags and any warning, under a hairline of their own - only when there is something to show. */}
+                      {(deviceReuseOf(result.units[0]).status !== 'none' || splitterWarningOf(result.units[0])) && (
+                        <div className="avail-extras">
+                          <DeviceReuse unit={result.units[0]} inline />
+                          <SplitterWarning unit={result.units[0]} bar />
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -440,12 +511,9 @@ export function ServiceAvailability() {
               {!result.building && (
                 <div className="avail-location">
                   <div className="row gap-4">
-                    <span aria-hidden="true" className="avail-hub avail-hub-none">
-                      <Icon path={SEARCH} className="size-6" />
-                    </span>
                     <div className="avail-id">
                       <span className="caption-strong text-muted uppercase">Location Not Matched</span>
-                      <h3 className="title title-xl">No Match Found</h3>
+                      <h3 className="title title-lg">No Match Found</h3>
                       <span className="caption-muted">Searched on {mode.matchedOn}</span>
                     </div>
                   </div>
@@ -453,7 +521,7 @@ export function ServiceAvailability() {
                     {searched.map((f) => (
                       <div key={f.id}>
                         <dt className="caption-muted">{f.label}</dt>
-                        <dd className="title title-lg tabular-nums">{values[f.id]}</dd>
+                        <dd className="title title-md tabular-nums">{values[f.id]}</dd>
                       </div>
                     ))}
                   </dl>
@@ -465,7 +533,6 @@ export function ServiceAvailability() {
               <>
                 <div className="row-between mt-6 mb-4">
                   <h3 className="title title-sm">Select 5G Home Type</h3>
-                  <span className={`caption-muted ${fwaType ? 'text-[var(--success-on-tint)]' : ''}`}>{fwaType ? 'Type selected' : 'Required'}</span>
                 </div>
                 <div role="radiogroup" aria-label="Select 5G Home Type" className="grid-2-up max-w-3xl">
                   {FWA_TYPES.map((t) => (
@@ -604,7 +671,7 @@ export function ServiceAvailability() {
         </div>
       )}
     </Modal>
-    {(back || action) && (
+    {(back || action || canActivate) && (
       <>
         <div aria-hidden="true" className="h-20" />
         <div className="action-bar bottom-0">
@@ -615,7 +682,10 @@ export function ServiceAvailability() {
                 Back
               </Button>
             ) : <span />}
-            {action}
+            <div className="cluster gap-3">
+              {canActivate && <Button size="lg" variant="secondary" onClick={activate}>Activate</Button>}
+              {action}
+            </div>
           </div>
         </div>
       </>

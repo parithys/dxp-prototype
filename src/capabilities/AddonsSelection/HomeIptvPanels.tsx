@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Button, Drawer, Switch } from 'dxp-ui';
+import { SerialCaptureField } from './SerialCaptureField';
+import { scanMockSerial } from '../../data/reference/deviceScanMock';
 import { CARD_IDLE, CARD_SELECTED, SelectedTick } from '../../components/primitives/offerCardParts';
-import { MAX_EXTRA_STBS, extraStbChargeQar, asksAdditionalStbs, extraStbCount, iptvOneTimeLines, isIptvComplete, stbLabel, type HomeIptvSelection, type StbChoice } from '../../engines/homeIptv';
+import { MAX_EXTRA_STBS, extraStbChargeQar, asksAdditionalStbs, extraStbCount, isIptvComplete, type HomeIptvSelection, type StbChoice } from '../../engines/homeIptv';
 import { formatAmount } from '../../lib/format';
 import type { AddonProduct } from './AddonsPicker';
 
@@ -27,54 +29,62 @@ export function IptvEnable({ enabled, onChange }: { enabled: boolean; onChange: 
  * or chargeable by the bundle's own terms), then, whatever was chosen, whether the customer needs additional physical STBs and how many (always chargeable). The drawer opens when a bundle
  * is chosen; Edit reopens it.
  */
-export function IptvStbPanel({ bundle, selection, onChange }: { bundle: AddonProduct | undefined; selection: HomeIptvSelection; onChange: (next: HomeIptvSelection) => void }) {
+export function IptvStbPanel({ bundle, selection, onChange, serials = true }: { bundle: AddonProduct | undefined; selection: HomeIptvSelection; onChange: (next: HomeIptvSelection) => void; serials?: boolean }) {
   // The choice follows the bundle: another bundle starts its box choice again.
   const bundleId = bundle?.productId;
   const [open, setOpen] = useState(false);
+  // What the choice was when the drawer opened: Cancel puts it back.
+  const [opened, setOpened] = useState<HomeIptvSelection>(selection);
+  const openDrawer = (from: HomeIptvSelection) => {
+    setOpened(from);
+    setOpen(true);
+  };
   useEffect(() => {
     if (bundleId === selection.bundleId) return;
-    onChange({ ...selection, bundleId, stbOffered: bundle?.stb?.included === true, stb: undefined, extraStbs: undefined });
-    if (bundleId) setOpen(true);
+    const fresh: HomeIptvSelection = { ...selection, bundleId, stbOffered: bundle?.stb?.included === true, stb: undefined, stbSerial: undefined, extraStbs: undefined, extraStbSerials: undefined };
+    onChange(fresh);
+    if (bundleId) openDrawer(fresh);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bundleId]);
   if (!bundle) return <p className="muted-body">Choose an IPTV bundle plan to continue.</p>;
   const terms = bundle.stb;
   const count = extraStbCount(selection);
   const asked = selection.extraStbs !== undefined;
-  const options: { key: StbChoice; title: string; note: string; price: string }[] = terms?.included
+  // The serials already on this order's boxes: a scan never reads one of them again.
+  const stbSerialsTaken = [selection.stbSerial, ...(selection.extraStbSerials ?? [])].filter((x): x is string => Boolean(x));
+  const options: { key: StbChoice; title: string; note: string; price: string | undefined }[] = terms?.included
     ? [
-        { key: 'premium', title: 'Premium STB', note: 'The premium box for this bundle', price: qar(terms.premiumPriceQAR) },
         { key: 'lite', title: 'Lite STB', note: 'The lite box for this bundle', price: qar(terms.litePriceQAR) },
-        { key: 'none', title: 'No STB', note: 'Proceed without a set-top box', price: 'No charge' },
+        { key: 'premium', title: 'Premium STB', note: 'The premium box for this bundle', price: qar(terms.premiumPriceQAR) },
+        { key: 'none', title: 'No STB', note: 'Proceed without a set-top box', price: undefined },
       ]
     : [];
-  const oneTime = iptvOneTimeLines(bundle, selection);
-  const oneTimeTotal = oneTime.reduce((sum, l) => sum + l.amountQAR, 0);
-  const readBack = [selection.stb ? stbLabel(selection.stb) : terms?.included ? 'Set-top box not chosen' : undefined, asksAdditionalStbs(selection) ? (asked ? (count > 0 ? `${count} additional STB${count > 1 ? 's' : ''}` : 'No additional STBs') : 'Additional STBs not answered') : undefined].filter(Boolean).join(' · ');
   return (
     <>
-      <div className="card p-4">
-        <div className="split">
-          <div>
-            <p className="title title-md font-semibold">Set-Top Box</p>
-            <p className="caption-secondary">{readBack}</p>
-          </div>
-          <Button variant="secondary" onClick={() => setOpen(true)}>
-            {isIptvComplete(selection) ? 'Edit' : 'Choose'}
-          </Button>
-        </div>
-      </div>
+      {/* No card: the drawer opens by itself when a bundle is chosen, and this link is the way back to it. */}
+      <Button variant="link" className="link" onClick={() => openDrawer(selection)}>
+        {isIptvComplete(selection, serials) ? 'Edit Set-Top Box' : 'Choose Set-Top Box'}
+      </Button>
       <Drawer
         open={open}
         onClose={() => setOpen(false)}
         title="Set-Top Box"
         footer={
-          <>
-            <p className="caption-secondary flex-1">{oneTimeTotal > 0 ? `One-time charges today: QAR ${formatAmount(oneTimeTotal)}` : null}</p>
-            <Button disabled={!isIptvComplete(selection)} onClick={() => setOpen(false)}>
+          // One child: the drawer's footer lays its children out as equal columns, so the two buttons sit together at the right, each as wide as its label.
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                onChange(opened);
+                setOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button disabled={!isIptvComplete(selection, serials)} onClick={() => setOpen(false)}>
               Done
             </Button>
-          </>
+          </div>
         }
       >
         <div className="stack gap-6">
@@ -89,7 +99,11 @@ export function IptvStbPanel({ bundle, selection, onChange }: { bundle: AddonPro
               </div>
               <div role="radiogroup" aria-label="Set-Top Box" className="stack gap-3">
                 {options.map((o) => (
-                  <ChoiceRow key={o.key} selected={selection.stb === o.key} title={o.title} note={o.note} aside={o.price} onSelect={() => onChange({ ...selection, stb: o.key, ...(o.key === 'none' ? { extraStbs: undefined } : {}) })} />
+                  <ChoiceRow key={o.key} selected={selection.stb === o.key} title={o.title} note={o.note} aside={o.price} onSelect={() => (o.key === selection.stb ? undefined : onChange({ ...selection, stb: o.key, stbSerial: undefined, ...(o.key === 'none' ? { extraStbs: undefined, extraStbSerials: undefined } : {}) }))}
+                  >
+                    {/* A Premium or Lite box is a physical unit: its serial number is captured here by scanning its barcode (and can be removed). */}
+                    {serials && o.key !== 'none' && <SerialCaptureField kind="STB" label="STB Serial Number" sample={() => scanMockSerial('stb', stbSerialsTaken)} serial={selection.stbSerial} onChange={(stbSerial) => onChange({ ...selection, stbSerial })} />}
+                  </ChoiceRow>
                 ))}
               </div>
             </section>
@@ -110,19 +124,38 @@ export function IptvStbPanel({ bundle, selection, onChange }: { bundle: AddonPro
                   onSelect={() => onChange({ ...selection, extraStbs: Math.max(1, count) })}
                 >
                   {count > 0 && (
+                    <>
                     <div className="row gap-3 divider-top pt-3">
                       <span className="caption-secondary flex-1">Quantity</span>
-                      <Button variant="secondary" size="icon-sm" aria-label="Fewer additional STBs" disabled={count <= 1} onClick={() => onChange({ ...selection, extraStbs: count - 1 })}>
-                        -
+                      <Button variant="secondary" size="icon" aria-label="Fewer additional STBs" className="btn-icon-bordered text-fg size-11" disabled={count <= 0} onClick={() => onChange({ ...selection, extraStbs: count - 1, extraStbSerials: selection.extraStbSerials?.slice(0, count - 1) })}>
+                        <span aria-hidden="true" className="title title-xl">−</span>
                       </Button>
                       <span aria-live="polite" className="title title-lg">{count}</span>
-                      <Button variant="secondary" size="icon-sm" aria-label="More additional STBs" disabled={count >= MAX_EXTRA_STBS} onClick={() => onChange({ ...selection, extraStbs: count + 1 })}>
-                        +
+                      <Button variant="secondary" size="icon" aria-label="More additional STBs" className="btn-icon-bordered text-fg size-11" disabled={count >= MAX_EXTRA_STBS} onClick={() => onChange({ ...selection, extraStbs: count + 1 })}>
+                        <span aria-hidden="true" className="title title-xl">+</span>
                       </Button>
                     </div>
+                    {/* Each additional box has its own serial number, captured as the first box's is. */}
+                    {serials && (<div className="stack gap-3">
+                      {Array.from({ length: count }, (_, i) => (
+                        <SerialCaptureField
+                          key={i}
+                          kind="STB"
+                          sample={() => scanMockSerial('stb', stbSerialsTaken)}
+                          label={`Additional STB ${i + 1} Serial Number`}
+                          serial={selection.extraStbSerials?.[i]}
+                          onChange={(serial) => {
+                            const next = Array.from({ length: count }, (_, j) => selection.extraStbSerials?.[j] ?? '');
+                            next[i] = serial ?? '';
+                            onChange({ ...selection, extraStbSerials: next });
+                          }}
+                        />
+                      ))}
+                    </div>)}
+                    </>
                   )}
                 </ChoiceRow>
-                <ChoiceRow selected={asked && count === 0} title="No Additional STBs" note="The customer needs no extra boxes" onSelect={() => onChange({ ...selection, extraStbs: 0 })} />
+                <ChoiceRow selected={asked && count === 0} title="No Additional STBs" note="The customer needs no extra boxes" onSelect={() => onChange({ ...selection, extraStbs: 0, extraStbSerials: undefined })} />
               </div>
             </section>
           )}
