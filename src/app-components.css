@@ -171,6 +171,10 @@
   }
   /* Demo-only text links (the shortcuts that fill a form or start a simulation) and their "Demo:" label: the info purple, as plain links, so a demo control reads as one wherever it appears. The element
      also carries the .demo-only marker, which hides it when demo content is switched off. */
+  /* A page's content column when a rail (the Journey Summary) stands beside it: takes the room the rail leaves, with the page's own side and bottom padding. */
+  .page-beside-rail {
+    @apply min-w-0 flex-1 px-8 pb-8;
+  }
   .demo-link {
     @apply text-[var(--info)] hover:underline;
   }

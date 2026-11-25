@@ -212,3 +212,22 @@ test('the plan\'s free add-ons are put on the order even when the Add-ons page i
   assert.match(src, /!d\.exclusiveGroup && d\.addonCategory !== 'IPTV'/);
   assert.match(fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8'), /!a\.exclusiveGroup && a\.addonCategory !== 'IPTV'/, 'the page applies the same rule');
 });
+
+test('Service Feasibility is a step of its own before Recommended Offers, for a journey that began on Check RFS only; Back and Edit return to Check RFS (it is not passed over)', () => {
+  as(RETAIL_SALES);
+  return load('/src/modules/new-connection/connectionSteps.tsx').then((build) => {
+    const home = build.buildConnectionSteps({ journey: 'home', products: [], customerBenefits: [], familyLines: [], familyOrders: [] });
+    const keys = home.map((s) => s.key);
+    assert.ok(keys.indexOf('feasibility') === keys.indexOf('homeOffers') - 1, 'straight before Recommended Offers');
+    const f = home.find((s) => s.key === 'feasibility');
+    const fromRfs = order('fibre', 'RFS_UNLIMITED', 'instant', { rfsCheck: { service: 'fibre', status: 'RFS_UNLIMITED', buildingName: 'Al Waab Residence Tower', kid: 'KID-55830120-101' } });
+    assert.equal(f.skip(fromRfs), false);
+    assert.equal(f.skip({ product: 'fixed-line' }), true, 'a journey that did not begin on Check RFS has none');
+    assert.equal(f.autoPass, undefined, 'not passed over: Back from the offers lands on it, and it returns to Check RFS');
+    const rows = f.summary.map((x) => [x.label, x.value(fromRfs)]);
+    assert.deepEqual(rows.find((r) => r[0] === 'Result'), ['Result', 'RFS Unlimited']);
+    assert.deepEqual(rows.find((r) => r[0] === 'KID'), ['KID', 'KID-55830120-101']);
+    const choice = fs.readFileSync('src/modules/new-connection/steps/productChoice.ts', 'utf8');
+    assert.equal((choice.match(/\(isRepresentativeOrder\(values\) \? 1 : 0\) \+ 2/g) ?? []).length, 2, 'the journey opens at the offers, past the Service Feasibility step');
+  });
+});

@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
-import { Button, Card, Modal, type Column, Icon, Input, PhoneNumberInput, Select, FILE, ARROW_RIGHT, BARCODE_ICON, BOLT, BUILDING, CHEVRON_LEFT, HASH, HOUSE, INSTALLATION_WIFI, LAYERS_ICON, PIN, SEARCH, SIGNAL_TOWER, STAR, WARNING_ALT, WIFI } from 'dxp-ui';
+import { Button, Card, Modal, type Column, Icon, Input, PhoneNumberInput, Select, Tooltip, FILE, ARROW_RIGHT, BARCODE_ICON, BOLT, BUILDING, CHEVRON_LEFT, HASH, HOUSE, INSTALLATION_WIFI, LAYERS_ICON, PIN, SEARCH, SIGNAL_TOWER, STAR, WARNING_ALT, WIFI } from 'dxp-ui';
 import { CARD_IDLE, CARD_SELECTED, SelectedTick } from '../../components/primitives/offerCardParts';
 import { AVAILABILITY_STATUS, MBB_OFFERS, type AvailabilityBuilding, type AvailabilityStatusKey, type AvailabilityUnit } from '../../data/reference/serviceAvailabilityData';
 import { Link, useLocation, useNavigate } from '../../lib/router';
@@ -95,10 +95,14 @@ function UnitBody({ unit, selectable, selected, onInterested, busy }: { unit: Av
         <span className="value-text-lg font-bold">{label}</span>
         <span className="caption-muted">Floor {unit.floor}</span>
         {onInterested && (
-          // The same action as the Interested button at the foot of the card (it raises the same lead); an icon so it can sit in the header. It must not also select the unit.
-          <Button variant="ghost" size="icon-sm" className="ml-auto" aria-label={`Interested in ${label}`} title="Interested" disabled={busy} onClick={(e) => { e.stopPropagation(); onInterested(); }} onKeyDown={(e) => e.stopPropagation()}>
-            <Icon path={STAR} className="size-4" />
-          </Button>
+          // The same action as the Interested button at the foot of the card (it raises the same lead); a bordered icon button so it can sit in the header. It must not also select the unit.
+          <span className="ml-auto">
+            <Tooltip content="Create Lead" placement="top">
+              <Button variant="secondary" size="icon" className="btn-icon-bordered text-fg size-9" aria-label={`Create Lead: interested in ${label}`} disabled={busy} onClick={(e) => { e.stopPropagation(); onInterested(); }} onKeyDown={(e) => e.stopPropagation()}>
+                <Icon path={STAR} className="size-5" />
+              </Button>
+            </Tooltip>
+          </span>
         )}
       </div>
       <dl className="avail-kv">

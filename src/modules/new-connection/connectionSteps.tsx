@@ -19,6 +19,7 @@ import type { EligibilityResult } from '../../components/domain/eligibilityTypes
 const SHARED_KEYS = ['address', 'billingAccount'];
 import { homeOffersStep, productStep } from './steps/productStep';
 import { rfsStarted } from './rfsStart';
+import { serviceFeasibilityStep } from './steps/feasibilityStep';
 import { HomeOfferPlanSettler } from './steps/HomeOfferPlanSettler';
 import { planTypeOfHomeProduct } from '../../components/patterns/homePlanModel';
 import { IdTypeApprovalNotice } from './steps/IdTypeApprovalNotice';
@@ -78,6 +79,8 @@ export function buildConnectionSteps(ctx: ConnectionStepContext): WizardStep[] {
       // Check RFS gave the address: from there the journey has no Address page, and Recommended Offers replaces the product cards (see rfsStart.ts).
       { ...homeAddressStep(), skip: rfsStarted },
       productStep(ctx),
+      // Check RFS's result is a step of its own, before the offers: kept in the Journey Summary, and Back from the offers returns to Check RFS (steps/feasibilityStep.tsx).
+      serviceFeasibilityStep(ctx),
       { ...homeOffersStep(ctx), headless: ({ values, setValue }) => (offerPlanOf(values) ? <HomeOfferPlanSettler values={values} setValue={setValue} /> : null) },
       ...forProduct('fixed-line', withIdTypeNotice(fixedLineSteps({ planSettled: offerPlanSettled }).filter((s) => s.key !== 'address'))),
     ];

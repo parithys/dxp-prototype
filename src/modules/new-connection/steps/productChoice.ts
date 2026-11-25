@@ -130,7 +130,7 @@ export function handOverHomeToRfs(ctx: ProductStepContext, values: Record<string
           ...(offer && crossSales ? { crossSales, serviceJourney: offer.serviceJourney } : {}),
           ...pendingHome,
         },
-        startProgressTo: (isRepresentativeOrder(values) ? 1 : 0) + 1,
+        startProgressTo: (isRepresentativeOrder(values) ? 1 : 0) + 2,
       },
     });
     return;
@@ -150,7 +150,7 @@ export function handOverHomeToRfs(ctx: ProductStepContext, values: Record<string
           ...(offer && crossSales ? { crossSales, serviceJourney: offer.serviceJourney } : {}),
         },
         // Contact (and the Customer Representative's pages) are done: the journey opens at the offers page.
-        progressTo: (isRepresentativeOrder(values) ? 1 : 0) + 1,
+        progressTo: (isRepresentativeOrder(values) ? 1 : 0) + 2,
       } satisfies HomeStart,
     },
   });
