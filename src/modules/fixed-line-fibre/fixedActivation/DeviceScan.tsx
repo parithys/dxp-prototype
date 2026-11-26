@@ -7,7 +7,7 @@ import {
   demoSerials, scanMockSerial, validateScanDevice, wincashValidate,
 } from '../../../data/reference/deviceScanMock';
 import type { HomeIptvSelection } from '../../../engines/homeIptv';
-import { checkIndoorUnitSerial, indoorUnitsInStock, normaliseIndoorUnitSerial, type IndoorUnitDetails } from './fixedActivationModel';
+import { checkIndoorUnitSerial, cpeTypeOfService, indoorUnitsInStock, normaliseIndoorUnitSerial, type IndoorUnitDetails } from './fixedActivationModel';
 import { isRetailOrder, isSourcedKind, scanRowsFor, sourcedSerialOf, type CartDevice, type DeviceScanValue, type ScanRow } from './activationMode';
 
 // The Device Scanning of an Instant Activation order (New Home Connection): the ONT / CPE / STB / Mesh serial numbers, each in the search box with the barcode icon that the Physical SIM page uses. FRONT-END
@@ -81,7 +81,7 @@ function DeviceSerialField({ row, values, setValue, retail, cpeStock }: { row: S
     let brand: string | undefined;
     let details: IndoorUnitDetails | undefined;
     if (row.kind === 'cpe') {
-      const check = checkIndoorUnitSerial(serial, cpeStock);
+      const check = checkIndoorUnitSerial(serial, cpeStock, cpeTypeOfService(latest.current));
       if (!check.ok) return refuse(check.error);
       details = check.details;
       model = check.details.modelNumber;
@@ -118,7 +118,7 @@ function DeviceSerialField({ row, values, setValue, retail, cpeStock }: { row: S
     if (row.kind === 'cpe') {
       if (which === 'invalid') return 'NK772299Z';
       if (which === 'wincash') return WINCASH_DECLINED_SERIALS.find((s) => cpeStock.some((d) => d.serialNumber === s));
-      return indoorUnitsInStock(cpeStock).find((d) => !WINCASH_DECLINED_SERIALS.includes(d.serialNumber) && !taken().includes(d.serialNumber))?.serialNumber;
+      return indoorUnitsInStock(cpeStock, cpeTypeOfService(latest.current)).find((d) => !WINCASH_DECLINED_SERIALS.includes(d.serialNumber) && !taken().includes(d.serialNumber))?.serialNumber;
     }
     const d = demoSerials(row.kind);
     return which === 'valid' ? scanMockSerial(row.kind, taken()) : which === 'invalid' ? d.invalid : d.wincashDeclined;
@@ -150,7 +150,7 @@ function DeviceSerialField({ row, values, setValue, retail, cpeStock }: { row: S
   return (
     <section aria-label={row.label} className="stack gap-2 max-w-xl">
       <Input
-        label={row.label}
+        label={row.fieldLabel ?? row.label}
         required
         placeholder={`Enter the ${SCAN_DEVICE_LABEL[row.kind]} serial number, or use the barcode scanner`}
         value={text}

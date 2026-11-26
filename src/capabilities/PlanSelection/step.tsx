@@ -96,6 +96,8 @@ export function fixedPlanSelectionStep(): WizardStep {
           setValue(field, value);
           if (field === 'productId') {
             setValue('addonIds', []);
+            // The add-ons are cleared with the plan, so the free ones are put on the order again for the new plan (their once-per-plan marker goes too).
+            setValue('freeAddonsFor', undefined);
             setValue('iptv', undefined);
             setValue('extenders', undefined);
           }

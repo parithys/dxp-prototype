@@ -195,7 +195,7 @@
   {
     "offerId": "OFR-4010",
     "offerType": "Cross Sell",
-    "offerName": "GigaHome Fiber Double Play",
+    "offerName": "GigaHome Fiber Dual Play",
     "monthlyRental": 350,
     "offerDescription": "Add home fibre with voice to your mobile line",
     "campaignCode": "CMP-NEW-0930",
@@ -2528,7 +2528,7 @@
     "_note": "App-level demo addition (2026-10-09) so every offer-type section of the Offers step has an example for CUST-3021; serviceJourney names the journey an accepted offer continues in. Name, price and description are illustrative.",
     "offerId": "OFR-CUST-3021-4",
     "offerType": "Cross Sell",
-    "offerName": "GigaHome Fiber Double Play",
+    "offerName": "GigaHome Fiber Dual Play",
     "monthlyRental": 350,
     "offerDescription": "Add home fibre with voice to your mobile line",
     "campaignCode": "CMP-NEW-1009",

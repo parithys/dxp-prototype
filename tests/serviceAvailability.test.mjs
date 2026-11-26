@@ -33,13 +33,32 @@ test('each search finds the status the inventory holds, or NOT_FOUND', () => {
   for (const [mode, values, status] of table) assert.equal(look(mode, values).status, status, `${mode} ${JSON.stringify(values)}`);
 });
 
-test('a unit filter narrows a ZSB hit, and an unknown unit keeps every unit', () => {
+test('Unit / Flat: a unit gives that unit\'s KID, "-" gives the address\'s own dummy KID without reading a unit, an unknown unit is not found', () => {
   const base = { zone: '55', street: '830', building: '12' };
-  assert.equal(look('zsb', base).units.length, 4);
-  const one = look('zsb', { ...base, unit: '201' });
-  assert.equal(one.units.length, 1);
-  assert.ok(one.single);
-  assert.equal(look('zsb', { ...base, unit: '999' }).units.length, 4);
+  const b = data.AVAILABILITY_BUILDINGS.find((x) => x.zone === '55' && x.street === '830' && x.building === '12');
+  // Every unit of every building: exactly its own KID, whatever else the building holds.
+  for (const x of data.AVAILABILITY_BUILDINGS) {
+    for (const u of x.units) {
+      const r = look('zsb', { zone: x.zone, street: x.street, building: x.building, unit: u.unit });
+      assert.deepEqual(r.units.map((y) => y.kid), [u.kid], `${x.name} ${u.unit}`);
+      assert.ok(r.single);
+      assert.equal(r.status, x.status);
+    }
+  }
+  // "-": one dummy KID for the address, the same whatever unit text came with it, never a real unit's KID.
+  const dash = look('zsb', base);
+  assert.equal(dash.units.length, 1);
+  assert.ok(dash.single);
+  assert.equal(dash.status, b.status);
+  assert.equal(dash.units[0].kid, 'KID-55830120-0');
+  assert.equal(dash.units[0].unit, '');
+  assert.ok(!b.units.some((u) => u.kid === dash.units[0].kid));
+  assert.equal(look('zsb', { ...base, unit: '   ' }).units[0].kid, dash.units[0].kid);
+  // Every building gets a distinct dummy KID.
+  const kids = data.AVAILABILITY_BUILDINGS.map((x) => look('zsb', { zone: x.zone, street: x.street, building: x.building }).units[0].kid);
+  assert.equal(new Set(kids).size, kids.length);
+  // A unit the building does not have is never swapped for another.
+  assert.equal(look('zsb', { ...base, unit: '999' }).status, 'NOT_FOUND');
 });
 
 test('a KID / VFID hit is a single unit; a multi-unit building is not', () => {
@@ -108,7 +127,7 @@ test('device reuse and Zero Touch: read from the feasibility response and UIM\'s
   assert.deepEqual(tags({ model: 'ZTE F670L', reusable: true }), ['Instant Activation'], 'a reusable device carries no Reusable tag');
   assert.deepEqual(tags({ model: 'Nokia G-240W-C', reusable: true }), [], 'reusable, but the model does not support Zero Touch');
   assert.deepEqual(tags({ model: 'Acme CPE X1', reusable: true }), [], 'a model not mapped for Instant Activation says nothing about it');
-  assert.deepEqual(tags({ model: 'ZTE F670L', reusable: false }), ['Not Reusable']);
+  assert.deepEqual(tags({ model: 'ZTE F670L', reusable: false }), [], 'Not Reusable is not shown');
   assert.deepEqual(tags(undefined), []);
   // Through the lookup: unit 101 of Al Waab has a reusable Zero Touch device, 202 none.
   const units = look('area', { area: 'Al Waab', bname: 'Al Waab Residence Tower' }).units;
@@ -164,4 +183,24 @@ test('the KID and VFID fields take a barcode scan, and what a scan reads is an i
       assert.notEqual(look(id, { [id]: read }).status, 'NOT_FOUND', `${id} ${read} is in the inventory`);
     }
   }
+});
+
+test('GTM (synthetic): the Area Name is derived from the Zone Number; the Building Name is shown only where GTM holds one', async () => {
+  const gtm = await load('/src/data/synthetic/gtmData.ts');
+  // Every inventory zone is a GTM zone and names the area the inventory gives it (an independent table, not read back from the code).
+  const expectedArea = { 55: 'Al Waab', 63: 'West Bay', 66: 'West Bay', 69: 'Lusail', 71: 'Al Wakrah', 72: 'Al Wakrah', 91: 'Lusail' };
+  for (const b of data.AVAILABILITY_BUILDINGS) {
+    assert.equal(model.areaNameOf(b), expectedArea[b.zone], b.name);
+    assert.equal(model.areaNameOf(b), b.area, b.name);
+  }
+  assert.equal(model.areaNameOf({ zone: '999' }), '');
+  const b = data.AVAILABILITY_BUILDINGS.find((x) => x.zone === '55' && x.street === '830' && x.building === '12');
+  // The building as a whole, and any flat GTM has no record of its own for, carry the building's name; a flat GTM names nothing for (102) has none.
+  assert.equal(model.buildingNameOf(b), 'Al Waab Residence Tower');
+  assert.equal(model.buildingNameOf(b, '101'), 'Al Waab Residence Tower');
+  assert.equal(model.buildingNameOf(b, '102'), '');
+  // An address GTM does not know has no building name.
+  assert.equal(model.buildingNameOf({ zone: '12', street: '345', building: '6' }), '');
+  // A flat's record never changes another building's name, and every GTM record points at an inventory building.
+  for (const g of gtm.GTM_ADDRESSES) assert.ok(data.AVAILABILITY_BUILDINGS.some((x) => x.zone === g.zone && x.street === g.street && x.building === g.building), JSON.stringify(g));
 });

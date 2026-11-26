@@ -63,9 +63,8 @@ export function isIptvComplete(sel: HomeIptvSelection | undefined, serials = tru
   if (sel.stbOffered && !sel.stb) return false;
   // A Premium or Lite box is a physical unit: its serial number has to be scanned (or entered) before the choice is complete.
   if (serials && asksAdditionalStbs(sel) && !sel.stbSerial?.trim()) return false;
-  // Additional boxes are asked only after a Premium or Lite STB; with no STB there is nothing to answer.
+  // Additional boxes are no longer asked on the Add-ons page: none requested (extraStbs undefined) is a complete answer.
   if (!asksAdditionalStbs(sel)) return true;
-  if (sel.extraStbs === undefined) return false;
   // Each additional box needs its own serial number, as the first box does.
   return !serials || Array.from({ length: extraStbCount(sel) }).every((_, i) => Boolean(sel.extraStbSerials?.[i]?.trim()));
 }

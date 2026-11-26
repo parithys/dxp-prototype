@@ -169,9 +169,9 @@
   }
   /* Demo-only text links (the shortcuts that fill a form or start a simulation) and their "Demo:" label: the info purple, as plain links, so a demo control reads as one wherever it appears. The element
      also carries the .demo-only marker, which hides it when demo content is switched off. */
-  /* A page's content column when a rail (the Journey Summary) stands beside it: takes the room the rail leaves, with the page's own side and bottom padding. */
+  /* A page's content column when a rail (the Journey Summary) stands beside it: takes the room the rail leaves, with the same 32px of air above as the rail has (my-8), so the two tops are level, and the page's own side and bottom padding. */
   .page-beside-rail {
-    @apply min-w-0 flex-1 px-8 pb-8;
+    @apply min-w-0 flex-1 p-8;
   }
   .demo-link {
     @apply text-[var(--info)] hover:underline;
@@ -521,6 +521,10 @@
   }
   .card-row-button {
     @apply hover:bg-[var(--field-card-hover-bg)];
+  }
+  /* The bordered icon button that raises a lead (Interested): on hover its fill turns a teal wash stronger than the pale teal of a hovered / selected card it sits on (which would hide the change) and its border the fields' focus border. */
+  .btn-icon-bordered.btn-icon-interested {
+    @apply transition-colors hover:enabled:bg-[color-mix(in_oklab,var(--bg),var(--link)_30%)] hover:enabled:border-[var(--field-focus-border)];
   }
   .nav-icon-tile {
     @apply flex shrink-0 items-center justify-center w-9 h-9 rounded-[var(--radius-sm)];
@@ -1032,13 +1036,6 @@
      padding and gap (.option-row: 4 + 3 units below sm, 5 + 5 above). */
   .option-row-aside {
     @apply py-3 pr-3 pl-[calc(var(--space-unit)*21)] sm:pl-[calc(var(--space-unit)*24)];
-  }
-  /* A short list of label / value rows (the Wi-Fi Extenders' Free / Chargeable split): a separator above the first row and below every row, in the card border colour so it shows on a tinted card. */
-  .rows-rule {
-    @apply border-t border-[var(--field-card-border)];
-  }
-  .rows-rule > div {
-    @apply border-b border-[var(--field-card-border)] py-2;
   }
   .aside-value {
     @apply min-w-0 max-w-[50%] shrink-0 text-right;

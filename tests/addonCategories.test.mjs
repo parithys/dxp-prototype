@@ -144,14 +144,14 @@ test('the chosen add-ons are counted per category, across both filters', () => {
 test('the Add-ons page mounts the picker with the category tabs, and under them the selected category in two counted columns: Paid Addons, Free Addons', () => {
   const picker = fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8');
   assert.match(picker, /<TabStrip[\s\S]*tabs\.map/);
-  assert.match(picker, /\[\.\.\.\(homeTabs \?\? ADDON_CATEGORIES\), FREQUENTLY_USED_TAB\]/);
+  assert.match(picker, /\[\.\.\.\(homeTabs \? homeTabs\.filter\(\(c\) => addons\.some\(\(a\) => categoryOf\(a\) === c\)\) : ADDON_CATEGORIES\), FREQUENTLY_USED_TAB\]/);
   assert.match(picker, /categoryOf\(a\) === activeTab && isFreeAddon\(a\)/);
   // The home Add-ons page is opt-in: IPTV, Mesh, Speed Booster, Voice, with Paid and Free under each.
   assert.match(fs.readFileSync('src/engines/addonCategories.ts', 'utf8'), /HOME_ADDON_TABS = \['IPTV', 'Mesh', 'Speed Booster', 'Voice'\]/);
   assert.match(picker, /inTab\('paid'\)/);
   assert.match(picker, /inTab\('free'\)/);
   assert.ok(picker.indexOf("'Paid Addons'") < picker.indexOf("'Free Addons'"), 'Paid on the left, free on the right');
-  assert.match(picker, /\{list\.length\}/);
+  assert.match(picker, /\{list\.length \+ \(kind === .free. && freeFirst \? 1 : 0\)\}/);
   assert.match(picker, /md:grid-cols-2/);
   // The Addons page of the Add-Ons capability asks for it (the same page Add Add-On shows).
   assert.match(fs.readFileSync('src/capabilities/AddonsSelection/PostpaidAddonsStep.tsx', 'utf8'), /categorized/);
@@ -363,7 +363,7 @@ test('every condition present must hold; an empty or absent block never matches'
 
 test('the picker always shows the Frequently Used tab, and says so when nothing matches the customer', () => {
   const picker = fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8');
-  assert.match(picker, /const tabs: string\[\] = \[\.\.\.\(homeTabs \?\? ADDON_CATEGORIES\), FREQUENTLY_USED_TAB\]/);
+  assert.match(picker, /const tabs: string\[\] = \[\.\.\.\(homeTabs \? homeTabs\.filter\(\(c\) => addons\.some\(\(a\) => categoryOf\(a\) === c\)\) : ADDON_CATEGORIES\), FREQUENTLY_USED_TAB\]/);
   assert.match(picker, /No frequently used add-ons for this customer/);
 });
 
@@ -390,7 +390,7 @@ test('every home add-on states its lock-in in months (0: none), free ones have n
     if (r.price === 0) assert.equal(r.lockInMonths, 0, `${r.addonDiscountId}: a free add-on has no lock-in`);
   }
   assert.ok(rows.some((r) => r.lockInMonths > 0) && rows.some((r) => r.price > 0 && r.lockInMonths === 0));
-  assert.match(fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8'), /homeTabs && a\.lockInMonths !== undefined/);
+  assert.match(fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8'), /homeTabs && !isFreeAddon\(a\) && a\.addonCategory !== 'Voice' && a\.lockInMonths !== undefined/);
 });
 
 test('only the home Speed Booster offers fixed terms (1, 2, 3, 6 months) in place of a one-time option; no other add-on carries term options', () => {
@@ -403,4 +403,43 @@ test('only the home Speed Booster offers fixed terms (1, 2, 3, 6 months) in plac
   }
   const picker = fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8');
   assert.match(picker, /homeTabs && listed\.termOptions/);
+});
+
+test('free add-ons of a home plan go on the order by default: all of them, IPTV only when the plan includes it, one per exclusive group', () => {
+  const rows = [
+    { id: 1, addonCategory: 'Speed Booster' }, { id: 2, addonCategory: 'Voice' }, { id: 3, addonCategory: 'Mesh' }, { id: 4 },
+    { id: 5, addonCategory: 'IPTV' }, { id: 6, addonCategory: 'IPTV', exclusiveGroup: 'home-iptv-bundle' }, { id: 7, addonCategory: 'IPTV', exclusiveGroup: 'home-iptv-bundle' },
+  ];
+  const ids = (iptv) => m.defaultedFree(rows, iptv).map((r) => r.id);
+  // Dual Play / FWA: IPTV is switched on first, so nothing of it is defaulted.
+  assert.deepEqual(ids(false), [1, 2, 3, 4]);
+  // Triple Play includes IPTV: its free add-ons are defaulted, and of the alternatives (one group) only the first.
+  assert.deepEqual(ids(true), [1, 2, 3, 4, 5, 6]);
+  // Nothing is lost: defaulted plus left-out is the whole list.
+  assert.equal(ids(true).length + rows.filter((r) => !ids(true).includes(r.id)).length, rows.length);
+});
+
+test('the home Frequently Used tab is an aggregated view: paid add-ons only, each naming its category, one selection shared with the category tab; other pages are untouched', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8');
+  assert.match(src, /const aggregated = Boolean\(homeTabs\) && activeTab === FREQUENTLY_USED_TAB;/);
+  assert.match(src, /const free = useTabs && !aggregated \? /);
+  assert.match(src, /\{aggregated && a\.addonCategory && <span className=\{`badge \$\{CATEGORY_TAG\[a\.addonCategory\] \?\? 'badge-filled-neutral'\} mb-1`\}>\{a\.addonCategory\}<\/span>\}/);
+  // Each home category has its own colour, and no two share one.
+  const tags = [...src.match(/const CATEGORY_TAG[\s\S]*?\n\};/)[0].matchAll(/'badge-tag-(\w+)'/g)].map((x) => x[1]);
+  assert.ok(tags.length >= 4 && new Set(tags).size === tags.length, 'distinct colours');
+  // The same cards and the same selectedIds as the category tab: nothing is copied, so a choice made here is the choice there.
+  assert.match(src, /frequent\.filter\(\(a\) => isFreeAddon\(a\) === \(pricing === 'free'\)\)/);
+});
+
+test('of several free alternatives in an exclusive group, the one marked defaultSelected goes on the order, not merely the first', () => {
+  const rows = [
+    { id: 1, addonCategory: 'IPTV', exclusiveGroup: 'g' }, { id: 2, addonCategory: 'IPTV', exclusiveGroup: 'g', defaultSelected: true }, { id: 3, addonCategory: 'IPTV', exclusiveGroup: 'g' },
+    { id: 4, addonCategory: 'Mesh' },
+  ];
+  assert.deepEqual(m.defaultedFree(rows, true).map((r) => r.id), [2, 4]);
+  assert.deepEqual(m.defaultedFree(rows.map(({ defaultSelected: _d, ...r }) => r), true).map((r) => r.id), [1, 4], 'with none marked, the first');
+  assert.deepEqual(m.defaultedFree(rows, false).map((r) => r.id), [4], 'IPTV is not defaulted unless the plan includes it');
+  const osn = JSON.parse(fs.readFileSync('public/mock-data/addons-discounts.json', 'utf8')).filter((a) => a.addonCategory === 'IPTV' && a.defaultSelected);
+  assert.ok(osn.length > 0 && osn.every((a) => a.name === 'OSNTV Lite Pack Free' && a.price === 0), 'only OSNTV Lite Pack Free is marked');
 });

@@ -7,6 +7,7 @@ import { logActivity } from '../../../engines/activityEngine';
 import { customerContextActions } from '../../../stores/customerContextSlice';
 import { newTaskId } from '../../../lib/taskId';
 import { store } from '../../../stores/store';
+import { releaseWhenLeft } from './releaseWhenLeft';
 import { currentAgentId } from '../../../stores/currentAgent';
 import { useAction } from '../../../stores/hooks';
 import { entityOps, listEntities } from '../../../services/entityOps';
@@ -122,9 +123,11 @@ export function useWizardDraftActions({
     store.dispatch(customerContextActions.endJourney(wizardId));
     setActivityComments('');
     if (draftOrderId) await discardSavedDraft(draftOrderId);
-    clearDraft(wizardId);
+    // The draft is cleared once the page has changed (releaseWhenLeft): clearing it first redraws the journey's first page until the route has moved.
+    const release = releaseWhenLeft(wizardId);
     setAbandonOpen(false);
     onAbandon?.();
+    release();
   });
 
   // Explicitly distinct from abandonOrder (2026-09-28 "keep this distinct
@@ -221,8 +224,9 @@ export function useWizardDraftActions({
     if (!id) return;
     await recordActivity('saved-exit', id, comments);
     store.dispatch(customerContextActions.endJourney(wizardId));
-    clearDraft(wizardId);
+    const release = releaseWhenLeft(wizardId);
     if (!stay) onSaveExit?.();
+    release();
   });
 
   // Abandon from the leave-journey prompt: the same discard as Abandon Order (activity recorded, held customer released,
@@ -231,7 +235,8 @@ export function useWizardDraftActions({
     await recordActivity('abandoned', draftOrderId, 'Journey abandoned when the agent left it.');
     store.dispatch(customerContextActions.endJourney(wizardId));
     if (draftOrderId) await discardSavedDraft(draftOrderId);
-    clearDraft(wizardId);
+    // The caller lets the blocked navigation go on once this returns; the draft is cleared when the page has changed.
+    releaseWhenLeft(wizardId)();
   });
 
   // Save: writes the draft order, confirms with a toast and clears the in-memory draft (the saved

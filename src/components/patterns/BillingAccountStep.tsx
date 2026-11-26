@@ -2,7 +2,7 @@ import { SupportingDocumentField } from '../domain/SupportingDocumentField';
 import type { AdditionalDocument } from '../domain/AdditionalDocumentsUpload';
 import { isBusinessSegment } from '../../engines/businessSegment';
 import { CARD_SELECTED, SelectedTick, CARD_IDLE } from '../primitives/offerCardParts';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Badge, Button, Icon, Input, DateInput, Select, CHEVRON_DOWN, CHEVRON_UP, PERSON } from 'dxp-ui';
 import { BILL_LANGUAGES, BILL_TYPES, DEFAULT_BILL_LANGUAGE, DEFAULT_BILL_TYPE, computeBillCycleDay, isValidVatExpiry, ordinal, withoutVat } from './billingAccountModel';
@@ -123,6 +123,8 @@ export function BillingAccountStep({
     })();
   }, [customerId]);
 
+  // New Home Connection, a customer with an account on file: the Billing Address of their default account (the first listed) is kept for the new account unless "Same as Installation Address" is ticked.
+  const existingAddress = homeBillingAddress ? profiles[0]?.billingAddress?.trim() || undefined : undefined;
   const newAccount = value.newAccount ?? {};
   const setNewAccount = (patch: Partial<NewBillingAccountValue>) =>
     onChange({ ...value, newAccount: { ...newAccount, ...patch } });
@@ -191,6 +193,12 @@ export function BillingAccountStep({
       secondaryContactPhone: o?.record?.cellNumber ?? undefined,
       secondaryContactEmail: o?.record?.employerEmail ?? undefined,
     });
+  // The persisted account reads the address it keeps from the draft.
+  const needsExistingAddress = Boolean(value.creatingNew) && !editing && newAccount.existingAddressLine !== existingAddress;
+  useEffect(() => {
+    if (needsExistingAddress) setNewAccount({ existingAddressLine: existingAddress });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [needsExistingAddress, existingAddress]);
   // One contact: it is the primary contact without the agent choosing. Several: the customer's own record leads, else the first.
   const defaultPrimary = contactOptions.find((o) => o.record && isCustomersOwn(o.record)) ?? contactOptions[0];
   const needsDefaultPrimary = Boolean(value.creatingNew) && !editing && !newAccount.primaryContactId && Boolean(defaultPrimary);
@@ -199,6 +207,36 @@ export function BillingAccountStep({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [needsDefaultPrimary, defaultPrimary?.id]);
 
+  // The new-account form, opened (or closed): the profile is set up for the agent - its name, bill medium and schedule, and the cycle the activation date gives.
+  const openNewAccount = (creatingNew: boolean) =>
+    onChange({
+      ...value,
+      creatingNew,
+      selectedProfileId: undefined,
+      editingProfileId: undefined,
+      newAccount: {
+        ...value.newAccount,
+        // Bill Type is a new-account choice: coming from an existing or edited account, it starts at the new-account default, never that account's.
+        billType: value.selectedProfileId || value.editingProfileId ? undefined : value.newAccount?.billType,
+        // Opening the form fixes the primary-payment default: ticked only when the customer has no other profile.
+        primaryPaymentProfile: value.newAccount?.primaryPaymentProfile ?? profiles.length === 0,
+        profileName: value.newAccount?.profileName ?? `${customerName ?? 'Customer'} - Postpaid`,
+        preferredInvoiceRecipient: value.newAccount?.preferredInvoiceRecipient ?? 'Primary Contact',
+        billMedia: value.newAccount?.billMedia ?? 'Email',
+        billingSchedule: value.newAccount?.billingSchedule ?? 'Immediate',
+        billCycleDay: value.newAccount?.billCycleDay ?? defaultBillCycleDay,
+      },
+    });
+  // New Home Connection, a customer with accounts on file: the new account's form opens by itself, so the Billing Address of their existing account is on screen (kept unless "Same as Installation Address" is
+  // ticked) rather than behind "Create New Billing Account". Once only: choosing an existing account, or closing the form, is the agent's and is not undone. Not for a Consumer at the two-profile cap (no new account).
+  const autoOpened = useRef(false);
+  const opensForHome = Boolean(homeBillingAddress) && loaded && profiles.length > 0 && !atConsumerCap && !value.creatingNew && !value.selectedProfileId && !value.editingProfileId;
+  useEffect(() => {
+    if (!opensForHome || autoOpened.current) return;
+    autoOpened.current = true;
+    openNewAccount(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opensForHome]);
   // No customer yet (a new customer, or a journey that has not resolved one): there are no accounts to load, so the step
   // opens on its create form instead of waiting forever.
   if (customerId && !loaded) {
@@ -208,7 +246,8 @@ export function BillingAccountStep({
   return (
     <div className="space-y-6">
       {/* Nothing to choose from when the customer has no account: the new-account form below is all there is. */}
-      {profiles.length > 0 && (
+      {/* New Home Connection: the account cards and "Create New Billing Account" are not asked - the new account's form is the page (the existing Billing Address is kept in it). Only a Consumer at the two-profile cap, who has to pick an existing account, still sees them. */}
+      {profiles.length > 0 && (!homeBillingAddress || atConsumerCap) && (
       <div>
         {profiles.length > 0 && <h3 className="title title-md font-semibold mb-1">Existing Billing Accounts</h3>}
         {/* The customer's accounts and "Create New Billing Account" sit in one row; the new-account form opens below it. */}
@@ -259,27 +298,7 @@ export function BillingAccountStep({
           {!atConsumerCap && profiles.length > 0 && (
             <button
               type="button"
-              onClick={() =>
-                onChange({
-                  ...value,
-                  creatingNew: !value.creatingNew,
-                  selectedProfileId: undefined,
-                  editingProfileId: undefined,
-                  // Opening the form fixes the primary-payment default: ticked only when the customer has no other profile.
-                  newAccount: {
-                    ...value.newAccount,
-                    // Bill Type is a new-account choice: coming from an existing or edited account, it starts at the new-account default, never that account's.
-                    billType: value.selectedProfileId || value.editingProfileId ? undefined : value.newAccount?.billType,
-                    primaryPaymentProfile: value.newAccount?.primaryPaymentProfile ?? profiles.length === 0,
-                    // The profile is set up for the agent: its name, bill medium and schedule, and the cycle the activation date gives.
-                    profileName: value.newAccount?.profileName ?? `${customerName ?? 'Customer'} - Postpaid`,
-                    preferredInvoiceRecipient: value.newAccount?.preferredInvoiceRecipient ?? 'Primary Contact',
-                    billMedia: value.newAccount?.billMedia ?? 'Email',
-                    billingSchedule: value.newAccount?.billingSchedule ?? 'Immediate',
-                    billCycleDay: value.newAccount?.billCycleDay ?? defaultBillCycleDay,
-                  },
-                })
-              }
+              onClick={() => openNewAccount(!value.creatingNew)}
               aria-expanded={Boolean(value.creatingNew)}
               className={`row card-frame p-4 text-left ${value.creatingNew ? CARD_SELECTED : CARD_IDLE}`}
             >
@@ -308,7 +327,8 @@ export function BillingAccountStep({
               {/* Contact */}
               {/* The Primary Contact is not asked for here: the account takes the customer's own contact (the default, see needsDefaultPrimary); it is
                   changed from Customer 360 afterwards. */}
-              {!editing && contactOptions.length > 1 && (
+              {/* A home order has no Secondary Contact to pick: the account takes the customer's own contact. */}
+              {!editing && !homeBillingAddress && contactOptions.length > 1 && (
               <div className={`${SECTION} pt-6`}>
                 {/* With more than one contact on the account, a secondary contact can be picked from the others: nothing is typed, their details come from their record. */}
                 {!editing && contactOptions.length > 1 && (
@@ -375,6 +395,7 @@ export function BillingAccountStep({
                       same={newAccount.sameAsInstallation}
                       given={newAccount.billingAddress}
                       canEdit={canEditAddress}
+                      existing={existingAddress}
                       onChange={(next) => setNewAccount({ sameAsInstallation: next.same, billingAddress: next.given })}
                     />
                   )}
@@ -392,7 +413,7 @@ export function BillingAccountStep({
                   </dl>
                   </>
                 )}
-                {/* Bill cycle: the same field as Bill Type and Bill Language, but disabled - it follows from the activation date and is not the agent's to change. */}
+                {/* Bill cycle: the same field as Bill Type and Bill Language, but disabled - it follows from the activation date and is not the agent's to change. New Home Connection: the Bill Type is the system's too (Detailed), disabled. */}
                 <div className="grid-2-up-sm pt-3">
                   <Select
                     label="Bill Cycle"
@@ -404,7 +425,8 @@ export function BillingAccountStep({
                     <>
                       <Select
                         label="Bill Type"
-                        value={newAccount.billType ?? DEFAULT_BILL_TYPE}
+                        disabled={Boolean(homeBillingAddress)}
+                        value={homeBillingAddress ? DEFAULT_BILL_TYPE : newAccount.billType ?? DEFAULT_BILL_TYPE}
                         onChange={(e) => setNewAccount({ billType: e.target.value })}
                         options={BILL_TYPES}
                       />

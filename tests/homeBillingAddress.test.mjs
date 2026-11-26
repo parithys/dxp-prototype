@@ -55,8 +55,8 @@ test('the home billing options are opt-in: Postpaid and Prepaid still pass Billi
 test('the checkbox is labelled and ticked by default; unticking opens the address fields', () => {
   const view = fs.readFileSync('src/capabilities/Billing/HomeBillingAddress.tsx', 'utf8');
   assert.match(view, /Same as Installation Address/);
-  assert.match(view, /const ticked = same !== false/);
-  assert.match(view, /disabled=\{!canEdit\}/);
+  assert.match(view, /const ticked = existing \? same === true : same !== false;/, 'no account on file: ticked; an account on file: unticked');
+  assert.match(view, /disabled=\{!existing && !canEdit\}/);
   for (const l of ['Zone Number', 'Street Number', 'Building Number', 'Unit Number / Apartment Number / Flat Number', 'Floor', 'PO Number', 'City', 'Country', 'Address Description']) assert.match(view, new RegExp(`label="${l.replace(/[/]/g, '\\/')}"`), l);
 });
 
@@ -68,4 +68,28 @@ test('a home account\'s own billing address (the box unticked) needs its zone, s
   assert.equal(sim.isValid(values({ zone: '66', streetNo: '840', buildingNo: '24' })), false, 'no unit');
   assert.equal(sim.isValid(values(undefined)), false);
   assert.equal(sim.isValid({ billingAccount: { creatingNew: true, newAccount: { profileName: 'Test - Fixed Line', billCycleDay: 1, primaryContactId: 'CUSTOMER', preferredInvoiceRecipient: 'Primary Contact' } } }), true, 'ticked (the default): the Installation Address');
+});
+
+test('a customer with an account on file keeps its Billing Address unless the box is ticked; the Bill Type is the system\'s on a home order', async () => {
+  const { persistBillingAccount } = await load('/src/capabilities/Billing/persistBillingAccount.ts');
+  const run = async (newAccount) => {
+    const log = [];
+    await persistBillingAccount({ creatingNew: true, newAccount: { profileName: 'Home', billCycleDay: 1, ...newAccount } }, { createRecord: async (k, r) => void log.push({ k, r }), updateRecord: async () => {}, kind: 'Consumer Fixed Line', customerId: 'C1', creditLimitQar: 1000, nationality: 'Qatari', agentId: 'USR-1', addressLine: 'New Installation, Zone 55' });
+    return log.find((x) => x.k === 'billing-profiles').r;
+  };
+  const existing = 'Villa 3, Street 12, Zone 40, Doha';
+  // Untouched or unticked: the existing address stays.
+  assert.equal((await run({ existingAddressLine: existing })).billingAddress, existing);
+  assert.equal((await run({ existingAddressLine: existing, sameAsInstallation: false })).billingAddress, existing);
+  // Ticked: the Installation Address replaces it.
+  assert.equal((await run({ existingAddressLine: existing, sameAsInstallation: true })).billingAddress, 'New Installation, Zone 55');
+  // No account on file: the Installation Address, as before.
+  assert.equal((await run({})).billingAddress, 'New Installation, Zone 55');
+  assert.equal((await run({})).billType, 'Detailed');
+  // The page itself: the Bill Type is disabled on a home order, and Continue needs no typed address when the existing one is kept.
+  const comp = fs.readFileSync('src/components/patterns/BillingAccountStep.tsx', 'utf8');
+  assert.match(comp, /label="Bill Type"\s+disabled=\{Boolean\(homeBillingAddress\)\}\s+value=\{homeBillingAddress \? DEFAULT_BILL_TYPE/);
+  const sim = steps.fixedLineSteps().find((s) => s.key === 'billingAccount');
+  const kept = { billingAccount: { creatingNew: true, newAccount: { profileName: 'T', billCycleDay: 1, primaryContactId: 'CUSTOMER', preferredInvoiceRecipient: 'Primary Contact', sameAsInstallation: false, existingAddressLine: existing } } };
+  assert.equal(sim.isValid(kept), true);
 });

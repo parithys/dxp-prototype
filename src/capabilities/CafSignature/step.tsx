@@ -7,7 +7,7 @@ import type { GuidedContactValue } from '../../components/patterns/guidedContact
 import type { CafType } from '../../components/patterns/cafTypes';
 import type { ActualUserValue } from '../ActualUser/actualUserModel';
 import { actualUserIdentity, supplementaryRows } from '../ActualUser/actualUserModel';
-import { paperCopiesOf, type PaperCopy, consolidatedDocuments, documentTypeOptionsFor, missingMandatoryDocuments, requiredDocumentsFor } from '../../engines/journeyDocuments';
+import { paperCopiesOf, type PaperCopy, consolidatedDocuments, documentTypeOptionsFor, mandatoryDocumentLabels, missingMandatoryDocuments, requiredDocumentsFor } from '../../engines/journeyDocuments';
 
 import { IPAY_ACTIVATION_DEFAULT, IPAY_TERMS_SECTIONS, PREPAID_TERMS_SECTIONS } from '../../data/prepaidActivation';
 import { store } from '../../stores/store';
@@ -112,6 +112,7 @@ export function cafSignatureStep(
           documentRequirements={requiredDocumentsFor({ values, personaId: store.getState().persona.activePersonaId, journey: 'new-connection' })}
           // The document types offered come from public/config/document-types.json, narrowed to this role, journey, scenario and customer.
           documentLabelOptions={documentTypeOptionsFor({ values, personaId: store.getState().persona.activePersonaId, journey: 'new-connection' })}
+          documentMandatoryLabels={mandatoryDocumentLabels(values)}
           journeyDocuments={consolidatedDocuments(values)}
           supplementaryForm={actualUserIdentity(values.actualUser as ActualUserValue | undefined) ? { rows: supplementaryRows(values.actualUser as ActualUserValue), actualUserName: actualUserIdentity(values.actualUser as ActualUserValue)?.moiResult?.name } : undefined}
           // Built from the totals CHECKOUT computed plus the plan/number facts already on `values`, so the figures
@@ -126,7 +127,7 @@ export function cafSignatureStep(
         const attached = ((values.caf as { additionalDocuments?: { requirementId?: string }[] } | undefined)?.additionalDocuments ?? []).map((d) => d.requirementId);
         // A document type chosen with no file yet (reported by the form as documentsBlocked) holds Continue too.
         if ((values.caf as { documentsBlocked?: boolean } | undefined)?.documentsBlocked) return false;
-        if (missingMandatoryDocuments((values.caf as { additionalDocuments?: { label?: string }[] } | undefined)?.additionalDocuments).length) return false;
+        if (missingMandatoryDocuments((values.caf as { additionalDocuments?: { label?: string }[] } | undefined)?.additionalDocuments, values).length) return false;
         return cafSigned(values) && requiredDocumentsFor({ values, personaId: store.getState().persona.activePersonaId, journey: 'new-connection' }).every((r) => attached.includes(r.id));
       },
       // "The first and only step where the customer-facing view is presented": the rail/footer stay up WHILE

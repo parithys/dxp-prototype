@@ -28,32 +28,35 @@ test('only an FWA result takes a SIM: FWA Indoor, FWA Outdoor and a chosen type 
   assert.equal(model.isFwaService(valuesFor('fibre', 'RFS_LIMITED')), false);
 });
 
-test('the Device & SIM Scanning step follows the Fixed Line Number and is passed over unless the order is an FWA one activated instantly', () => {
+test('FWA: SIM Selection, with the CPE / ONT / Combo Box serial on the same page, follows the Fixed Line Number, for Indoor, Outdoor and either of both, whatever the activation; Fiber has neither', () => {
   const list = steps.fixedLineSteps();
   const keys = list.map((s) => s.key);
-  assert.equal(keys.indexOf('fwaSim'), keys.indexOf('deviceScan') + 1, 'straight after the Fiber Device Scanning step, which is after Number & Devices');
-  assert.equal(keys.indexOf('deviceScan'), keys.indexOf('number') + 1, 'after Number & Devices');
+  assert.equal(keys.indexOf('fwaSim'), keys.indexOf('deviceScan') + 1, 'after the Fiber Device Scanning step, which is after Number & Devices');
+  assert.ok(!keys.includes('fwaDevice'), 'no separate device page: it is on the SIM Selection page');
+  assert.equal(keys.indexOf('installationAddress'), keys.indexOf('fwaSim') + 1, 'then the Service/Installation Address');
   assert.ok(keys.indexOf('fwaSim') < keys.indexOf('checkout'));
   const sim = list.find((s) => s.key === 'fwaSim');
-  assert.equal(sim.label, 'Device & SIM Scanning (CPE)');
+  assert.equal(sim.label, 'SIM Selection');
   const instant = (service, status, extra) => valuesFor(service, status, { activation: 'instant', ...extra });
-  assert.equal(sim.skip(instant('fwa', 'FWA_INDOOR')), false, 'FWA Indoor, Instant Activation (the default role, Retail Sales, scans)');
-  assert.equal(sim.skip(valuesFor('fwa', 'FWA_INDOOR')), true, 'FWA Indoor, Field Engineer: the field engineer scans');
-  assert.equal(sim.skip(instant('fwa', 'FWA_OUTDOOR')), true, 'FWA Outdoor is Field Engineer only');
+  for (const [name, v] of [['FWA Indoor, Instant', instant('fwa', 'FWA_INDOOR')], ['FWA Indoor, Field Engineer', valuesFor('fwa', 'FWA_INDOOR')], ['FWA Outdoor', valuesFor('fwa', 'FWA_OUTDOOR')], ['FWA Outdoor, Instant asked for', instant('fwa', 'FWA_OUTDOOR')]]) {
+    assert.equal(sim.skip(v), false, `${name}: SIM Selection`);
+  }
   assert.equal(sim.skip(instant('fibre', 'RFS_UNLIMITED')), true, 'Fiber takes no SIM');
 });
 
 const devices = JSON.parse(fs.readFileSync('public/mock-data/cpe-devices.json', 'utf8'));
 const idu = devices.find((d) => d.deviceType === 'Indoor IDU' && d.stockStatus === 'In-Stock');
 
-test('Continue needs a validated Physical SIM and an Indoor Unit the inventory accepted for the serial in the field', () => {
+test('the SIM Selection page needs a validated Physical SIM and a CPE the inventory accepted for the serial in the field', () => {
   const sim = steps.fixedLineSteps().find((s) => s.key === 'fwaSim');
+  const simStep = sim;
   const ok = { ...valuesFor('fwa', 'FWA_INDOOR', { activation: 'instant' }), simType: { simType: 'Physical', simSerial: '8974000000000001', simValid: true }, deviceScan: { cpe: { serial: idu.serialNumber, status: 'validated' } } };
   assert.equal(sim.isValid(ok), true);
   assert.equal(sim.isValid({ ...ok, deviceScan: { cpe: { serial: idu.serialNumber, status: 'invalid', error: 'x' } } }), false, 'a serial the inventory has not accepted');
   assert.equal(sim.isValid({ ...ok, deviceScan: {} }), false, 'no device in the cart');
-  assert.equal(sim.isValid({ ...ok, simType: { simType: 'Physical', simSerial: '8974000000000001', simValid: false } }), false, 'an unvalidated SIM');
-  assert.equal(sim.isValid({ ...ok, simType: { simType: 'eSIM', esimIssued: true } }), false, 'no eSIM');
+  assert.equal(simStep.isValid(ok), true);
+  assert.equal(simStep.isValid({ ...ok, simType: { simType: 'Physical', simSerial: '8974000000000001', simValid: false } }), false, 'an unvalidated SIM');
+  assert.equal(simStep.isValid({ ...ok, simType: { simType: 'eSIM', esimIssued: true } }), false, 'no eSIM');
 });
 
 test('the Indoor Unit check: found, an Indoor Unit, in stock - and the reason when not; any case and surrounding spaces are accepted', () => {
@@ -82,7 +85,7 @@ test('the SIM Type and Indoor Unit join the Order Summary for FWA only, and the 
   const src = fs.readFileSync('src/modules/fixed-line-fibre/fixedActivation/fixedSteps.tsx', 'utf8');
   assert.match(src, /label: 'SIM Type'/);
   assert.match(src, /label: 'Indoor Unit MAC Address'|Indoor Unit/);
-  assert.match(src, /checkoutSummaryStep\(\{ familyRows: deviceOrderRows\b/);
+  assert.match(src, /checkoutSummaryStep\(\{ familyRows: \(v: Values\) => \[\.\.\.homeOrderDetailRows\(v\), \.\.\.deviceOrderRows\(v\)\]/);
   const submit = fs.readFileSync('src/modules/fixed-line-fibre/fixedActivation/submitFixedActivationOrder.ts', 'utf8');
   assert.match(submit, /isFwaService\(values\)/);
   assert.match(submit, /indoorUnitSerial/);

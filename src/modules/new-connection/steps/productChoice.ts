@@ -1,7 +1,6 @@
 import { workflowActions } from '../../../stores/workflowSlice';
 
 import { canStartProduct } from '../productAccess';
-import { customerContextActions } from '../../../stores/customerContextSlice';
 import type { CrossSalesValue } from '../../../capabilities';
 import { isRepresentativeOrder } from '../../../capabilities/CustomerQualification/representative';
 import { PRODUCT_OWNED_KEYS, billingStepActive, connectionOf, eligibilityJourney } from '../products';
@@ -9,6 +8,7 @@ import type { EligibilityResult } from '../../../components/domain/eligibilityTy
 import type { ConnectionProduct, HomeProduct, MnpType } from '../products';
 import type { ProductStepContext } from './ProductSelection';
 import { store } from '../../../stores/store';
+import { releaseWhenLeft } from '../../../components/patterns/wizard/releaseWhenLeft';
 import { homeConnectionRoute } from './homeConnectionRoute';
 import type { Offer } from '../../../capabilities';
 import type { HomeStart } from '../rfsStart';
@@ -57,16 +57,20 @@ export function selectProduct(
   return true;
 }
 
+/** Whether eligibility has been judged for THIS product: the line type (Fixed/FWA vs mobile) and port-in, not only the journey, so a decision made for another product is not reused. */
+export function eligibilityJudgedForProduct(values: Record<string, unknown>): boolean {
+  const e = values.eligibility as EligibilityResult | undefined;
+  return Boolean(e && e.scope === 'product' && !e.lineLimitSkipped && e.journeyType === eligibilityJourney(values) && Boolean(e.portIn) === (values.product === 'mnp') &&
+    (e.connectionType ?? (e.journeyType === 'prepaid' ? 'MOBILE_PREPAID' : 'MOBILE_POSTPAID')) === connectionOf(values));
+}
+
 /** Whether eligibility has been judged for the product now chosen (and its kind, for Fixed Line), and nothing stops the order. */
 export function productEligibilityClear(values: Record<string, unknown>, opts: { requireHomeKind?: boolean } = {}): boolean {
   const e = values.eligibility as EligibilityResult | undefined;
   // New Home Connection picks the connection type on this page (its product cards). In New Connection, Fixed Line's connection type and
   // MNP's plan type are asked on the step after, not on the Recommended Offers page.
   const needsKind = Boolean(opts.requireHomeKind) && values.product === 'fixed-line' && !values.homeProduct;
-  // Judged for THIS product: the line type (Fixed/FWA vs mobile) and port-in, not only the journey, so a decision made for another product is not reused.
-  const judgedFor = e && e.scope === 'product' && !e.lineLimitSkipped && e.journeyType === eligibilityJourney(values) && Boolean(e.portIn) === (values.product === 'mnp') &&
-    (e.connectionType ?? (e.journeyType === 'prepaid' ? 'MOBILE_PREPAID' : 'MOBILE_POSTPAID')) === connectionOf(values);
-  return !needsKind && Boolean(judgedFor) && !e!.hardStop && !e!.softStop;
+  return !needsKind && eligibilityJudgedForProduct(values) && !e!.hardStop && !e!.softStop;
 }
 
 /** The plan type of a New MNP journey (Postpaid / Prepaid). Changing it drops what the other type chose, as changing product does, and returns progress to the plan-type step. */
@@ -91,10 +95,11 @@ export const clearAndQuiet = (values: Record<string, unknown>, opts: { requireHo
  * scan and eligibility read), and this journey's draft and customer hold are released so leaving does not ask what to do with a draft.
  */
 export function handOverToJourney(ctx: ProductStepContext, route: string, customer?: { customerId: string }, back?: { path: string; label: string }): void {
-  store.dispatch(customerContextActions.endJourney(ctx.wizardId));
-  store.dispatch(workflowActions.clearDraft(ctx.wizardId));
+  // The draft and the customer hold are released once the other journey's page has replaced this one (releaseWhenLeft), not before: clearing first would redraw this journey's first page meanwhile.
+  const release = releaseWhenLeft(ctx.wizardId);
   // `back` names the page to return to (the screen it opens shows a Back bar for it), with the customer so that page opens for them again.
   ctx.navigate(route, customer || back ? { state: { ...(customer ? { launch: customer } : {}), ...(back ? { returnTo: { ...back, launch: customer } } : {}) } } : undefined);
+  release();
 }
 
 /** Fixed Line's connection type (Fibre / Fixed-Line / FWA / 5G Home), chosen on its own step after Product Selection. Changing it drops what the other type chose. */
@@ -114,8 +119,7 @@ export const HOME_OFFER_ROUTE = '/fibre-home/check-rfs';
 export function handOverHomeToRfs(ctx: ProductStepContext, values: Record<string, unknown>, offer?: Offer): void {
   const customerId = (values.eligibility as EligibilityResult | undefined)?.customerId;
   const crossSales: CrossSalesValue | undefined = offer && { decision: 'accepted', offerId: offer.offerId, offerName: offer.offerName, journey: offer.serviceJourney, linkedProductIds: offer.linkedProductIds };
-  store.dispatch(customerContextActions.endJourney(ctx.wizardId));
-  store.dispatch(workflowActions.clearDraft(ctx.wizardId));
+  const release = releaseWhenLeft(ctx.wizardId);
   // Check RFS already ran before the customer was identified (Check RFS -> the common Contact page -> Recommended Offers): its result goes straight into the home journey, with no second check.
   const pendingHome = values.pendingHome as Record<string, unknown> | undefined;
   if (pendingHome) {
@@ -133,6 +137,7 @@ export function handOverHomeToRfs(ctx: ProductStepContext, values: Record<string
         startProgressTo: (isRepresentativeOrder(values) ? 1 : 0) + 2,
       },
     });
+    release();
     return;
   }
   ctx.navigate(HOME_OFFER_ROUTE, {
@@ -154,4 +159,15 @@ export function handOverHomeToRfs(ctx: ProductStepContext, values: Record<string
       } satisfies HomeStart,
     },
   });
+  release();
+}
+
+/**
+ * New Home Connection opened with an offer already chosen (Select Offer in New Connection, or Start Another Journey): its Recommended Offers page lists nothing and only judges the product's
+ * eligibility, then moves on by itself. While that is still ahead - the judgement is pending, or it is clear and quiet - the page is a pass-through that must not be drawn: it would show for a moment
+ * and be gone. A stop or an approval routing is the agent's to read, so the page is drawn then.
+ */
+export function homeOffersPassingThrough(values: Record<string, unknown>): boolean {
+  if (values.productPreselected !== true || values.offerCarried !== true || !values.product) return false;
+  return !eligibilityJudgedForProduct(values) || clearAndQuiet(values, { requireHomeKind: true });
 }

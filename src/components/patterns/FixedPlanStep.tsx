@@ -27,7 +27,7 @@ interface FixedPlan {
   offer?: boolean;
 }
 
-const BUNDLE_TITLE = { double: 'Double Play', triple: 'Triple Play' } as const;
+const BUNDLE_TITLE = { double: 'Dual Play', triple: 'Triple Play' } as const;
 
 type PlanTab = 'offers' | 'standard' | 'special';
 const PLAN_TABS: { key: PlanTab; label: string }[] = [
@@ -67,7 +67,7 @@ export function FixedPlanStep({ values, setValue, specialDiscountType }: { value
   }, [planType]);
   // The two groups, as on the postpaid plan page: the Offers tab (at most six) and the Standard Plans tab (a page of twelve at a time).
   const offers = plans.filter((p) => p.offer).slice(0, OFFERS_TAB_LIMIT);
-  // Standard Plans are the two fibre bundles only - Double Play and Triple Play; a 5G Home plan is neither and stays listed.
+  // Standard Plans are the two fibre bundles only - Dual Play and Triple Play; a 5G Home plan is neither and stays listed.
   const standard = plans.filter((p) => !p.offer && (p.type !== 'Fixed Line Plan' || homePlayOf(p) !== undefined));
   // The Special Offers tab, only for a validated Special Discount (Consumer B2B2C, Retiree or MADA): the Standard Plans that discount is on. An Offers-tab plan is pre-bundled and takes none.
   const special = specialDiscountType && specialDiscountType !== 'none' ? SPECIAL_DISCOUNT_TYPE[specialDiscountType] : undefined;
@@ -97,7 +97,7 @@ export function FixedPlanStep({ values, setValue, specialDiscountType }: { value
   const [paging, setPaging] = useState({ tab: activeTab, page: 1 });
   const page = paging.tab === activeTab ? paging.page : 1;
   const setPage = (n: number) => setPaging({ tab: activeTab, page: n });
-  // The Standard Plans tab of a fibre home connection is two cards - Double Play and Triple Play - each standing for its bundle's lowest-priced plan; a 5G Home list is shown as it is.
+  // The Standard Plans tab of a fibre home connection is two cards - Dual Play and Triple Play - each standing for its bundle's lowest-priced plan; a 5G Home list is shown as it is.
   const bundleCards = (['double', 'triple'] as const).flatMap((b) => standard.filter((p) => homePlayOf(p) === b).slice(0, 1));
   const standardTab = planType === 'Fixed Line Plan' ? bundleCards : standard;
   const paged = activeTab === 'standard' ? standardTab : activeTab === 'special' ? specialPlans : [];

@@ -1,3 +1,4 @@
+import { GTM_ADDRESSES, GTM_ZONES } from '../../data/synthetic/gtmData';
 import { AVAILABILITY_BUILDINGS, DEVICE_ZERO_TOUCH, type AvailabilityBuilding, type AvailabilityStatusKey, type AvailabilityUnit } from '../../data/reference/serviceAvailabilityData';
 
 // The pure half of the Check RFS Service Availability card: what the four search modes ask for, whether an entry is valid, and the lookup
@@ -15,8 +16,8 @@ export interface SearchField {
   pattern?: RegExp;
   message?: string;
   numeric?: boolean;
-  /** 'area' is the area choice, 'building' the building-name suggestions for that area. */
-  kind?: 'area' | 'building';
+  /** 'area' is the area choice, 'building' the building-name suggestions for that area, 'unit' the units of the building the zone / street / building numbers name. */
+  kind?: 'area' | 'building' | 'unit';
   /** The field takes a barcode scan: a reader's output lands in it (the KID and VFID are on the premises' labels). */
   scan?: boolean;
 }
@@ -37,7 +38,7 @@ export const SEARCH_MODES: SearchMode[] = [
     { id: 'zone', label: 'Zone Number', required: true, watermark: 'e.g. 55', numeric: true, pattern: /^\d{1,3}$/, message: 'Enter a zone number (1–3 digits).' },
     { id: 'street', label: 'Street Number', required: true, watermark: 'e.g. 830', numeric: true, pattern: /^\d{1,4}$/, message: 'Enter a street number (1–4 digits).' },
     { id: 'building', label: 'Building Number', required: true, watermark: 'e.g. 12', numeric: true, pattern: /^\d{1,4}$/, message: 'Enter a building number (1–4 digits).' },
-    { id: 'unit', label: 'Unit / Flat (Optional)', required: false, watermark: 'e.g. 4B' },
+    { id: 'unit', label: 'Unit / Flat (Optional)', required: false, kind: 'unit' },
   ] },
   { id: 'kid', title: 'KID', subtitle: 'Kahramaa ID', matchedOn: 'Kahramaa ID', columns: 1, fields: [
     { id: 'kid', label: 'Kahramaa ID (KID)', required: true, watermark: 'e.g. KID-12345678-001', scan: true, pattern: /^KID-\d{8}-\w{1,4}$/i, message: 'Use the format KID-########-###.' },
@@ -78,6 +79,22 @@ export const availabilityAreas = (): string[] => [...new Set(AVAILABILITY_BUILDI
 /** The building names to suggest, narrowed to the chosen area. */
 export const buildingNames = (area: string | undefined): string[] => AVAILABILITY_BUILDINGS.filter((b) => !area || b.area === area).map((b) => b.name);
 
+/** The Area Name, derived from the building's Zone Number (GTM's zone list); blank for a zone GTM does not know. */
+export const areaNameOf = (b: Pick<AvailabilityBuilding, 'zone'>): string => GTM_ZONES[b.zone] ?? '';
+
+/** The Building Name GTM holds for the address - for the flat when GTM has a record of its own for it, else for the building - or '' when it holds none. */
+export function buildingNameOf(b: Pick<AvailabilityBuilding, 'zone' | 'street' | 'building'>, unit?: string): string {
+  const at = (u: string | undefined) => GTM_ADDRESSES.find((x) => x.zone === b.zone && x.street === b.street && x.building === b.building && x.unit === u);
+  return ((unit ? at(unit) : undefined) ?? at(undefined))?.name ?? '';
+}
+
+/** The KID of an address searched without a unit: built from its ZSB (zone, street, building, as the real KIDs are), with 0 where a unit's own suffix would be. It has no unit, floor or VFID of its own. */
+const addressUnit = (b: AvailabilityBuilding): AvailabilityUnit => ({ unit: '', floor: '-', kid: `KID-${b.zone}${b.street}${b.building}0-0`, vfid: '-', state: 'Available', patch: null, sla: null });
+
+/** The units to offer for the building the zone / street / building numbers name; none when no building in the inventory has those numbers. */
+export const unitNames = (values: SearchValues): string[] =>
+  AVAILABILITY_BUILDINGS.find((x) => x.zone === trimmed(values, 'zone') && x.street === trimmed(values, 'street') && x.building === trimmed(values, 'building'))?.units.map((u) => u.unit) ?? [];
+
 export interface AvailabilityResult {
   status: AvailabilityStatusKey;
   building?: AvailabilityBuilding;
@@ -103,12 +120,11 @@ export function lookupAvailability(modeId: SearchModeId, values: SearchValues): 
     case 'zsb': {
       const b = AVAILABILITY_BUILDINGS.find((x) => x.zone === trimmed(values, 'zone') && x.street === trimmed(values, 'street') && x.building === trimmed(values, 'building'));
       if (!b) return { status: 'NOT_FOUND' };
-      let units = b.units;
       const wanted = trimmed(values, 'unit');
-      if (wanted) {
-        const hit = units.filter((u) => unitKey(u.unit) === unitKey(wanted));
-        if (hit.length) units = hit;
-      }
+      // A unit chosen: the KID of that unit at this address (a unit the building does not have is not found, never replaced by another).
+      // "-" (none): the address stands on its own - the ZSB alone is read, the unit is not considered, and the address gets a dummy KID.
+      const units = wanted ? b.units.filter((u) => unitKey(u.unit) === unitKey(wanted)) : [addressUnit(b)];
+      if (!units.length) return { status: 'NOT_FOUND' };
       return { status: b.status, building: b, units, single: units.length === 1 };
     }
     case 'kid':
@@ -136,13 +152,13 @@ export function deviceReuseOf(unit: Pick<AvailabilityUnit, 'device'>): DeviceReu
   return { status: zeroTouch === undefined ? 'unknown-model' : zeroTouch ? 'zero-touch' : 'no-zero-touch', model: d.model };
 }
 
-/** The tags the result puts beside the device model (Instant Activation where the model supports it, Not Reusable where the device cannot be reused; a reusable device has no tag). */
+/** The tags the result puts beside the device model (Instant Activation where the model supports it; whether the device can be reused is not shown, as a tag or otherwise). */
 export function deviceReuseTags(r: DeviceReuse): { label: string; tone: 'success' | 'info' | 'neutral' }[] {
   switch (r.status) {
     case 'none': return [];
-    case 'not-reusable': return [{ label: 'Not Reusable', tone: 'neutral' }];
     case 'zero-touch': return [{ label: 'Instant Activation', tone: 'info' }];
-    // A reusable device carries no tag of its own; only Not Reusable is called out. Where the model is not mapped, Instant Activation is unknown and nothing is said about it.
+    // Neither Reusable nor Not Reusable is called out. Where the model is not mapped, Instant Activation is unknown and nothing is said about it.
+    case 'not-reusable':
     case 'no-zero-touch':
     case 'unknown-model': return [];
   }

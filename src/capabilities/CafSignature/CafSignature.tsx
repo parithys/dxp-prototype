@@ -93,6 +93,7 @@ export type CafSignatureProps =
       /** Additional Documents: what this order requires, and what the journey already holds (viewable, downloadable). */
       documentRequirements?: Capture['documentRequirements'];
       documentLabelOptions?: Capture['documentLabelOptions'];
+      documentMandatoryLabels?: Capture['documentMandatoryLabels'];
       journeyDocuments?: Capture['journeyDocuments'];
     });
 
@@ -164,6 +165,7 @@ export function CafSignature(props: CafSignatureProps) {
         ipayActivation={props.ipayActivation}
         supplementaryForm={props.supplementaryForm}
         documentLabelOptions={props.documentLabelOptions ?? []}
+        documentMandatoryLabels={props.documentMandatoryLabels}
         documentRequirements={props.documentRequirements}
         journeyDocuments={props.journeyDocuments}
         inlineSignaturePad

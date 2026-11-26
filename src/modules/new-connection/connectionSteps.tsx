@@ -3,7 +3,7 @@ import type { GuidedContactValue } from '../../components/patterns/guidedContact
 import type { QualificationContext } from '../../capabilities';
 import type { DeviceType } from 'dxp-ui';
 import { mnpSteps } from '../mnp-fnp-porting/screens/mnpSteps';
-import { fixedLineSteps, homeAddressStep } from '../fixed-line-fibre/fixedActivation/fixedSteps';
+import { deviceScanStep, fixedLineSteps, homeAddressStep } from '../fixed-line-fibre/fixedActivation/fixedSteps';
 import { prepaidSteps } from '../mobile-prepaid/screens/prepaidSteps';
 import { postpaidSteps } from './postpaidSteps';
 import type { PostpaidStepContext } from './postpaidSteps';
@@ -81,8 +81,10 @@ export function buildConnectionSteps(ctx: ConnectionStepContext): WizardStep[] {
       productStep(ctx),
       // Check RFS's result is a step of its own, before the offers: kept in the Journey Summary, and Back from the offers returns to Check RFS (steps/feasibilityStep.tsx).
       serviceFeasibilityStep(ctx),
+      // Fiber - Instant Activation: the ONT is scanned right after Activate on Check RFS, before anything else (the step is skipped for every other order).
+      deviceScanStep(),
       { ...homeOffersStep(ctx), headless: ({ values, setValue }) => (offerPlanOf(values) ? <HomeOfferPlanSettler values={values} setValue={setValue} /> : null) },
-      ...forProduct('fixed-line', withIdTypeNotice(fixedLineSteps({ planSettled: offerPlanSettled }).filter((s) => s.key !== 'address'))),
+      ...forProduct('fixed-line', withIdTypeNotice(fixedLineSteps({ planSettled: offerPlanSettled }).filter((s) => s.key !== 'address' && s.key !== 'deviceScan'))),
     ];
   }
   // The Address and the Billing Profile are collected once, after Customer Verification and BEFORE Recommended Offers, for every product:
