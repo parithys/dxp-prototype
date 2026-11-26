@@ -131,7 +131,7 @@ export function billingStep(
       const billing = (values.billingAccount as BillingAccountValue) ?? {};
       if (!isBillingAccountValid(billing)) return false;
       // A home account's own billing address (the box unticked) needs its zone, street, building and unit.
-      if (opts.homeBillingAddress && billing.creatingNew && !billing.selectedProfileId && billing.newAccount?.sameAsInstallation === false) {
+      if (opts.homeBillingAddress && billing.creatingNew && !billing.selectedProfileId && billing.newAccount?.sameAsInstallation === false && !billing.newAccount.existingAddressLine) {
         const g = billing.newAccount.billingAddress;
         if (!(g?.zone?.trim() && g.streetNo?.trim() && g.buildingNo?.trim() && g.aptFlatUnit?.trim())) return false;
       }

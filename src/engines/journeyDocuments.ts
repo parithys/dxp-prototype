@@ -119,21 +119,28 @@ export function withoutInapplicableVatDocument<T extends { requirementId?: strin
   return req && !holds('vat-registration', values) ? docs.filter((d) => d.requirementId !== req.id) : docs;
 }
 
-/** The labels of the documents every order must carry from Additional Documents (configured `mandatory`), in their configured order. */
-export function mandatoryDocumentLabels(): string[] {
-  return getDocumentTypes().filter((t) => t.mandatory).map((t) => t.label);
+/** Whether Additional Documents offers (and, if mandatory, requires) this type for the order's product: a type is left out for the products it names in `notInProducts`. */
+const offeredForProduct = (t: DocumentTypeConfig, values: Values | undefined): boolean => {
+  const product = values?.product as string | undefined;
+  return !(product !== undefined && t.notInProducts?.includes(product));
+};
+
+/** The labels of the documents every order must carry from Additional Documents (configured `mandatory`), in their configured order; a product a type is not for (`notInProducts`) does not carry it. */
+export function mandatoryDocumentLabels(values?: Values): string[] {
+  return getDocumentTypes().filter((t) => t.mandatory && offeredForProduct(t, values)).map((t) => t.label);
 }
 
 /** The mandatory documents not yet among the uploaded ones (matched by label: a Star Number approval uploaded earlier in the journey counts). */
-export function missingMandatoryDocuments(uploaded: { label?: string }[] | undefined): string[] {
+export function missingMandatoryDocuments(uploaded: { label?: string }[] | undefined, values?: Values): string[] {
   const have = new Set((uploaded ?? []).map((d) => d.label));
-  return mandatoryDocumentLabels().filter((l) => !have.has(l));
+  return mandatoryDocumentLabels(values).filter((l) => !have.has(l));
 }
 
 /** The labels offered in Additional Documents: the types configured with an `additionalDocumentsOrder` (mandatory or not), in that order, when any are; otherwise every configured type that applies here, except those already asked for as a required card. */
 export function documentTypeOptionsFor(ctx: DocumentContext): string[] {
-  const ordered = getDocumentTypes().filter((t) => t.additionalDocumentsOrder !== undefined).sort((a, b) => a.additionalDocumentsOrder! - b.additionalDocumentsOrder!);
-  if (ordered.length) return ordered.map((t) => t.label);
+  const ordered = getDocumentTypes().filter((t) => t.additionalDocumentsOrder !== undefined && offeredForProduct(t, ctx.values)).sort((a, b) => a.additionalDocumentsOrder! - b.additionalDocumentsOrder!);
+  // A product that none of the configured types is for is offered none (not every type).
+  if (getDocumentTypes().some((t) => t.additionalDocumentsOrder !== undefined)) return ordered.map((t) => t.label);
   const required = new Set(requiredDocumentsFor(ctx).map((r) => r.id));
   const types = getDocumentTypes().filter((t) => !required.has(t.id) && (t.offerAlways !== undefined || documentTypeApplies(t, ctx)));
   // The always-offered types first, in their set order; then the ones this journey, role and customer make relevant.

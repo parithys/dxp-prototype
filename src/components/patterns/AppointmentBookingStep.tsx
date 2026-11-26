@@ -98,6 +98,9 @@ export function AppointmentBookingStep({ value, onChange }: AppointmentBookingSt
         </div>
       </div>
 
+      {/* Only the cluster is asked first: the date, slots, specific-date request, notes and documents follow once a cluster is chosen. */}
+      {cluster && (
+        <>
       <section aria-label="Appointment date" className="space-y-3">
         <div className="split gap-2">
           <h3 className="title title-lg">Select appointment date - {monthYear(date ?? earliest)}</h3>
@@ -229,6 +232,8 @@ export function AppointmentBookingStep({ value, onChange }: AppointmentBookingSt
           })}
         </ul>
       </section>
+        </>
+      )}
     </div>
   );
 }

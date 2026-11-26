@@ -21,7 +21,7 @@ import { submitFixedActivationOrder } from '../fixed-line-fibre/fixedActivation/
 import { submitMnpOrder } from '../mnp-fnp-porting/screens/submitMnpOrder';
 import { detectDeviceType } from 'dxp-ui';
 import { homeProductLabel, productLabel } from './products';
-import { productStepIndex } from './steps/productChoice';
+import { homeOffersPassingThrough, productStepIndex } from './steps/productChoice';
 import type { ConnectionProduct, HomeProduct } from './products';
 import {
   ActivationComplete,
@@ -133,11 +133,12 @@ export function NewConnectionWizard({
   const personaIdForEntry = useAppSelector((st) => st.persona.activePersonaId);
   const entryState = location.state as { resumeOrderId?: string; startValues?: unknown } | null;
   const homeEntryUnderway = Boolean(entryState?.resumeOrderId || entryState?.startValues || draftValues?.contact || draftOrderId || (draftStep ?? 0) > 0);
+  const redirectsToCommonContact = journey === 'home' && !isMirrorWindow && !homeEntryUnderway && Boolean(personaIdForEntry) && canUseFeature(personaIdForEntry!, COMMON_CONTACT_FEATURE);
   useEffect(() => {
-    if (journey !== 'home' || isMirrorWindow || homeEntryUnderway || !personaIdForEntry || !canUseFeature(personaIdForEntry, COMMON_CONTACT_FEATURE)) return;
+    if (!redirectsToCommonContact) return;
     navigate(flow === 'existing' && existingCustomerId ? existingCustomerPath(existingCustomerId) : '/start-connection', { replace: true, state: { startFresh: true } });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [journey, isMirrorWindow, homeEntryUnderway, personaIdForEntry, flow, existingCustomerId]);
+  }, [redirectsToCommonContact, flow, existingCustomerId]);
   // A resumed New Home Connection draft (see HomeDraftOrdersPrompt and the Draft Orders list) carries what it computed for the CAF and the charges: an amended order recalculates its charges at
   // Order Summary and is signed again, so none of it is kept. Only a journey that is being resumed (it has the step to return to) is cleaned; a new one has nothing to clean.
   const resumingStepKey = useAppSelector((s) => s.workflow.drafts[WIZARD_ID]?.resumeToStepKey);
@@ -198,7 +199,10 @@ export function NewConnectionWizard({
   const journeyTitle =
     journey === 'home' ? 'New Home Connection' : chosenLabel && (!onProductStep || productPreselected) ? chosenLabel : 'New Connection';
 
+  const [passGaveUp, setPassGaveUp] = useState(false);
+
   if (heldByAnotherJourney && !isMirrorWindow) return null; // redirecting to the journey that holds the customer
+  if (redirectsToCommonContact) return null; // redirecting to the common Contact page: the home journey's own first page is never drawn
 
   if (confirmedOrder) {
     return (
@@ -261,8 +265,14 @@ export function NewConnectionWizard({
   // New Home Connection: once the customer is identified (the first page, nothing saved of this journey yet), the agent's own drafts for them are offered.
   const offerHomeDrafts = journey === 'home' && !isMirrorWindow && (draftStep ?? 0) === 0 && !draftOrderId;
 
+  // The home journey's Recommended Offers page, opened with an offer already chosen, only judges eligibility and moves on: it is not drawn meanwhile. Only while it IS the current step - a journey opened
+  // on another step (Fiber Instant Activation opens on the device scan, ahead of the offers) draws that step at once. Drawn anyway if the pass-through has not moved on within a few seconds.
+  const currentStepKey = steps.filter((st) => !st.skip?.(draftValues ?? {}))[draftStep ?? 0]?.key;
+  const passing = journey === 'home' && !isMirrorWindow && currentStepKey === 'homeOffers' && homeOffersPassingThrough(draftValues ?? {});
+
   return (
-    <div className="min-h-full flex flex-col" data-device={device}>
+    <div className="min-h-full flex flex-col" data-device={device} hidden={passing && !passGaveUp}>
+      {passing && !passGaveUp && <PassThroughTimeout onElapsed={() => setPassGaveUp(true)} />}
       {offerDrafts && <DraftOrdersPrompt wizardId={WIZARD_ID} customerId={identifiedCustomerId} agentId={agentId} steps={steps} currentValues={draftValues ?? {}} />}
       {offerHomeDrafts && <HomeDraftOrdersPrompt wizardId={WIZARD_ID} customerId={identifiedCustomerId} agentId={agentId} steps={steps} currentValues={draftValues ?? {}} />}
       <GuidedActivationWizard
@@ -308,4 +318,13 @@ export function NewConnectionWizard({
       />
     </div>
   );
+}
+
+/** Gives up waiting for a pass-through page to move on, so a page that has to be read (a failed check) is shown after a few seconds. */
+function PassThroughTimeout({ onElapsed }: { onElapsed: () => void }) {
+  useEffect(() => {
+    const t = window.setTimeout(onElapsed, 5000);
+    return () => window.clearTimeout(t);
+  }, [onElapsed]);
+  return null;
 }

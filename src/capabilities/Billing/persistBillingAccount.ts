@@ -100,7 +100,8 @@ export async function persistBillingAccount(
     billCycleLabel: fresh.billCycleDay ? ordinal(fresh.billCycleDay) : undefined,
     billingType: fresh.billingMode ?? 'Arrears',
     // New Home Connection: the Installation Address unless the agent gave another; every other journey's new account takes the address line it was given.
-    billingAddress: fresh.sameAsInstallation === false ? billingAddressLine(fresh.billingAddress) ?? ctx.addressLine : ctx.addressLine,
+    // A customer with an account on file keeps its Billing Address unless the box is ticked (then the Installation Address).
+    billingAddress: fresh.existingAddressLine && fresh.sameAsInstallation !== true ? fresh.existingAddressLine : fresh.sameAsInstallation === false ? billingAddressLine(fresh.billingAddress) ?? ctx.addressLine : ctx.addressLine,
     billMedium: fresh.billMedia ?? 'Email',
     billType: fresh.billType ?? DEFAULT_BILL_TYPE,
     billLanguage: fresh.billLanguage ?? DEFAULT_BILL_LANGUAGE,

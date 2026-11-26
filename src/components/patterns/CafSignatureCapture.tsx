@@ -97,6 +97,8 @@ interface CafSignatureCaptureProps {
   /** Post-signature document labels as a list of values instead of free text. */
   /** Post-signature document labels as a list of values instead of free text. */
   documentLabelOptions?: string[];
+  /** The mandatory document types for this order (a product a type is not for does not carry it). Absent: every configured mandatory type. */
+  documentMandatoryLabels?: string[];
   /**
    * Which journey's application form this is (postpaid by default). Prepaid carries its own form title and its own
    * Terms & Conditions (Mobile Prepaid BRSD MPRA_001_CAF_02 / CAF_03); the signature, agreement and documents
@@ -225,6 +227,7 @@ export function CafSignatureCapture({
   fullTerms = false,
   inlineSignaturePad = false,
   documentLabelOptions,
+  documentMandatoryLabels,
   maxAdditionalDocuments,
   documentRequirements,
   journeyDocuments,
@@ -707,7 +710,7 @@ export function CafSignatureCapture({
               // The same pattern as the Customer Representative page's Authorization / Supporting Documents: each type is its own container, uploaded one at a time.
               separateUploads
               // The mandatory ones (configured in document-types.json) carry * and hold Continue; the others are marked (Optional).
-              mandatoryLabels={mandatoryDocumentLabels()}
+              mandatoryLabels={documentMandatoryLabels ?? mandatoryDocumentLabels()}
               maxDocuments={maxAdditionalDocuments}
               onPendingChange={setDocumentPending}
               requirements={documentRequirements}

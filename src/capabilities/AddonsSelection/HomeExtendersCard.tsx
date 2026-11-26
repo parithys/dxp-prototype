@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
-import { Badge, Button, INSTALLATION_WIFI, Icon, OptionToggle } from 'dxp-ui';
+import { INSTALLATION_WIFI, Icon, OptionToggle } from 'dxp-ui';
+import { CARD_SELECTED, SelectedTick } from '../../components/primitives/offerCardParts';
+import { freePeriodLabel } from '../../engines/addonCategories';
 import { extenderCharge, type ExtenderTerms, type HomeExtendersSelection } from '../../engines/homeExtenders';
 import { formatAmount } from '../../lib/format';
 import { SerialCaptureField } from './SerialCaptureField';
@@ -12,9 +14,6 @@ import { scanMockSerial } from '../../data/reference/deviceScanMock';
 export function HomeExtendersCard({ terms, selection, onChange, serials = true }: { terms: ExtenderTerms; selection: HomeExtendersSelection | undefined; onChange: (next: HomeExtendersSelection | undefined) => void; serials?: boolean }) {
   const quantity = selection?.quantity ?? 0;
   const c = extenderCharge(selection ?? { quantity: 0, terms });
-  // Zero is the agent's own answer (kept), so the default below is not applied again after they take the Extenders off.
-  // The serial numbers follow the quantity: taking an Extender off drops the last one's.
-  const set = (q: number) => onChange({ quantity: q, billing: selection?.billing, terms, serials: selection?.serials?.slice(0, q) });
   const included = terms.freeAllowance;
   // The quantity starts at the Extenders the plan includes (all free); the agent changes it to what the customer asks for.
   useEffect(() => {
@@ -22,31 +21,28 @@ export function HomeExtendersCard({ terms, selection, onChange, serials = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection === undefined, included]);
   return (
-    <section aria-label="Wi-Fi Extenders" className="card card-static-highlight p-4 stack gap-3">
-      {/* Singled out at the top of the Mesh tab: what the plan includes, and the quantity the customer asks for. */}
-      <div className="row gap-4">
-        <span className="option-glyph glyph-chosen">
+    // The same look as a selected add-on card (its tick and wash): the plan's Extenders are on the order from the start, so it is selected by default and has nothing to toggle.
+    <section aria-label="Wi-Fi Extenders" className={`relative card-option ${CARD_SELECTED}`}>
+      <SelectedTick />
+      <div className="row option-row">
+        <span className="option-glyph option-glyph-lg glyph-chosen">
           <Icon path={INSTALLATION_WIFI} className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="title title-lg">Wi-Fi Extenders</h3>
-          <p className="text-secondary">{included > 0 ? `${included} ${included === 1 ? 'Extender' : 'Extenders'} included with your plan.` : 'No Extenders are included with your plan.'} Additional Extenders are chargeable.</p>
+          <p className="title title-md font-semibold leading-snug">{included > 0 ? `${included} Free Wi-Fi ${included === 1 ? 'Extender' : 'Extenders'}` : 'Wi-Fi Extenders'}</p>
+          <p className="caption-secondary">{included > 0 ? `${included} ${included === 1 ? 'Extender' : 'Extenders'} included with your plan.` : 'No Extenders are included with your plan.'}</p>
+          {/* The plan's Extenders stay free for as long as the service has the plan. */}
+          {included > 0 && <p className="mt-1 caption-muted">{freePeriodLabel({ lifetime: true })}</p>}
         </div>
-        {included > 0 && <Badge variant="success">{included} Included Free</Badge>}
-      </div>
-      <div className="row gap-3 divider-top pt-3">
-        <span className="title title-md flex-1">Quantity Requested</span>
-        <Button variant="secondary" size="icon" aria-label="Fewer Extenders" className="btn-icon-bordered text-fg size-9" disabled={quantity <= 0} onClick={() => set(quantity - 1)}>
-          <span aria-hidden="true" className="title title-xl">−</span>
-        </Button>
-        <span aria-live="polite" className="title title-xl min-w-8 text-center">{quantity}</span>
-        <Button variant="secondary" size="icon" aria-label="More Extenders" className="btn-icon-bordered text-fg size-9" onClick={() => set(quantity + 1)}>
-          <span aria-hidden="true" className="title title-xl">+</span>
-        </Button>
+        {included > 0 && (
+          <div className="aside-value">
+            <p className="title title-xl">Free</p>
+          </div>
+        )}
       </div>
       {/* Each Mesh extender's serial number, scanned or entered (Instant Activation: the field engineer scans them otherwise). */}
       {serials && quantity > 0 && (
-        <div className="divider-top pt-3 fields-2">
+        <div className="divider-top option-row-aside fields-2">
           {Array.from({ length: quantity }, (_, i) => (
             <SerialCaptureField
               key={i}
@@ -63,33 +59,6 @@ export function HomeExtendersCard({ terms, selection, onChange, serials = true }
             />
           ))}
         </div>
-      )}
-      {quantity > 0 && (
-        <dl className="stack rows-rule">
-          {c.free > 0 && (
-            <div className="split-nowrap gap-2">
-              <dt className="text-fg">
-                {c.free} {c.free === 1 ? 'Extender' : 'Extenders'}
-              </dt>
-              <dd>
-                <Badge variant="success">Free</Badge>
-              </dd>
-            </div>
-          )}
-          {c.chargeable > 0 && (
-            <div className="split-nowrap gap-2">
-              <dt className="text-fg">
-                {c.chargeable} additional {c.chargeable === 1 ? 'Extender' : 'Extenders'} (Chargeable)
-              </dt>
-              <dd className="row gap-2">
-                <span className="font-semibold">
-                  QAR {formatAmount(c.totalQAR)}
-                  {c.billing === 'monthly' ? ' /mo' : ' one-time'}
-                </span>
-              </dd>
-            </div>
-          )}
-        </dl>
       )}
       {c.chargeable > 0 && terms.oneTimeQAR !== undefined && (
         <div className="stack gap-1">

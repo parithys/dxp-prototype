@@ -25,7 +25,15 @@ export function resumePosition(savedStep: number): { currentStep: number; maxSte
   return { currentStep: 0, maxStepReached: Math.max(savedStep, 0) };
 }
 
-export function useJourneyStartResume(wizardId: string, steps: WizardStep[]) {
+/**
+ * The navigations whose start (or resume) has been applied to the draft. The start is applied in an effect, AFTER the first render, so until then the journey would draw the draft it
+ * found - the first page, or the page a previous run stopped on - for a moment before jumping to the page the entry point named. `useJourneyStartResume` therefore tells the journey it is
+ * still starting (true), and the journey draws nothing until the draft is ready.
+ */
+const startsApplied = new Set<string>();
+
+/** Returns whether a start / resume is still to be applied: the journey must not draw a page yet. */
+export function useJourneyStartResume(wizardId: string, steps: WizardStep[]): boolean {
   const clearDraft = useAction(workflowActions.clearDraft);
   const hydrateDraft = useAction(workflowActions.hydrateDraft);
   const patchDraft = useAction(workflowActions.patchDraft);
@@ -53,11 +61,14 @@ export function useJourneyStartResume(wizardId: string, steps: WizardStep[]) {
   const location = useLocation();
   const navigate = useNavigate();
   const freshenedFor = useRef<string | null>(null);
+  const entry = location.state as { startFresh?: boolean; resumeOrderId?: string; startValues?: Record<string, unknown>; startProgressTo?: number } | null;
+  const starting = Boolean(entry?.startFresh || entry?.resumeOrderId) && !startsApplied.has(location.key);
   useEffect(() => {
     const nav = location.state as { startFresh?: boolean; resumeOrderId?: string; startValues?: Record<string, unknown>; startProgressTo?: number } | null;
     if (!nav?.startFresh && !nav?.resumeOrderId) return;
     if (freshenedFor.current === location.key) return;
     freshenedFor.current = location.key;
+    const key = location.key;
 
     const consume = () => navigate(location.pathname + location.search, { replace: true, state: null });
 
@@ -85,6 +96,7 @@ export function useJourneyStartResume(wizardId: string, steps: WizardStep[]) {
           const position = resumePosition(stepIndex);
           // The draft's own task, so the journey keeps the Task ID the agent was given when it was saved.
           const task = (await listEntities<{ taskId: string; relatedOrderId?: string }>('tasks')).find((t) => t.relatedOrderId === order.orderId);
+          startsApplied.add(key);
           hydrateDraft(wizardId, {
             currentStep: position.currentStep,
             maxStepReached: position.maxStepReached,
@@ -95,10 +107,16 @@ export function useJourneyStartResume(wizardId: string, steps: WizardStep[]) {
             ...(task ? { resumeTaskId: task.taskId } : {}),
           });
         })
-        .finally(consume);
+        .finally(() => {
+          // Nothing to hydrate (the order is gone): the journey opens as it was.
+          startsApplied.add(key);
+          consume();
+        });
       return;
     }
 
+    // Marked before the draft is written, so the one render those writes cause already draws the started journey.
+    startsApplied.add(key);
     clearDraft(wizardId);
     // Opened for a customer (Customer 360 / Customer Search "Acting for ..."): the draft remembers who, because the router state is
     // consumed below. Capabilities that identify the customer (scan, eligibility) read it from the draft, so every journey gets it.
@@ -120,4 +138,5 @@ export function useJourneyStartResume(wizardId: string, steps: WizardStep[]) {
     steps,
     wizardId,
   ]);
+  return starting;
 }

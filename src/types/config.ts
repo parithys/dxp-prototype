@@ -216,6 +216,8 @@ export interface DocumentTypeConfig {
   mandatory?: boolean;
   /** Where the type sits (1 first) in the CAF page's Additional Documents. When any type has one, Additional Documents offers only those types, in this order; each is mandatory or optional by `mandatory`. */
   additionalDocumentsOrder?: number;
+  /** Products whose orders do not offer or require this type in Additional Documents (a New Home / Fixed Line order carries only the documents its own scenario asks for). */
+  notInProducts?: string[];
   reason?: string;
   /** Where the rule comes from; "assumed" ones await business confirmation. */
   basis?: string;

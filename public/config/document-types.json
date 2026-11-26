@@ -60,7 +60,10 @@
       },
       "basis": "Document type named by the business (2026-10-27); applicability not yet specified - assumed, to be confirmed.",
       "scanner": "ocr",
-      "additionalDocumentsOrder": 2
+      "additionalDocumentsOrder": 2,
+      "notInProducts": [
+        "fixed-line"
+      ]
     },
     {
       "id": "caf",
@@ -142,7 +145,10 @@
       ],
       "reason": "Supports the Waive Off of the Star number charge; the order is approved against it.",
       "basis": "From the journey's own rules.",
-      "additionalDocumentsOrder": 3
+      "additionalDocumentsOrder": 3,
+      "notInProducts": [
+        "fixed-line"
+      ]
     },
     {
       "id": "upfront-payment-receipt",
@@ -155,7 +161,10 @@
       "basis": "Document type named by the business (2026-10-27); applicability not yet specified - assumed, to be confirmed.",
       "scanner": "flatbed",
       "mandatory": true,
-      "additionalDocumentsOrder": 1
+      "additionalDocumentsOrder": 1,
+      "notInProducts": [
+        "fixed-line"
+      ]
     },
     {
       "id": "authorized-persons-qid",

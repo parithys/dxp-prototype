@@ -5,7 +5,7 @@ import { CARD_IDLE, CARD_SELECTED, SelectedTick, SelectedCardTexture } from '../
 import { ADDON_FOCUS_EVENT, addonCardId } from '../../lib/addonFocus';
 import { MULTI_SIM_MAX, multiSimCountOf, multiSimsRequested } from '../../engines/multiSim';
 import { isAddonEligible, type AddonEligibilityContext, type AddonEligibilityRule } from '../../engines/addonEligibility';
-import { ADDON_CATEGORIES, FREQUENTLY_USED_TAB, isFrequentlyUsed, type FrequentlyUsedRule, isFreeAddon, addonCategoryOf, selectedPerCategory, type AddonPricingModel, type AddonBillingFrequency, type AddonBillingOption, type AddonTermOption, addonPriceDisplay, addonChargeType, addonWithBillingChoice, isAddonAvailable } from '../../engines/addonCategories';
+import { ADDON_CATEGORIES, FREQUENTLY_USED_TAB, isFrequentlyUsed, type FrequentlyUsedRule, isFreeAddon, addonCategoryOf, selectedPerCategory, type AddonPricingModel, type AddonBillingFrequency, type AddonBillingOption, type AddonTermOption, addonPriceDisplay, addonChargeType, addonWithBillingChoice, isAddonAvailable, defaultedFree, freePeriodLabel, type FreePeriod } from '../../engines/addonCategories';
 import { appliedDiscountFor, discountedAddon, type AddonDiscount, type AppliedAddonDiscounts } from '../../engines/addonDiscounts';
 import { formatAmount } from '../../lib/format';
 import { listEntities } from '../../services/entityOps';
@@ -22,6 +22,10 @@ export interface AddonProduct {
   /** The add-on's category on the Add-ons page (see addonCategories.ts). */
   /** The add-on's category on the Add-ons page (see addonCategories.ts). */
   addonCategory?: string;
+  /** Of several free alternatives in an exclusive group, the one that is on the order by default. */
+  defaultSelected?: boolean;
+  /** How long a free add-on is free for: the lifetime of the service, or a limited period. */
+  freeFor?: FreePeriod;
   /** The Multi-SIMs this add-on provides, as stated on its record (see engines/multiSim.ts). */
   /** The Multi-SIMs this add-on provides, as stated on its record (see engines/multiSim.ts). */
   multiSimCount?: number;
@@ -59,11 +63,25 @@ export interface AddonProduct {
   extender?: boolean;
 }
 
+/** Each home add-on category's own tag colour on Frequently Used, so a product is told apart by its category at a glance. A category with no entry keeps the neutral tag. */
+const CATEGORY_TAG: Record<string, string> = {
+  IPTV: 'badge-tag-violet',
+  Mesh: 'badge-tag-blue',
+  'Speed Booster': 'badge-tag-amber',
+  Voice: 'badge-tag-green',
+};
+
 /** What a page puts around one tab's add-on lists: before them, after them, or in place of them (the home IPTV tab: its enable switch, its set-top box questions). */
 export interface AddonTabSlot {
   before?: ReactNode;
   after?: ReactNode;
   hideList?: boolean;
+  /** Content shown inside a selected add-on's own card, under its row (the home IPTV bundle's set-top box choices). */
+  cardExtra?: (addon: AddonProduct) => ReactNode;
+  /** The one-time charge (QAR) a selected add-on's own choices add - the set-top boxes of an IPTV bundle: shown on its card beside (or in place of "Free" for) its own price. */
+  /** Content shown first in the Free column (the Mesh tab's Wi-Fi Extenders: free units included with the plan); counted in the column's number. */
+  freeFirst?: ReactNode;
+  cardCharge?: (addon: AddonProduct) => number | undefined;
   /** Add-ons the page shows its own way, left out of the list. */
   hide?: (addon: AddonProduct) => boolean;
 }
@@ -122,6 +140,8 @@ interface AddonsPickerProps {
   categorized?: boolean;
   /** Opt-in own category tabs (the home Add-ons page: IPTV, Mesh, Speed Booster, Voice) in place of the postpaid ones; an add-on sits under the tab its record's `addonCategory` names, and Paid / Free read plainly. Frequently Used is always last. */
   homeTabs?: readonly string[];
+  /** With homeTabs: categories that do not apply to this plan - their add-ons are not listed anywhere (not under their tab, not under Frequently Used) and the tab is left out of homeTabs by the caller. */
+  hiddenCategories?: readonly string[];
   /** With homeTabs: what the page adds around a tab's lists. */
   tabSlot?: (tab: string, addons: AddonProduct[]) => AddonTabSlot | undefined;
   /** The add-on discounts the agent has applied (add-on product id -> discount id): an add-on shows its discounted charge and the discount. Omitted: no add-on discounts on this page. */
@@ -136,7 +156,7 @@ interface AddonsPickerProps {
   /** With homeTabs: items a tab holds that are not cards in it (the Wi-Fi Extenders' units on Mesh, set by quantity), added to that tab's count. */
   tabExtraCounts?: Record<string, number>;
   /** With homeTabs: the plan's free add-ons are selected for the agent once per plan (`doneFor` is the plan already done; `onDone` records it), and stay the agent's to deselect. */
-  freeByDefault?: { doneFor: string | undefined; onDone: (planId: string) => void };
+  freeByDefault?: { doneFor: string | undefined; onDone: (planId: string) => void; /** The plan includes IPTV (Triple Play): its free IPTV add-ons are defaulted too. Otherwise IPTV is switched on first, so none is. */ iptvIncluded?: boolean };
 }
 
 // "Plan & Add-ons" (reference flow step 5) - optional, non-gating multi-select
@@ -151,7 +171,7 @@ export interface AddonStatus {
   lines?: string[];
 }
 
-export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, selectedTerms = {}, onTermChange, onBillingChange, hideHeader, eligibilityContext, emptyMessage, layout = 'cards', mandatoryProducts = false, source = 'catalogue', categorized = false, homeTabs, tabSlot, appliedDiscounts, addonStatus, onOpenMultiSim, multiSimWanted, tabExtraCounts, freeByDefault }: AddonsPickerProps) {
+export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, selectedTerms = {}, onTermChange, onBillingChange, hideHeader, eligibilityContext, emptyMessage, layout = 'cards', mandatoryProducts = false, source = 'catalogue', categorized = false, homeTabs, hiddenCategories, tabSlot, appliedDiscounts, addonStatus, onOpenMultiSim, multiSimWanted, tabExtraCounts, freeByDefault }: AddonsPickerProps) {
   const [discountRecords, setDiscountRecords] = useState<AddonDiscount[]>([]);
   const wantsDiscounts = appliedDiscounts !== undefined;
   useEffect(() => {
@@ -169,7 +189,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
   // Eligibility is evaluated BEFORE anything renders: an add-on the customer is not
   // eligible for is not in the list at all, so it can be neither seen nor selected.
   const eligibleAddons = eligibilityContext ? allAddons.filter((a) => isAddonEligible(a, eligibilityContext)) : allAddons;
-  const addons = eligibleAddons.filter(isAddonAvailable);
+  const addons = eligibleAddons.filter(isAddonAvailable).filter((a) => !a.addonCategory || !hiddenCategories?.includes(a.addonCategory));
   const firstFilledCategory = (homeTabs ?? ADDON_CATEGORIES).find((c) => addons.some((a) => categoryOf(a) === c));
   useEffect(() => {
     if (!categorized || categoryPicked.current || !firstFilledCategory) return;
@@ -188,11 +208,11 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
     let cancelled = false;
     const load: Promise<AddonProduct[]> =
       source === 'prepaid' || source === 'plan'
-        ? listEntities<{ addonDiscountId: string; name: string; addonType: string; price: number; category: string; description?: string; planId?: string; isMandatory?: boolean; addonCategory?: string; frequentlyUsedFor?: FrequentlyUsedRule; exclusiveGroup?: string; stb?: IptvStbTerms; extraStbPriceQAR?: number; lockInMonths?: number; billingOptions?: AddonBillingOption[]; termOptions?: AddonTermOption[]; extender?: boolean }>('addons-discounts')
+        ? listEntities<{ addonDiscountId: string; name: string; addonType: string; price: number; category: string; description?: string; planId?: string; isMandatory?: boolean; addonCategory?: string; frequentlyUsedFor?: FrequentlyUsedRule; exclusiveGroup?: string; defaultSelected?: boolean; freeFor?: FreePeriod; stb?: IptvStbTerms; extraStbPriceQAR?: number; lockInMonths?: number; billingOptions?: AddonBillingOption[]; termOptions?: AddonTermOption[]; extender?: boolean }>('addons-discounts')
             .then((all) =>
               all
                 .filter((d) => d.category === 'Paid Add-on' && d.planId === eligibilityContext?.planId)
-                .map((d) => ({ productId: d.addonDiscountId, name: d.name, type: d.addonType, mrcQAR: d.price, description: d.description, addonCategory: d.addonCategory, mandatory: mandatoryProducts && d.isMandatory === true, ...(homeTabs ? { frequentlyUsedFor: d.frequentlyUsedFor, exclusiveGroup: d.exclusiveGroup, stb: d.stb, extraStbPriceQAR: d.extraStbPriceQAR, lockInMonths: d.lockInMonths, billingOptions: d.billingOptions, termOptions: d.termOptions, extender: d.extender } : {}) }))
+                .map((d) => ({ productId: d.addonDiscountId, name: d.name, type: d.addonType, mrcQAR: d.price, description: d.description, addonCategory: d.addonCategory, mandatory: mandatoryProducts && d.isMandatory === true, ...(homeTabs ? { frequentlyUsedFor: d.frequentlyUsedFor, exclusiveGroup: d.exclusiveGroup, defaultSelected: d.defaultSelected, freeFor: d.freeFor, stb: d.stb, extraStbPriceQAR: d.extraStbPriceQAR, lockInMonths: d.lockInMonths, billingOptions: d.billingOptions, termOptions: d.termOptions, extender: d.extender } : {}) }))
             )
         : listEntities<AddonProduct>('products').then((all) => all.filter((p) => p.type === 'Add-on'));
     load
@@ -208,12 +228,14 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attempt, source, mandatoryProducts, eligibilityContext?.planId]);
 
-  // The plan's free add-ons are on the order from the start (once per plan, so one the agent takes off stays off). An add-on that is one of several alternatives (an exclusive group - the IPTV bundles) is
-  // the agent's choice, not defaulted; nor is IPTV, which is switched on first.
+  // The plan's free add-ons are on the order from the start (once per plan, so one the agent takes off stays off): all of them, but IPTV unless the plan includes it (otherwise it is switched on first),
+  // and one only of an exclusive group's alternatives (the IPTV bundles).
   const planKey = eligibilityContext?.planId;
   useEffect(() => {
     if (!freeByDefault || !homeTabs || status !== 'ready' || !planKey || freeByDefault.doneFor === planKey) return;
-    const free = addons.filter((a) => isFreeAddon(a) && !a.exclusiveGroup && a.addonCategory !== 'IPTV' && !selectedIds.includes(a.productId)).map((a) => a.productId);
+    // One of an exclusive group's alternatives at most; and none when the agent already holds one of that group.
+    const heldGroups = new Set(addons.filter((a) => a.exclusiveGroup && selectedIds.includes(a.productId)).map((a) => a.exclusiveGroup));
+    const free = defaultedFree(addons.filter((a) => isFreeAddon(a) && !selectedIds.includes(a.productId) && !(a.exclusiveGroup && heldGroups.has(a.exclusiveGroup))), freeByDefault.iptvIncluded === true).map((a) => a.productId);
     if (free.length > 0) onChange([...selectedIds, ...free]);
     freeByDefault.onDone(planKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -289,17 +311,24 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
   const matchesSearch = (a: AddonProduct) =>
     !q || [a.name, a.description, addonPriceDisplay(a)?.primary, addonPriceDisplay(a)?.secondary, a.priceLabel, String(a.mrcQAR)].some((t) => t?.toLowerCase().includes(q));
   // Frequently Used: the add-ons whose record says they suit this customer's plan and nationality. The tab is always there; with no match it says so.
-  const frequent = eligibilityContext ? addons.filter((a) => isFrequentlyUsed(a, eligibilityContext)) : [];
-  const tabs: string[] = [...(homeTabs ?? ADDON_CATEGORIES), FREQUENTLY_USED_TAB];
+  // On the home page the tab holds paid add-ons only (a free one is the plan's own and is under its category); elsewhere it is as it was.
+  const frequent = eligibilityContext ? addons.filter((a) => isFrequentlyUsed(a, eligibilityContext) && !(homeTabs && isFreeAddon(a))) : [];
+  // The home page lists only the categories the plan has add-ons in (a Mesh tab for a plan with no Mesh add-on would be an empty promise); Frequently Used is always there.
+  const tabs: string[] = [...(homeTabs ? homeTabs.filter((c) => addons.some((a) => categoryOf(a) === c)) : ADDON_CATEGORIES), FREQUENTLY_USED_TAB];
   const activeTab: string = category;
   const slot = homeTabs && tabSlot ? tabSlot(activeTab, addons) : undefined;
   const inTab = (pricing: 'free' | 'paid') =>
     activeTab === FREQUENTLY_USED_TAB
       ? frequent.filter((a) => isFreeAddon(a) === (pricing === 'free'))
       : addons.filter((a) => categoryOf(a) === activeTab && isFreeAddon(a) === (pricing === 'free'));
+  // The Free column's own first item stays unless a search for something else hides it.
+  const freeFirst = slot?.freeFirst && (!q || /extender|wi-?fi|mesh/.test(q)) ? slot.freeFirst : undefined;
   const shownHere = (a: AddonProduct) => !slot?.hide?.(a);
   const paid = useTabs ? inTab('paid').filter(matchesSearch).filter(shownHere) : [];
-  const free = useTabs ? inTab('free').filter(matchesSearch).filter(shownHere) : [];
+  // Frequently Used is an aggregated view of the paid add-ons that suit the plan: a free add-on is the plan's own (on the order from the start) and is found under its category.
+  // Only the home Add-ons page (homeTabs) has this view: the postpaid and prepaid pages keep their Frequently Used tab as it was.
+  const aggregated = Boolean(homeTabs) && activeTab === FREQUENTLY_USED_TAB;
+  const free = useTabs && !aggregated ? inTab('free').filter(matchesSearch).filter(shownHere) : [];
   const shown = useTabs ? [...paid, ...free] : addons;
   const perCategory: Record<string, number> = homeTabs
     ? Object.fromEntries(homeTabs.map((c) => [c, addons.filter((a) => categoryOf(a) === c && selectedIds.includes(a.productId)).length + (tabExtraCounts?.[c] ?? 0)]))
@@ -337,6 +366,10 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
     const options = onBillingChange ? (a.billingOptions ?? []) : [];
     const billing = selectedBilling[a.productId] ?? a.billingFrequency ?? options[0]?.frequency;
     const blocked = multiSimBlocked(a);
+    // Content the page puts inside the selected card (a bundle's set-top box choices).
+    const extra = selected ? slot?.cardExtra?.(a) : undefined;
+    const oneTime = selected ? slot?.cardCharge?.(a) ?? 0 : 0;
+    const ownControls = options.length > 1 || Boolean(extra);
     // The add-on as charged after its applied discount (the price, and the choice of billing frequency, are shown on it).
     const discount = appliedDiscountFor(discountRecords, appliedDiscounts, a);
     const priced = discountedAddon(a, discount);
@@ -349,32 +382,53 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
               <div
                 key={a.productId}
                 id={addonCardId(a.productId)}
-                role={options.length > 1 ? undefined : 'button'}
-                tabIndex={options.length > 1 ? undefined : 0}
-                aria-pressed={options.length > 1 ? undefined : selected}
+                role={ownControls ? undefined : 'button'}
+                tabIndex={ownControls ? undefined : 0}
+                aria-pressed={ownControls ? undefined : selected}
                 aria-disabled={blocked || a.mandatory || undefined}
-                onClick={options.length > 1 ? undefined : () => press(a)}
+                onClick={ownControls ? undefined : () => press(a)}
                 onKeyDown={(e) => {
-                  if (options.length <= 1 && e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                  if (!ownControls && e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
                     e.preventDefault();
                     press(a);
                   }
                 }}
-                className={`relative card-option ${blocked ? 'cursor-not-allowed opacity-60' : a.mandatory ? 'cursor-default' : options.length > 1 ? '' : 'cursor-pointer'} ${
+                className={`relative card-option ${blocked ? 'cursor-not-allowed opacity-60' : a.mandatory ? 'cursor-default' : ownControls && !extra ? '' : 'cursor-pointer'} ${
                   selected ? CARD_SELECTED : CARD_IDLE
                 }`}
               >
                 {selected && <SelectedTick />}
-                <div className="row option-row">
+                {/* With its own controls inside (the IPTV bundle's set-top box choices) the card is not one button: its row is, so the choices are not nested in it. */}
+                <div
+                  className="row option-row"
+                  {...(extra
+                    ? {
+                        role: 'button',
+                        tabIndex: 0,
+                        'aria-pressed': selected,
+                        onClick: () => press(a),
+                        onKeyDown: (e: React.KeyboardEvent) => {
+                          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                            e.preventDefault();
+                            press(a);
+                          }
+                        },
+                      }
+                    : {})}
+                >
                 <span className={`option-glyph option-glyph-lg ${selected ? 'glyph-chosen' : ''}`}>
                   <Icon path={DATA_ICON} className="size-5 " />
                 </span>
                 <div className="min-w-0 flex-1">
+                  {/* Frequently Used gathers add-ons of every category: each says which one it is in, so similar products are not mistaken for each other. */}
+                  {aggregated && a.addonCategory && <span className={`badge ${CATEGORY_TAG[a.addonCategory] ?? 'badge-filled-neutral'} mb-1`}>{a.addonCategory}</span>}
                   {/* The Add-ons page names an add-on by what it gives ("2.5 GB full-speed data"); elsewhere the name leads and the description follows. */}
                   <p className="title title-md font-semibold leading-snug">{namedByContent ? a.description ?? a.name : a.name}</p>
                   {!namedByContent && a.description && <p className="caption-secondary">{a.description}</p>}
-                  {addonChargeType(a, source === 'prepaid' ? 'prepaid' : 'catalogue', billing) && <p className="mt-1 caption-muted">{addonChargeType(a, source === 'prepaid' ? 'prepaid' : 'catalogue', billing)}</p>}
-                  {homeTabs && a.lockInMonths !== undefined && addonWithBillingChoice(a, billing).billingFrequency !== 'one-time' && <p className="caption-muted">{a.lockInMonths > 0 ? `${a.lockInMonths}-month lock-in` : 'No lock-in'}</p>}
+                  {!(homeTabs && isFreeAddon(a)) && addonChargeType(a, source === 'prepaid' ? 'prepaid' : 'catalogue', billing) && <p className="mt-1 caption-muted">{addonChargeType(a, source === 'prepaid' ? 'prepaid' : 'catalogue', billing)}</p>}
+                  {/* A free add-on says how long it is free for: its lifetime, or a limited period. */}
+                  {homeTabs && isFreeAddon(a) && freePeriodLabel(a.freeFor) && <p className="mt-1 caption-muted">{freePeriodLabel(a.freeFor)}</p>}
+                  {homeTabs && !isFreeAddon(a) && a.addonCategory !== 'Voice' && a.lockInMonths !== undefined && addonWithBillingChoice(a, billing).billingFrequency !== 'one-time' && <p className="caption-muted">{a.lockInMonths > 0 ? `${a.lockInMonths}-month lock-in` : 'No lock-in'}</p>}
                   {selected && addonStatus?.[a.productId] && (
                     <div className="mt-2 stack gap-1 items-start">
                       {/* Complete: just each SIM's line. Not yet: what is still needed, then the SIMs already in. */}
@@ -393,10 +447,19 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
                     <>
                       <p className="title title-xl leading-none whitespace-nowrap">{addonPriceDisplay(priced, billing)!.primary}</p>
                       {addonPriceDisplay(priced, billing)!.secondary && <p className="mt-2 caption-note">{addonPriceDisplay(priced, billing)!.secondary}</p>}
+                      {oneTime > 0 && <p className="mt-2 caption-note">+ QAR {formatAmount(oneTime)} one-time</p>}
                       {discount && <p className="mt-2 caption-note text-[var(--success)]">{discount.name}: {discount.percent}% off</p>}
                     </>
                   ) : a.pricing === 'free' || (!a.pricing && a.mrcQAR === 0) ? (
-                    <p className="title title-xl">Free</p>
+                    // Free by itself; once its set-top box choice carries a charge, that is what is payable.
+                    oneTime > 0 ? (
+                      <>
+                        <p className="title title-xl leading-none whitespace-nowrap">QAR {formatAmount(oneTime)}</p>
+                        <p className="mt-2 caption-note">one-time</p>
+                      </>
+                    ) : (
+                      <p className="title title-xl">Free</p>
+                    )
                   ) : a.priceLabel && /QR\s*\d/.test(a.priceLabel) ? (
                     // Only wording that states a QAR amount ("QR 50 per additional SIM") is shown; open prices (TBC, Plan-based, Plan-dependent) are not displayed.
                     <p className="title title-sm max-w-48">{a.priceLabel}</p>
@@ -411,7 +474,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
                 </div>
                 {options.length > 1 && homeTabs && listed.termOptions && (
                   // Home Speed Booster: Lifetime (the ongoing monthly charge), or a fixed term chosen from the list (charged once).
-                  <div className="divider-top p-3 row gap-3">
+                  <div className="divider-top option-row-aside row gap-3">
                     <OptionToggle
                       label={`Billing for ${a.name}`}
                       items={[{ key: 'monthly', label: `Lifetime · QAR ${formatAmount(options.find((o) => o.frequency === 'monthly')?.priceQAR ?? a.mrcQAR)}` }]}
@@ -450,6 +513,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
                     />
                   </div>
                 )}
+                {extra && <div onClick={(e) => e.stopPropagation()}>{extra}</div>}
               </div>
     );
   };
@@ -502,7 +566,7 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
       {/* Add-on cards share the plan cards' standard (shared idle / selected states, selected texture, tick).
           Multi-select: each card toggles only itself, so choosing one never clears another. */}
       {useTabs && slot?.hideList ? null : useTabs ? (
-        paid.length === 0 && free.length === 0 ? (
+        paid.length === 0 && free.length === 0 && !freeFirst ? (
           <EmptyState
             icon={LAYERS_ICON}
             title={q ? `No ${activeTab.toLocaleLowerCase()} add-ons match your search` : activeTab === FREQUENTLY_USED_TAB ? 'No frequently used add-ons for this customer' : `No ${activeTab.toLocaleLowerCase()} add-ons available`}
@@ -523,16 +587,17 @@ export function AddonsPicker({ selectedIds, onChange, selectedBilling = {}, sele
             className="min-h-80 border-y border-border-soft"
           />
         ) : (
-        <div className="fields gap-6 md:grid-cols-2">
-          {([[homeTabs ? 'Paid' : 'Paid Addons', paid, 'paid'], [homeTabs ? 'Free' : 'Free Addons', free, 'free']] as const).map(([title, list, kind]) => (
+        <div className={aggregated ? 'stack' : 'fields gap-6 md:grid-cols-2'}>
+          {([[homeTabs ? 'Paid' : 'Paid Addons', paid, 'paid'], [homeTabs ? 'Free' : 'Free Addons', free, 'free']] as const).filter(([, , kind]) => kind === 'paid' || !aggregated).map(([title, list, kind]) => (
             <section key={kind} aria-label={title} className="space-y-4 min-w-0">
-              <div className={`row gap-2 label-caps font-semibold ${kind === 'free' ? 'text-[var(--success)]' : 'text-fg-2'}`}>
+              {!aggregated && (<div className={`row gap-2 label-caps font-semibold ${kind === 'free' ? 'text-[var(--success)]' : 'text-fg-2'}`}>
                 <h4>{title}</h4>
                 <span className={`count-pill ${kind === 'free' ? 'bg-tone-success text-[var(--success)]' : 'bg-surface text-fg-2'}`}>
-                  {list.length}
+                  {list.length + (kind === 'free' && freeFirst ? 1 : 0)}
                 </span>
-              </div>
-              {list.length === 0 ? <EmptyState compact message={q ? `No ${kind} add-ons in ${activeTab} match that search.` : `No ${kind} add-ons in ${activeTab}.`} /> : <div className="stack gap-4">{list.map((a) => rowCard(a))}</div>}
+              </div>)}
+              {kind === 'free' && freeFirst}
+              {list.length === 0 ? (kind === 'free' && freeFirst ? null : <EmptyState compact message={q ? `No ${kind} add-ons in ${activeTab} match that search.` : `No ${kind} add-ons in ${activeTab}.`} />) : <div className={aggregated ? 'fields-sm md:grid-cols-2' : 'stack gap-4'}>{list.map((a) => rowCard(a))}</div>}
             </section>
           ))}
         </div>

@@ -136,7 +136,7 @@ export function AdditionalDocumentsUpload({
   const noTypesToOffer = labelOptions !== undefined && labelOptions.every((o) => documents.some((d) => d.label === o));
 
   // The mandatory documents uploaded here are shown under Uploaded Documents only, until Continue saves them to the journey.
-  const mandatoryLabels = mandatoryDocumentLabels();
+  const mandatoryLabels = requiredTypes ?? mandatoryDocumentLabels();
   const pendingHere = documents.filter((d) => mandatoryLabels.includes(d.label));
   const uploadedFor = (requirementId: string) => documents.find((d) => d.requirementId === requirementId);
   const missing = requirements.filter((r) => !uploadedFor(r.id));
@@ -336,7 +336,7 @@ export function AdditionalDocumentsUpload({
             <div key={r.id} className="upload-section row px-3 py-3">
               <Icon path={DOC} className="icon-sm text-muted" />
               <span className="min-w-0 flex-1">
-                <span className="block title title-sm font-semibold">{r.label}</span>
+                <span className="block title title-sm font-semibold">{r.label}<span className="text-[var(--field-border-error)]" aria-hidden="true"> *</span></span>
                 <span className="block caption-muted">{r.reason}</span>
               </span>
               {/* Captured the way the device does it (scan on the web, camera on a tablet) or uploaded, straight under this requirement. */}

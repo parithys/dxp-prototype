@@ -34,15 +34,15 @@ test('the matrix: Fiber / FWA Indoor with Instant Activation scan in the journey
     ['Fiber, Instant Activation', order('fibre', 'RFS_UNLIMITED', 'instant'), { deviceScan: true, sim: false, appointment: false }],
     ['Fiber, Field Engineer', order('fibre', 'RFS_UNLIMITED', 'field'), { deviceScan: false, sim: false, appointment: true }],
     ['FWA Indoor, Instant Activation', order('fwa', 'FWA_INDOOR', 'instant'), { deviceScan: false, sim: true, appointment: false }],
-    ['FWA Indoor, Field Engineer', order('fwa', 'FWA_INDOOR', 'field'), { deviceScan: false, sim: false, appointment: true }],
-    ['FWA Outdoor, Field Engineer', order('fwa', 'FWA_OUTDOOR', 'field'), { deviceScan: false, sim: false, appointment: true }],
-    ['FWA Outdoor, Instant Activation asked for: never offered, so Field Engineer', order('fwa', 'FWA_OUTDOOR', 'instant'), { deviceScan: false, sim: false, appointment: true }],
+    ['FWA Indoor, Field Engineer', order('fwa', 'FWA_INDOOR', 'field'), { deviceScan: false, sim: true, appointment: true }],
+    ['FWA Outdoor, Field Engineer', order('fwa', 'FWA_OUTDOOR', 'field'), { deviceScan: false, sim: true, appointment: true }],
+    ['FWA Outdoor, Instant Activation asked for: never offered, so Field Engineer', order('fwa', 'FWA_OUTDOOR', 'instant'), { deviceScan: false, sim: true, appointment: true }],
     ['no activation mode recorded (another entry point): Field Engineer', (({ activationMode: _m, ...v }) => v)(order('fibre', 'RFS_UNLIMITED')), { deviceScan: false, sim: false, appointment: true }],
   ];
   for (const [name, values, want] of cases) {
     const keys = shown(values);
     assert.equal(keys.includes('deviceScan'), want.deviceScan, `${name}: Device Scanning`);
-    assert.equal(keys.includes('fwaSim'), want.sim, `${name}: Device & SIM Scanning`);
+    assert.equal(keys.includes('fwaSim'), want.sim, `${name}: SIM Selection`);
     assert.equal(keys.includes('appointment'), want.appointment, `${name}: Installation Appointment`);
   }
 });
@@ -81,8 +81,9 @@ test('what is scanned follows what is ordered: the ONT or CPE and a box per STB 
   assert.deepEqual(keys(order('fwa', 'FWA_INDOOR', 'instant')), ['cpe']);
   assert.deepEqual(keys(order('fwa', 'FWA_INDOOR', 'instant', { iptv, extenders })), ['cpe', 'stb-0', 'stb-1', 'stb-2'], 'the two Mesh extenders are not rows here');
   assert.deepEqual(keys(order('fibre', 'RFS_UNLIMITED', 'instant', { iptv: { ...iptv, stb: 'none' } })), ['ont'], 'No STB: no box to scan');
-  assert.deepEqual(keys(order('fwa', 'FWA_INDOOR', 'field', { iptv, extenders })), [], 'Field Engineer: nothing in the journey');
-  assert.deepEqual(keys(order('fwa', 'FWA_OUTDOOR', 'instant', { iptv, extenders })), []);
+  assert.deepEqual(keys(order('fwa', 'FWA_INDOOR', 'field', { iptv, extenders })), ['cpe'], 'Field Engineer FWA: only the CPE serial, captured on its own page');
+  assert.deepEqual(keys(order('fwa', 'FWA_OUTDOOR', 'instant', { iptv, extenders })), ['cpe']);
+  assert.deepEqual(keys(order('fibre', 'RFS_UNLIMITED', 'field', { iptv, extenders })), [], 'Fiber, Field Engineer: nothing in the journey');
 });
 
 test('the step is complete once every needed device is validated into the cart; an invalid one, or a box whose serial changed on Add-ons, is not', () => {
@@ -205,12 +206,12 @@ test('the plan\'s free add-ons are put on the order even when the Add-ons page i
   const rows = JSON.parse(fs.readFileSync('public/mock-data/addons-discounts.json', 'utf8'));
   const free = rows.filter((d) => d.category === 'Paid Add-on' && d.planId && d.price === 0);
   assert.ok(free.length > 0, 'the catalogue has free add-ons');
-  const defaulted = free.filter((d) => !d.exclusiveGroup && d.addonCategory !== 'IPTV');
+  const defaulted = free.filter((d) => d.addonCategory !== 'IPTV');
   assert.ok(defaulted.some((d) => d.name === 'Speed Boost Trial'), 'Speed Boost Trial is defaulted');
-  assert.ok(defaulted.every((d) => d.price === 0 && !d.exclusiveGroup), 'only free, non-exclusive ones');
+  assert.ok(defaulted.every((d) => d.price === 0), 'only free ones');
   const src = fs.readFileSync('src/capabilities/AddonsSelection/HomeFreeAddonsApplier.tsx', 'utf8');
-  assert.match(src, /!d\.exclusiveGroup && d\.addonCategory !== 'IPTV'/);
-  assert.match(fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8'), /!a\.exclusiveGroup && a\.addonCategory !== 'IPTV'/, 'the page applies the same rule');
+  assert.match(src, /defaultedFree\(/);
+  assert.match(fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8'), /defaultedFree\(addons\.filter[\s\S]*freeByDefault\.iptvIncluded === true/, 'the page applies the same rule');
 });
 
 test('Service Feasibility is a step of its own before Recommended Offers, for a journey that began on Check RFS only; Back and Edit return to Check RFS (it is not passed over)', () => {
@@ -218,7 +219,9 @@ test('Service Feasibility is a step of its own before Recommended Offers, for a 
   return load('/src/modules/new-connection/connectionSteps.tsx').then((build) => {
     const home = build.buildConnectionSteps({ journey: 'home', products: [], customerBenefits: [], familyLines: [], familyOrders: [] });
     const keys = home.map((s) => s.key);
-    assert.ok(keys.indexOf('feasibility') === keys.indexOf('homeOffers') - 1, 'straight before Recommended Offers');
+    // Fiber - Instant Activation scans its ONT right after Service Feasibility (skipped for every other order), then Recommended Offers.
+    assert.ok(keys.indexOf('feasibility') === keys.indexOf('deviceScan') - 1 && keys.indexOf('deviceScan') === keys.indexOf('homeOffers') - 1, 'Feasibility, the device scan, then Recommended Offers');
+    assert.equal(keys.filter((k) => k === 'deviceScan').length, 1, 'the scan is not listed twice');
     const f = home.find((s) => s.key === 'feasibility');
     const fromRfs = order('fibre', 'RFS_UNLIMITED', 'instant', { rfsCheck: { service: 'fibre', status: 'RFS_UNLIMITED', buildingName: 'Al Waab Residence Tower', kid: 'KID-55830120-101' } });
     assert.equal(f.skip(fromRfs), false);
@@ -230,4 +233,26 @@ test('Service Feasibility is a step of its own before Recommended Offers, for a 
     const choice = fs.readFileSync('src/modules/new-connection/steps/productChoice.ts', 'utf8');
     assert.equal((choice.match(/\(isRepresentativeOrder\(values\) \? 1 : 0\) \+ 2/g) ?? []).length, 2, 'the journey opens at the offers, past the Service Feasibility step');
   });
+});
+
+test('the Order Summary of a home order reads back the customer, service, Fixed Line Number, activation and installation; a detail the order does not hold is left out', () => {
+  const full = {
+    contact: { idType: 'QID', idNumber: '29303051200106' },
+    installation: { serviceType: 'fiber' },
+    msisdn: '44030303',
+    address: { zone: '55', streetNo: '830', buildingNo: '12', aptFlatUnit: '101', area: 'Al Waab' },
+    rfsCheck: { buildingName: 'Al Waab Residence Tower', kid: 'KID-55830120-101', vfid: 'WAB-0012-A' },
+  };
+  const rows = Object.fromEntries(steps.homeOrderDetailRows(full).map((r) => [r.label, r.value]));
+  assert.equal(rows['Customer ID'], 'QID 29303051200106');
+  assert.equal(rows['Service Type'], 'Fiber');
+  assert.equal(rows['Fixed Line Number (FLN)'], '44030303');
+  assert.equal(rows['Activation Mode'], 'Field Engineer');
+  assert.equal(rows['Installation Address'], 'Unit 101, Building 12, Street 830, Zone 55, Al Waab');
+  assert.equal(rows.Building, 'Al Waab Residence Tower');
+  assert.equal(rows.KID, 'KID-55830120-101');
+  assert.equal(rows.VFID, 'WAB-0012-A');
+  // An order without them says nothing rather than "-".
+  assert.deepEqual(steps.homeOrderDetailRows({}), []);
+  assert.deepEqual(steps.homeOrderDetailRows({ msisdn: '44030303' }).map((r) => r.label), ['Fixed Line Number (FLN)']);
 });

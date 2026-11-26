@@ -1,7 +1,7 @@
 import { InstallationReadiness } from '../../fixed-line-fibre/fixedActivation/FixedStepViews';
 import { CARD_IDLE, CARD_SELECTED, SelectedTick, CrossSalesStep, journeyLabel } from '../../../capabilities';
 import type { CrossSalesValue, GuidedContactValue, Offer } from '../../../capabilities';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { NavigateFunction } from '../../../lib/router';
 
 import { notificationActions } from '../../../stores/notificationSlice';
@@ -89,7 +89,17 @@ export function ProductSelection({
   // quiet. The flag is cleared as it fires, so coming Back to this page later never skips it again.
   // An offer the agent selected (Select Offer) also goes on when its eligibility routes the order for approval: the routing is shown on this page
   // and the order is held when it is submitted, and there is no Continue here to go on with.
-  const advance = values.productPreselected === true && Boolean(product) && (values.advanceOnApproval === true ? productEligibilityClear(values, { requireHomeKind: homeJourney }) : clearAndQuiet(values, { requireHomeKind: homeJourney }));
+  // A New Home offer's plan is settled in the background (its credit check) while this page passes through: moving on before that is read would land on a page that is skipped a moment later (Offers & Plans, once the
+  // check passes), and the journey would then open on Add-ons - which are passed over - instead of the step after them.
+  // It never waits for good: an offer whose plan is not settled here (nothing to check) moves on after a moment, so Select Offer is never left doing nothing.
+  const waitsForOfferPlan = homeJourney && values.offerCarried === true && crossSales?.decision === 'accepted' && (!values.productId || values.creditCheckPass === undefined);
+  const [waitedForPlan, setWaitedForPlan] = useState(false);
+  useEffect(() => {
+    if (!waitsForOfferPlan) return;
+    const t = window.setTimeout(() => setWaitedForPlan(true), 2500);
+    return () => window.clearTimeout(t);
+  }, [waitsForOfferPlan]);
+  const advance = values.productPreselected === true && Boolean(product) && (!waitsForOfferPlan || waitedForPlan) && (values.advanceOnApproval === true ? productEligibilityClear(values, { requireHomeKind: homeJourney }) : clearAndQuiet(values, { requireHomeKind: homeJourney }));
   useEffect(() => {
     if (!advance || new URLSearchParams(window.location.search).get('mirror') === '1') return;
     // A Recommended Offer moves on at once, so the ID type's approval (judged now the journey is known) cannot be read on this page: the page it lands on says it.

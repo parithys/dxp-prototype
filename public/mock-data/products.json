@@ -88,7 +88,8 @@
     "fupGB": 1000,
     "lockInMonths": 12,
     "disconnectionFeeQAR": 800,
-    "freeExtenders": 4
+    "freeExtenders": 4,
+    "fwaType": "outdoor"
   },
   {
     "productId": "PROD-201",
@@ -1963,7 +1964,8 @@
     "disconnectionFeeQAR": 600,
     "offer": true,
     "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
-    "freeExtenders": 2
+    "freeExtenders": 2,
+    "fwaType": "indoor"
   },
   {
     "productId": "PROD-441",
@@ -1976,7 +1978,8 @@
     "disconnectionFeeQAR": 600,
     "offer": true,
     "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
-    "freeExtenders": 4
+    "freeExtenders": 4,
+    "fwaType": "indoor"
   },
   {
     "productId": "PROD-450",
@@ -1988,7 +1991,8 @@
     "lockInMonths": 12,
     "disconnectionFeeQAR": 600,
     "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
-    "freeExtenders": 2
+    "freeExtenders": 2,
+    "fwaType": "indoor"
   },
   {
     "productId": "PROD-451",
@@ -2000,7 +2004,8 @@
     "lockInMonths": 12,
     "disconnectionFeeQAR": 600,
     "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
-    "freeExtenders": 2
+    "freeExtenders": 2,
+    "fwaType": "indoor"
   },
   {
     "productId": "PROD-452",
@@ -2012,7 +2017,8 @@
     "lockInMonths": 12,
     "disconnectionFeeQAR": 600,
     "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
-    "freeExtenders": 2
+    "freeExtenders": 2,
+    "fwaType": "outdoor"
   },
   {
     "productId": "PROD-453",
@@ -2024,7 +2030,8 @@
     "lockInMonths": 24,
     "disconnectionFeeQAR": 800,
     "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
-    "freeExtenders": 2
+    "freeExtenders": 2,
+    "fwaType": "outdoor"
   },
   {
     "productId": "PROD-454",
@@ -2036,7 +2043,8 @@
     "lockInMonths": 24,
     "disconnectionFeeQAR": 800,
     "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
-    "freeExtenders": 4
+    "freeExtenders": 4,
+    "fwaType": "outdoor"
   },
   {
     "productId": "PROD-455",
@@ -2048,6 +2056,7 @@
     "lockInMonths": 24,
     "disconnectionFeeQAR": 800,
     "_note": "Demo catalogue entry (2026-11-22): sample home plan so the Offers & Plans page has a full catalogue to page through; not a record from the workbooks.",
-    "freeExtenders": 4
+    "freeExtenders": 4,
+    "fwaType": "outdoor"
   }
 ]

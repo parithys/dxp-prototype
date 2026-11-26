@@ -43,7 +43,7 @@ export function GuidedActivationWizard({
   const setFieldValue = useAction(workflowActions.setFieldValue);
   const location = useLocation();
 
-  useJourneyStartResume(wizardId, steps);
+  const starting = useJourneyStartResume(wizardId, steps);
 
   // The customer's pop-up (?mirror=1) - see useCustomerViewShare.
   const isMirror = Boolean(allowCustomerView && new URLSearchParams(location.search).get('mirror') === '1');
@@ -178,6 +178,9 @@ export function GuidedActivationWizard({
   // responsible for whatever action it needs (e.g. CafSignatureCapture's own
   // "Please Sign"), because nothing here should invite the customer to
   // interact with wizard chrome meant for the agent.
+  // An entry point's start (or a resumed draft) is still being put into the draft: drawing now would show the first page, or where a previous run stopped, before the page the entry point named.
+  if (starting) return null;
+
   if (isMirror) {
     // The customer's pop-up. Scrollable everywhere. Read-only on every step except CAF & Signature,
     // where the customer reads the terms, ticks the agreement and signs: those edits are sent to the

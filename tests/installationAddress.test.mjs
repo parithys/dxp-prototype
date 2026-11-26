@@ -22,7 +22,7 @@ const handOff = (service, status, kid) => rfs.rfsDraftValues({ service, status, 
 test('the step follows Number Selection for Fibre and SIM Selection for FWA, and only an order that came from Check RFS has it', () => {
   const keys = steps.fixedLineSteps().map((s) => s.key);
   assert.ok(keys.indexOf('installationAddress') > keys.indexOf('number'));
-  assert.equal(keys.indexOf('installationAddress'), keys.indexOf('fwaSim') + 1, 'straight after the (FWA-only) SIM Selection, which itself follows the number');
+  assert.equal(keys.indexOf('installationAddress'), keys.indexOf('fwaSim') + 1, 'straight after the (FWA-only) SIM Selection page, which follows the number');
   assert.ok(keys.indexOf('installationAddress') < keys.indexOf('checkout'));
   const step = steps.fixedLineSteps().find((s) => s.key === 'installationAddress');
   assert.equal(step.label, 'Service/Installation Address');

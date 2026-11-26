@@ -44,6 +44,8 @@ export interface ScanRow {
   key: string;
   kind: ScanDeviceKind;
   label: string;
+  /** What the scan field is called on the Device Scanning page, where the page's title already names the device; the Order Summary keeps `label`. */
+  fieldLabel?: string;
 }
 
 /** What a validated device adds to the order (the cart): shown on the Order Summary. */
@@ -64,11 +66,12 @@ export type DeviceScanValue = Record<string, CartDevice>;
  * additional ones). Nothing is listed that was not ordered. A journey that does not scan lists none. (The Mesh extenders' serial numbers are captured with the extenders on the Add-ons page itself, not here.)
  */
 export function scanRowsFor(values: Record<string, unknown>, personaId?: string): ScanRow[] {
-  if (!scansInJourney(values, personaId)) return [];
   const type = serviceTypeOfOrder(values);
+  // FWA (Indoor, Outdoor, or either of both): the CPE's serial is captured on its own page whatever the activation mode; the other devices are scanned only by an Instant Activation order.
+  if (!scansInJourney(values, personaId)) return type === 'fwa-indoor' || type === 'fwa-outdoor' ? [{ key: 'cpe', kind: 'cpe', label: `${SCAN_DEVICE_LABEL.cpe} Serial Number`, fieldLabel: 'Device Serial Number' }] : [];
   const rows: ScanRow[] = [];
-  if (type === 'fiber') rows.push({ key: 'ont', kind: 'ont', label: `${SCAN_DEVICE_LABEL.ont} Serial Number` });
-  if (type === 'fwa-indoor') rows.push({ key: 'cpe', kind: 'cpe', label: `${SCAN_DEVICE_LABEL.cpe} Serial Number` });
+  if (type === 'fiber') rows.push({ key: 'ont', kind: 'ont', label: `${SCAN_DEVICE_LABEL.ont} Serial Number`, fieldLabel: 'Device Serial Number' });
+  if (type === 'fwa-indoor' || type === 'fwa-outdoor') rows.push({ key: 'cpe', kind: 'cpe', label: `${SCAN_DEVICE_LABEL.cpe} Serial Number`, fieldLabel: 'Device Serial Number' });
   const iptv = values.iptv as HomeIptvSelection | undefined;
   if (iptv?.enabled && asksAdditionalStbs(iptv)) {
     rows.push({ key: 'stb-0', kind: 'stb', label: `${SCAN_DEVICE_LABEL.stb} Serial Number` });

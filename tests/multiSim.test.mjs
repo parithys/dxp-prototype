@@ -229,7 +229,7 @@ test('a selected Multi SIM add-on\'s card says whether its SIM is selected or ge
 test('a selected Multi SIM add-on\'s card opens the SIM Selection drawer instead of deselecting; Remove SIM: the first container only clears its SIM (offered once one exists), a later one always clears and removes the container; an add-on left with no SIM is deselected on close', () => {
   const picker = read('src/capabilities/AddonsSelection/AddonsPicker.tsx');
   assert.match(picker, /onOpenMultiSim && selectedIds\.includes\(a\.productId\) && multiSimCountOf\(a\) > 0 \? onOpenMultiSim\(a\.productId\) : toggle\(a\.productId\)/);
-  assert.match(picker, /onClick=\{options\.length > 1 \? undefined : \(\) => press\(a\)\}/);
+  assert.match(picker, /onClick=\{ownControls \? undefined : \(\) => press\(a\)\}/);
   const comp = read('src/capabilities/AddonsSelection/MultiSimAddonSims.tsx');
   assert.match(comp, /\(!isFirstOf\(i\) \|\| isSimComplete\(valueAt\(i\)\)\) && \(/, 'first: only once a SIM exists; later ones: always');
   assert.match(comp, /onClick=\{\(\) => \(needsConfirm\(i\) \? setConfirming\(i\) : removeSim\(i\)\)\}/, 'asks first only when a SIM would be lost');

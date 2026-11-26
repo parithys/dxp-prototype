@@ -193,3 +193,42 @@ export function selectedPerCategory<T extends CategorisedAddon & { productId: st
   for (const a of addons) if (selectedIds.includes(a.productId)) out[addonCategoryOf(a)] += 1;
   return out;
 }
+
+/**
+ * Whether a free add-on of a home plan goes on the order by default. All of them do, but for IPTV: it is switched on first, so none of its add-ons is defaulted - unless the plan includes IPTV (Triple Play),
+ * where it is on from the start and the plan's free bundle (one of several alternatives, an exclusive group) is the plan's own. The one rule behind the Add-ons page and the journey that passes over it.
+ * Where several free add-ons are alternatives of one group, only one can be on the order: `defaultedFree` keeps the first of each group.
+ */
+export const isDefaultedFree = (a: { exclusiveGroup?: string; addonCategory?: string }, iptvIncluded: boolean): boolean => a.addonCategory !== 'IPTV' || iptvIncluded;
+
+/**
+ * The free add-ons that go on the order by default, in order, with one per exclusive group: where a group's alternatives are all free, the one whose record says `defaultSelected` (the business's choice,
+ * OSNTV Lite Pack Free), else the first.
+ */
+export function defaultedFree<T extends { exclusiveGroup?: string; addonCategory?: string; defaultSelected?: boolean }>(free: readonly T[], iptvIncluded: boolean): T[] {
+  const eligible = free.filter((a) => isDefaultedFree(a, iptvIncluded));
+  const chosenOf = new Map<string, T>();
+  for (const a of eligible) {
+    if (!a.exclusiveGroup) continue;
+    const held = chosenOf.get(a.exclusiveGroup);
+    if (!held || (a.defaultSelected === true && held.defaultSelected !== true)) chosenOf.set(a.exclusiveGroup, a);
+  }
+  return eligible.filter((a) => !a.exclusiveGroup || chosenOf.get(a.exclusiveGroup) === a);
+}
+
+/** How long a free add-on is free for, as its record states it: the lifetime of the service, or a limited period (days or months). Nothing on its record: unknown, not assumed. */
+export interface FreePeriod {
+  lifetime?: boolean;
+  days?: number;
+  months?: number;
+}
+
+/** The wording for a free add-on's validity ("Lifetime", "Free for 7 days"), or undefined when its record states none. */
+export function freePeriodLabel(period: FreePeriod | undefined): string | undefined {
+  if (!period) return undefined;
+  if (period.lifetime) return 'Lifetime';
+  const unit = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`;
+  if (period.months && period.months > 0) return `Free for ${unit(period.months, 'month')}`;
+  if (period.days && period.days > 0) return `Free for ${unit(period.days, 'day')}`;
+  return undefined;
+}

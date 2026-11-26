@@ -61,10 +61,12 @@ test('every home plan states its free Extenders: 4 on the Premium tier, 2 on the
   assert.equal(byName('GigaHome Fiber Basic 100'), 2);
 });
 
-test('the quantity opens at the plan\'s free Extenders and a zero the agent sets is kept', () => {
+test('the Extenders open at the plan\'s free allowance and the card reads "N Free Wi-Fi Extenders"', () => {
   const card = fs.readFileSync('src/capabilities/AddonsSelection/HomeExtendersCard.tsx', 'utf8');
   assert.match(card, /if \(!selection && included > 0\) onChange\(\{ quantity: included, terms \}\)/);
-  assert.match(card, /const set = \(q: number\) => onChange\(\{ quantity: q, billing: selection\?\.billing, terms, serials: selection\?\.serials\?\.slice\(0, q\) \}\)/, 'zero is an answer, not "unset"');
+  // The card is "N Free Wi-Fi Extenders": the plan's allowance, with no quantity to change.
+  assert.match(card, /\$\{included\} Free Wi-Fi \$\{included === 1 \? 'Extender' : 'Extenders'\}/);
+  assert.ok(!/Quantity Requested/.test(card), 'no quantity row');
 });
 
 test('nothing is added for the agent and the Extender is not a list card; the plan change clears the choice; Postpaid and Prepaid are untouched', () => {

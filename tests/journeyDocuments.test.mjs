@@ -200,3 +200,22 @@ test('the document viewer opens every image of the document clicked, one under a
   // One viewer, a drawer, on every device: no device branch around it.
   assert.doesNotMatch(src.slice(src.indexOf('<Drawer open={Boolean(viewing)}')), /detectDeviceType\(\)/);
 });
+
+test('New Home / Fixed Line: Additional Documents offers none of the three general documents and requires none of them; Postpaid, MNP and Prepaid are unchanged', () => {
+  const home = { product: 'fixed-line', contact: { idType: 'QID' } };
+  assert.deepEqual(labels(home), [], 'nothing to offer: the upload list is not shown');
+  assert.deepEqual(jd.mandatoryDocumentLabels(home), [], 'the Upfront Payment Receipt is not required');
+  assert.deepEqual(jd.missingMandatoryDocuments(undefined, home), [], 'Continue does not wait for it');
+  for (const product of ['postpaid', 'prepaid', 'mnp']) {
+    assert.deepEqual(labels({ product }), ['Upfront Payment Receipt', 'Special Needs Card', 'Star Number Discount Approval'], product);
+    assert.deepEqual(jd.missingMandatoryDocuments(undefined, { product }), ['Upfront Payment Receipt'], product);
+  }
+});
+
+test('a KID in use makes the Tenancy Document mandatory: it is asked for as a required card, and Continue is not allowed without it', () => {
+  const inUse = { product: 'fixed-line', rfsCheck: { kid: 'KID-1', kidInUse: { fln: '4420', status: 'Active', pon: 'PON-1' } } };
+  assert.deepEqual(jd.requiredDocumentsFor({ values: inUse, journey: 'new-connection' }).map((r) => r.id), ['tenancy-document']);
+  assert.deepEqual(jd.requiredDocumentsFor({ values: { product: 'fixed-line', rfsCheck: { kid: 'KID-1' } }, journey: 'new-connection' }), [], 'a KID not in use needs none');
+  assert.match(read('src/capabilities/CafSignature/step.tsx'), /requiredDocumentsFor\(\{[^}]*\}\)\.every\(\(r\) => attached\.includes\(r\.id\)\)/, 'the CAF step holds Continue until every required document is attached');
+  assert.match(read('src/components/domain/AdditionalDocumentsUpload.tsx'), /\{r\.label\}<span className="text-\[var\(--field-border-error\)\]" aria-hidden="true"> \*<\/span>/, 'the required card carries the * mark');
+});

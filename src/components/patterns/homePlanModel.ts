@@ -5,10 +5,10 @@ export const planTypeOfHomeProduct = (homeProduct: unknown) => (homeProduct === 
 export const homePlanSourceOf = (plan: { offer?: boolean } | undefined): 'OFFER' | 'PLAN' | undefined => (plan ? (plan.offer ? 'OFFER' : 'PLAN') : undefined);
 
 /**
- * The bundle a fixed-line (fibre) home plan sells: Double Play (Internet + Fixed Voice) or Triple Play (Internet + Fixed Voice + IPTV, the plan carries IPTV). A 5G Home (FWA) plan is neither:
+ * The bundle a fixed-line (fibre) home plan sells: Dual Play (Internet + Fixed Voice) or Triple Play (Internet + Fixed Voice + IPTV, the plan carries IPTV). A 5G Home (FWA) plan is neither:
  * it has no fixed voice or IPTV, so it is undefined and is listed as it always was.
  */
 export type HomePlay = 'double' | 'triple';
 export const homePlayOf = (plan: { type?: string; iptvIncluded?: boolean } | undefined): HomePlay | undefined =>
   plan?.type === 'Fixed Line Plan' ? (plan.iptvIncluded ? 'triple' : 'double') : undefined;
-export const HOME_PLAY_ROW: Record<HomePlay, string> = { double: 'Double Play: Internet + Fixed Voice', triple: 'Triple Play: Internet + Fixed Voice + IPTV' };
+export const HOME_PLAY_ROW: Record<HomePlay, string> = { double: 'Dual Play: Internet + Fixed Voice', triple: 'Triple Play: Internet + Fixed Voice + IPTV' };

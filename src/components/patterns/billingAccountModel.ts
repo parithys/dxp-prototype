@@ -56,6 +56,8 @@ export interface NewBillingAccountValue {
   billingMode?: string;
   /** New Home Connection: whether the new account's billing address is the Installation Address (ticked, the default) or another the agent gave in `billingAddress`. */
   sameAsInstallation?: boolean;
+  /** New Home Connection, a customer with an account on file: that account's Billing Address as one line, which the new account keeps unless `sameAsInstallation` is ticked. */
+  existingAddressLine?: string;
   billingAddress?: { zone?: string; streetNo?: string; buildingNo?: string; aptFlatUnit?: string; floor?: string; area?: string; city?: string; country?: string; poBox?: string; addressLine?: string };
   /** Editing an existing account: its billing address as one line (the profile on file holds one line, not street / building / area). */
   editAddressLine?: string;

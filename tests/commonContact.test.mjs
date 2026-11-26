@@ -27,7 +27,9 @@ test('the New Connections menu lands on the common Contact page for a role that 
 test('New Home Connection opened with nobody identified goes to the common page; a draft, carried values or a journey under way do not', () => {
   const w = fs.readFileSync('src/modules/new-connection/NewConnectionWizard.tsx', 'utf8');
   assert.match(w, /const homeEntryUnderway = Boolean\(entryState\?\.resumeOrderId \|\| entryState\?\.startValues \|\| draftValues\?\.contact \|\| draftOrderId \|\| \(draftStep \?\? 0\) > 0\);/);
-  assert.match(w, /if \(journey !== 'home' \|\| isMirrorWindow \|\| homeEntryUnderway \|\| !personaIdForEntry \|\| !canUseFeature\(personaIdForEntry, COMMON_CONTACT_FEATURE\)\) return;/);
+  assert.match(w, /const redirectsToCommonContact = journey === 'home' && !isMirrorWindow && !homeEntryUnderway && Boolean\(personaIdForEntry\) && canUseFeature\(personaIdForEntry!, COMMON_CONTACT_FEATURE\);/);
+  // The redirect is made before the home journey's own first page is ever drawn.
+  assert.match(w, /if \(redirectsToCommonContact\) return null;/);
   assert.match(w, /flow === 'existing' && existingCustomerId \? existingCustomerPath\(existingCustomerId\) : '\/start-connection'/);
 });
 

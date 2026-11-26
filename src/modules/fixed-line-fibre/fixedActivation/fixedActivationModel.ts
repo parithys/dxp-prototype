@@ -53,18 +53,23 @@ export const normaliseIndoorUnitSerial = (serial: string): string => serial.trim
 export type IndoorUnitCheck = { ok: true; details: IndoorUnitDetails } | { ok: false; error: string };
 
 /** Whether a serial is an Indoor Unit in stock: it must be in the inventory, be an Indoor Unit (not another device) and not already assigned. */
-export function checkIndoorUnitSerial(serial: string, devices: readonly IndoorUnitDetails[]): IndoorUnitCheck {
+export const OUTDOOR_UNIT_DEVICE_TYPE = 'Outdoor ODU';
+/** The CPE an FWA service takes: an Indoor Unit for FWA Indoor, an Outdoor Unit for FWA Outdoor. */
+export const cpeTypeOfService = (values: Record<string, unknown>): string =>
+  (values.installation as FixedInstallationValue | undefined)?.serviceType === 'fwa-outdoor' ? OUTDOOR_UNIT_DEVICE_TYPE : INDOOR_UNIT_DEVICE_TYPE;
+
+export function checkIndoorUnitSerial(serial: string, devices: readonly IndoorUnitDetails[], deviceType: string = INDOOR_UNIT_DEVICE_TYPE): IndoorUnitCheck {
   const s = normaliseIndoorUnitSerial(serial);
   if (!s) return { ok: false, error: 'Indoor Unit Serial Number is required.' };
   const found = devices.find((d) => d.serialNumber.toUpperCase() === s);
   if (!found) return { ok: false, error: 'Indoor Unit Serial Number not found in inventory.' };
-  if (found.deviceType !== INDOOR_UNIT_DEVICE_TYPE) return { ok: false, error: `This serial is a ${found.deviceType}, not an Indoor Unit.` };
+  if (found.deviceType !== deviceType) return { ok: false, error: `This serial is a ${found.deviceType}, not ${deviceType === INDOOR_UNIT_DEVICE_TYPE ? 'an Indoor Unit' : 'an Outdoor Unit'}.` };
   if (found.stockStatus !== IN_STOCK) return { ok: false, error: `This Indoor Unit is already assigned (${found.stockStatus}).` };
   return { ok: true, details: found };
 }
 
 /** The Indoor Units in stock, which a barcode scan can return. */
-export const indoorUnitsInStock = (devices: readonly IndoorUnitDetails[]): IndoorUnitDetails[] => devices.filter((d) => d.deviceType === INDOOR_UNIT_DEVICE_TYPE && d.stockStatus === IN_STOCK);
+export const indoorUnitsInStock = (devices: readonly IndoorUnitDetails[], deviceType: string = INDOOR_UNIT_DEVICE_TYPE): IndoorUnitDetails[] => devices.filter((d) => d.deviceType === deviceType && d.stockStatus === IN_STOCK);
 
 /** The order's Indoor Unit is complete when the serial in the field is one the inventory check accepted. */
 export const isIndoorUnitValid = (values: Record<string, unknown>): boolean => {
