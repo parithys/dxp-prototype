@@ -1,5 +1,4 @@
 import { SERVICE_ADDRESS_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { ServiceAddress } from './ServiceAddress';
 import { addressSummary } from './summary';
 import type { ZsbAddressValue } from '../../components/patterns/ZsbAddressStep';
@@ -7,6 +6,7 @@ import type { BillingAccountValue } from '../../components/patterns/billingAccou
 import type { PrefilledAddress } from '../../components/patterns/addressFromBilling';
 import { AddressPrefill } from './AddressPrefill';
 import { DemoAddressSeed } from './DemoAddressSeed';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * Service address: stores a ZSB address under `address`. `identity` reads the customer's ID number / nationality from the

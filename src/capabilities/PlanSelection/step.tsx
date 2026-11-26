@@ -1,5 +1,4 @@
 import { PLAN_SELECTION_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { PlanSelection } from './PlanSelection';
 import { PrepaidPackActions } from './PrepaidPackActions';
 import { AddDiscountAction } from './AddDiscountAction';
@@ -7,6 +6,7 @@ import { CustomiseAddonsAction } from './CustomiseAddonsAction';
 import { specialTypeOf } from './specialDiscount';
 import { loadMandatoryAddonIds } from '../AddonsSelection/usePackHasAddons';
 import { planSummary } from './summary';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * The prepaid pack step (prepaid activation and prepaid port-in): the packs, stored under `productId`. A different pack

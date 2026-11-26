@@ -1,7 +1,6 @@
 import { badgeVariantFor } from '../../../lib/statusTone';
 import { formatDateTime } from '../../../lib/format';
-import { DataTable, Badge, ErrorBanner } from 'dxp-ui';
-import { PageHeader } from '../../../components/patterns/PageHeader';
+import { Badge, DataTable, ErrorBanner, PageHeader } from 'dxp-ui';
 import { useEntityError, useEntityRecords, useKindPending } from '../../../services/entityHooks';
 
 interface BulkJob {

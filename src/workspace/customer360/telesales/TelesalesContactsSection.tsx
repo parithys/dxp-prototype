@@ -1,4 +1,4 @@
-import { SearchField, Icon } from 'dxp-ui';
+import { Icon, SearchField, strOrEmpty as str } from 'dxp-ui';
 import { FilterSelect } from '../sections/C360Kit';
 import { useState } from 'react';
 import { contactInformationResolvers } from '../sections/contactInformationResolvers';
@@ -6,7 +6,6 @@ import { Card, KV, Pill, type Ctx } from './TelesalesOverview';
 import { asText, dateTime } from './telesalesOverviewModel';
 import { ActionList, Avatar, Field, HeaderButton, SectionHeader, StatStrip, TableCard } from './TelesalesKit';
 import { ICON, yesNo } from './telesalesKitModel';
-import { strOrEmpty as str } from '../../../lib/values';
 import { demoOf, arr, rowDate } from './shared';
 import type { Rec } from './shared';
 

@@ -3,7 +3,7 @@ import { Link, useLocation, useParams, useSearchParams } from '../../lib/router'
 import { canUseFeature } from '../../engines/personaEngine';
 import { getAllRoutes, getPersona } from '../../engines/configEngine';
 import { resolveJourneyTarget } from '../../navigation/journeyTarget';
-import { Icon, SECONDARY_BUTTON_SURFACE } from 'dxp-ui';
+import { Icon, PageHeader, SECONDARY_BUTTON_SURFACE } from 'dxp-ui';
 import { NotYetBuiltPanel } from '../NotYetBuiltPanel';
 import { JourneyCard } from './JourneyCard';
 import { launchJourney, readLaunch, type LaunchContext } from '../../navigation/customerLaunch';
@@ -14,7 +14,6 @@ import {
   type JourneyCategory,
   type ProductLine,
 } from '../../navigation/journeyCatalogue';
-import { PageHeader } from '../../components/patterns/PageHeader';
 import { NotFound } from '../NotFound';
 import { useAppSelector } from '../../stores/hooks';
 

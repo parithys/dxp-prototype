@@ -1,9 +1,6 @@
 import { useState } from 'react';
-import { WARNING, Button, Modal } from 'dxp-ui';
+import { Button, Modal, StandaloneStepPage, WARNING, type WizardStep, WizardTitleBand } from 'dxp-ui';
 import { NumberSelection, RefreshNumbersButton } from '../../../capabilities';
-import { StandaloneStepPage } from '../../../components/patterns/wizard/StandaloneStepPage';
-import { WizardTitleBand } from '../../../components/patterns/wizard/WizardTitleBand';
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
 import { NUMBER_SELECTION_LABEL } from '../../../data/stepLabels';
 import { toLocalMsisdn } from '../../../components/domain/msisdnPickerModel';
 import { useSubmitGuard } from '../../../hooks/useSubmit';

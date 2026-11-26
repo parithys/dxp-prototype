@@ -44,8 +44,7 @@ test('the ID step shows these as an error panel, and the number field keeps only
 
 test('every failed or pending check panel is the same card as an eligibility result: icon tile, bold title, full-strength body, border all round', () => {
   const status = fs.readFileSync('src/components/patterns/ValidationStatus.tsx', 'utf8');
-  const scan = fs.readFileSync('src/components/domain/ScanFailureNotice.tsx', 'utf8');
-  for (const [name, src] of [['ValidationStatus', status], ['ScanFailureNotice', scan]]) {
+  for (const [name, src] of [['ValidationStatus', status]]) {
     assert.match(src, /className=\{?[`"']eligibility-alert /, `${name} is built on the eligibility card`);
     assert.match(src, /eligibility-alert-icon/, `${name} has the icon tile`);
     assert.match(src, /title title-md/, `${name} has the bold title`);

@@ -17,7 +17,7 @@ let nav, guard, steps, submitMod, submitNc, React, server, router, persona, req;
 before(async () => {
   await storeApi(); // the screens read the store: NextRouterProvider gives it to what it renders
   await boot();
-  nav = await load('/src/components/patterns/wizard/wizardNavigation.ts');
+  nav = await import('dxp-ui');
   guard = await load('/src/engines/eligibilityGuard.ts');
   steps = await load('/src/modules/mobile-service-changes/serviceChangeSteps.tsx');
   submitMod = await load('/src/modules/mobile-service-changes/submitServiceChangeOrder.ts');

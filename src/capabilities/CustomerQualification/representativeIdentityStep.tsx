@@ -1,8 +1,8 @@
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
 import { AuthorizedPerson } from './RepresentativeSections';
 import { customerRepresentativeOf, isAuthorizedPersonComplete, isRepresentativeOrder } from './representative';
 import type { CustomerRepresentativeValue } from './representative';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * The Authorized Person page: the page after the dedicated Contact page (representativeStep.tsx), active only in the Customer Representative scenario. It holds everything

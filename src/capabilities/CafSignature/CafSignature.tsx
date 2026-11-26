@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import type { TncBulletTemplate } from '../../components/patterns/cafTermsModel';
 import { CafSignatureCapture } from '../../components/patterns/CafSignatureCapture';
-import { KeyInformationPanel } from '../../components/patterns/KeyInformationPanel';
 import { listEntities } from '../../services/entityOps';
 import { CafLanguageProvider, CafLanguageToggle } from '../../components/patterns/cafLanguage';
 import { useCustomerPopup } from '../../hooks/useCustomerPopup';
 import type { CafContentDoc, CafLanguage } from '../../data/cafLanguage';
 import { loadCafContent } from '../../engines/cafContentEngine';
+import { KeyInformationPanel } from 'dxp-ui';
 
 type Capture = ComponentProps<typeof CafSignatureCapture>;
 

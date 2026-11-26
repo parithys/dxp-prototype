@@ -10,8 +10,7 @@ import {
   useJourneySession,
 } from '../../capabilities';
 import type { ConfirmedOrder } from '../../capabilities';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
-import { detectDeviceType } from 'dxp-ui';
+import { detectDeviceType, type WizardStep } from 'dxp-ui';
 import type { Product } from '../new-connection/newConnectionModel';
 import type { ServiceChangeContext } from './serviceChangeSteps';
 import { store } from '../../stores/store';

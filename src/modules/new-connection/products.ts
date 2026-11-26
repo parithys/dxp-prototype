@@ -1,6 +1,6 @@
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import type { ServiceJourney } from '../../capabilities';
 import type { ConnectionType } from '../../domain/eligibility';
+import { type WizardStep } from 'dxp-ui';
 
 // New Connection is ONE journey: Customer Verification once, then the product the agent chooses by the customer's intent,
 // and that product's steps continue in the same wizard (same draft, same customer lock). This is the product model.

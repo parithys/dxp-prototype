@@ -15,7 +15,7 @@ function hasClasses(set, expected, forbidden = [], msg = '') {
 }
 
 test('StandaloneStepPage layout: the wizard title band, the step card 32px in from the page edges, a full-width fixed action bar', async () => {
-  const { StandaloneStepPage } = await load('/src/components/patterns/wizard/StandaloneStepPage.tsx');
+  const { StandaloneStepPage } = await import('dxp-ui');
   const withNext = html(h(StandaloneStepPage, { title: 'T', step: { key: 'k', label: 'Step', render: () => null }, onNext() {}, canProceed: false }, h('p', null, 'x')));
   assert.match(withNext, /title-band-pad title-band/);
   hasClasses(new Set(/class="([^"]*card[^"]*m-8[^"]*)"/.exec(withNext)?.[1].split(/\s+/)), ['card', 'm-8', 'p-6']);

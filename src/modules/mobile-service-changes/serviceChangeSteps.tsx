@@ -1,6 +1,4 @@
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import * as sums from '../../components/patterns/wizard/commonSummaries';
-import { attachSummaries } from '../../components/patterns/wizard/stepSummary';
 import {
   addonsSelectionStep,
   cafSignatureStep,
@@ -20,6 +18,7 @@ import type { GuidedContactValue } from '../../components/patterns/guidedContact
 import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
 import type { CustomerBenefit } from '../../engines/customerBenefitEngine';
 import type { Product } from '../new-connection/newConnectionModel';
+import { attachSummaries, type WizardStep } from 'dxp-ui';
 
 /** What the line-change journeys need from their journey: the identification context, the plan catalogue and the customer's benefits. */
 export interface ServiceChangeContext extends QualificationContext {

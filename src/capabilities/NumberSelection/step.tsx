@@ -1,5 +1,4 @@
 import { NUMBER_SELECTION_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { NumberSelection } from './NumberSelection';
 import { numberSummary } from './summary';
 import { WaiveOff } from './WaiveOff';
@@ -12,6 +11,7 @@ import type { NumberPickerProfile } from '../../components/domain/msisdnPickerMo
 import { toLocalMsisdn } from '../../components/domain/msisdnPickerModel';
 import { AutoAllocatedNumber } from './AutoAllocatedNumber';
 import type { MsisdnSource } from './prepaidNumberAllocation';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * Number selection: the chosen number is stored under `msisdn` (and its price under `priceField`, when given).

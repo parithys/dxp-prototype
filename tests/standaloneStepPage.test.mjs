@@ -13,7 +13,7 @@ const read = (p) => fs.readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
 // fixed action bar - built from the shared parts, not restyled on the page.
 
 test('StandaloneStepPage: the title band, step card, heading and fixed Continue bar are the guided journey\'s own', async () => {
-  const { StandaloneStepPage } = await load('/src/components/patterns/wizard/StandaloneStepPage.tsx');
+  const { StandaloneStepPage } = await import('dxp-ui');
   const { RefreshNumbersButton } = await load('/src/capabilities/NumberSelection/RefreshNumbersButton.tsx');
   const out = html(
     h(
@@ -41,7 +41,7 @@ test('StandaloneStepPage: the title band, step card, heading and fixed Continue 
 });
 
 test('StandaloneStepPage: without onNext there is no action bar and no room reserved for one', async () => {
-  const { StandaloneStepPage } = await load('/src/components/patterns/wizard/StandaloneStepPage.tsx');
+  const { StandaloneStepPage } = await import('dxp-ui');
   const out = html(h(StandaloneStepPage, { title: 'T', step: { key: 'k', label: 'Done', render: () => null } }, h('p', null, 'x')));
   assert.ok(!/Continue|Save &amp; Finish/.test(out), 'no action bar, so no Continue');
 });

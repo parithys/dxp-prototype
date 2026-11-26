@@ -1,8 +1,7 @@
-import { IconButton, Button, Input, DateInput, Select, Icon, TRASH, UPLOAD_ICON, ErrorBanner } from 'dxp-ui';
+import { Button, DateInput, ErrorBanner, Icon, IconButton, Input, Select, TRASH, UPLOAD_ICON, useConfirmedRemoval } from 'dxp-ui';
 import { useEffect, useRef, useState } from 'react';
 import { ID_UPLOAD_ACCEPT, idFileProblem } from '../domain/idUploadModel';
 import { UPLOAD_RULES } from '../domain/documentUploadRules';
-import { useConfirmedRemoval } from '../domain/useConfirmedRemoval';
 import { NATIONALITIES } from '../../data/nationalities';
 import { idTypeDef, type IdType } from '../../data/idTypes';
 import { buildNewCustomerIdentity, formatDmyOnBlur, type NewCustomerErrors, type NewCustomerInput, type NewCustomerMoi } from './idLookupModel';

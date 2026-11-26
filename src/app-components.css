@@ -3,9 +3,7 @@
 @layer components {
   /* Larger corner radius (dashboard tiles and rows). */
   /* A card that is a link or button: on hover the fill turns pale teal and the border takes the form fields' focus border colour. */
-  .card-surface {
-    background-color: var(--surface);
-  }
+
   .card:not(.card-inherit-fill) {
     --btn-secondary-fill: var(--icon-tile-bg);
     --btn-secondary-hover: var(--bg);
@@ -240,14 +238,11 @@
   .menu-action-danger {
     @apply w-full flex items-center gap-2 px-4 py-3 border-t border-border-soft text-danger hover:bg-surface text-left;
   }
-
   /* ====================================================================================================================================
      Layout vocabulary, option cards, notices, chips and the other reusable surfaces. Each class bundles the utilities that used to be repeated
      as one long string; spacing and one-off sizes stay on the element. Added by the className-budget refactor (tests/classNameBudget.test.mjs).
      ==================================================================================================================================== */
-  .focus-ring {
-    @apply focus:outline-none focus-visible:shadow-[var(--focus-ring)];
-  }
+
   /* The detail icon's tile (Identity Details, the Authorization / Supporting Documents cards): a soft grey rounded square, used with .icon-tile. */
   .detail-icon-tile {
     @apply w-9 h-9 rounded-[var(--radius-button)] bg-[var(--detail-icon-tile-bg)] text-fg;
@@ -258,9 +253,6 @@
   /* .split with nothing on its right (a lone figure): centred instead of pushed left. */
   .split-centered {
     @apply justify-center;
-  }
-  .split-wide {
-    @apply flex flex-wrap items-center justify-between gap-x-4 gap-y-2;
   }
   /* A short list of plain points under a heading or lead-in: disc bullets, indented, secondary text. */
   .bullet-list {
@@ -284,9 +276,6 @@
   }
   .divider-top {
     @apply border-t border-border-soft;
-  }
-  .divider-bottom {
-    @apply border-b border-border-soft;
   }
   .row-rule-card {
     @apply border-b border-[var(--field-card-border)] last:border-0;
@@ -371,15 +360,6 @@
   .icon-tile-soft {
     @apply rounded-[var(--radius-card)];
   }
-  .disc-lg {
-    @apply flex h-16 w-16 items-center justify-center rounded-[var(--radius-pill)];
-  }
-  .title-band {
-    @apply bg-[var(--title-band-bg)] text-on-dark border-b border-[var(--field-card-border)];
-  }
-  .btn-on-title-band {
-    @apply [--btn-secondary-fill:var(--icon-tile-bg)] [--btn-secondary-hover:var(--bg)];
-  }
   .card-header-row {
     @apply flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 pt-4 pb-3;
   }
@@ -388,9 +368,6 @@
   }
   .toolbar-end {
     @apply flex flex-wrap items-center justify-end gap-x-5 gap-y-3 empty:hidden;
-  }
-  .sticky-corner {
-    @apply pointer-events-none sticky top-6 z-[var(--z-raised)] flex h-0 items-start justify-end;
   }
   .dash-hero {
     @apply bg-[image:var(--dash-hero-gradient)] text-on-dark rounded-b-[var(--radius-lg)] -mx-8 -mt-8 px-8 pt-8 pb-24;
@@ -436,9 +413,6 @@
   .tag-accent {
     @apply inline-flex items-center gap-1 rounded-[var(--radius-pill)] bg-accent text-on-dark py-0.5 text-[length:var(--fs-tag)] font-medium;
   }
-  .tag-warm {
-    @apply inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] bg-surface-warm px-2.5 py-0.5 text-[var(--accent-text)] text-[length:var(--fs-tag)] font-medium;
-  }
   .tile-pill {
     @apply inline-block whitespace-nowrap rounded-[var(--radius-sm)] px-2.5 py-1 text-[length:var(--fs-2xs)] font-bold uppercase tracking-wide;
   }
@@ -456,9 +430,6 @@
   }
   .pin-marker {
     @apply w-12 h-12 rounded-[var(--radius-pill)] bg-accent text-accent-on flex items-center justify-center;
-  }
-  .ping-ring {
-    @apply absolute inline-flex h-full w-full rounded-[var(--radius-pill)] bg-accent-on opacity-75 motion-safe:animate-ping;
   }
   .floating-label {
     @apply rounded-[var(--radius-button)] bg-bg px-3 py-2 text-[length:var(--fs-caption)];
@@ -612,17 +583,8 @@
   .dropdown-popover {
     @apply rounded-[var(--field-radius)] border border-border-soft bg-bg py-1;
   }
-
   /* ---- Text roles, layout rows and grids, icons, meters and small surfaces (className budget, 4+ utilities) ---- */
-  .split-top {
-    @apply flex items-start justify-between;
-  }
-  .spread {
-    @apply flex justify-between gap-4;
-  }
-  .wrap-center {
-    @apply flex flex-wrap items-center;
-  }
+
   .fields-2 {
     @apply grid grid-cols-1 gap-4 sm:grid-cols-2;
   }
@@ -654,13 +616,7 @@
     @apply rounded-[var(--radius-card)] border border-[var(--field-card-border)];
   }
   /* A bordered white panel; .tray-panel is the raised, clipped column version (the selected add-ons tray). */
-  .panel-soft,
-.tray-panel {
-    @apply rounded-[var(--radius-card)] border border-border-soft bg-bg;
-  }
-  .tray-panel {
-    @apply flex flex-col overflow-hidden text-fg shadow-raised;
-  }
+
   .list-frame {
     @apply rounded-[var(--radius-card)] border border-[var(--field-card-border)] divide-y divide-border-soft overflow-hidden;
   }
@@ -678,12 +634,6 @@
   }
   .wrap-top {
     @apply flex flex-wrap items-start;
-  }
-  .caps-strong {
-    @apply font-semibold tracking-wide uppercase;
-  }
-  .fill-column {
-    @apply flex flex-1 flex-col;
   }
   .dot-sm {
     @apply h-1.5 w-1.5 rounded-[var(--radius-pill)];
@@ -710,12 +660,7 @@
     @apply inline-block rounded-[var(--radius-button)] px-2 py-0.5 text-[length:var(--fs-caption)];
   }
   /* Plain red text link; the size is set where it is used. */
-  .title-2xl {
-    @apply text-[length:var(--fs-h3)];
-  }
-  .title-on-dark {
-    @apply text-[length:var(--fs-h4)] font-bold text-on-dark break-words min-w-0;
-  }
+
   .caps-compact {
     @apply text-[length:var(--fs-btn-compact)] font-medium uppercase tracking-wide;
   }
@@ -1137,9 +1082,6 @@
   .bar-soft {
     @apply px-4 py-2 bg-surface;
   }
-  .fill-start {
-    @apply flex-1 min-w-0 text-left;
-  }
   .search-shell {
     @apply rounded-[var(--radius-card-lg)] bg-bg p-2 shadow-[var(--shadow-dash-card-hover)];
   }
@@ -1204,9 +1146,6 @@
   .dropdown-card {
     @apply absolute z-[var(--z-popover)] top-full overflow-y-auto shadow-raised left-0 right-0 mt-1 max-h-96;
   }
-  .empty-page {
-    @apply p-8 max-w-2xl mx-auto text-center flex flex-col items-center justify-center min-h-[50vh];
-  }
   .status-row {
     @apply rounded-[var(--radius-button)] border border-border-soft bg-bg px-3 py-2;
   }
@@ -1238,18 +1177,9 @@
     @apply grid grid-cols-3 items-end gap-4;
   }
   /* A centred reading column: .reading-column bare, .narrow-panel padded and centred text. */
-  .reading-column,
-.narrow-panel {
-    @apply max-w-xl mx-auto;
-  }
+
   .narrow-panel {
     @apply w-full p-5 text-center;
-  }
-  .auto-fit-grid {
-    @apply grid gap-6 grid-cols-[repeat(auto-fit,minmax(max(18rem,calc((100%-1.5rem)/2)),1fr))] items-start;
-  }
-  .card-frame-soft {
-    @apply rounded-[var(--radius-card)] border border-border-soft;
   }
   .note-dashed {
     @apply rounded-[var(--radius-sm)] border border-dashed border-border-soft p-3;
@@ -1284,17 +1214,11 @@
   .tray-empty {
     @apply text-muted text-[length:var(--fs-body)] border-y border-border-soft px-5 py-5;
   }
-  .section-toggle {
-    @apply w-full flex items-center focus:outline-none focus-visible:shadow-[var(--focus-ring)] gap-2 px-4 py-3 text-left hover:bg-surface-warm;
-  }
   .summary-head {
     @apply shrink-0 border-b border-on-dark-line-2 bg-[var(--title-band-bg)] px-4 py-4;
   }
   .nav-hover-fill {
     @apply text-[var(--nav-fg-muted)] hover:bg-[var(--nav-hover-bg)];
-  }
-  .title-band-pad {
-    @apply px-4 sm:px-8 pt-6 sm:pt-8 pb-6;
   }
   .field-readonly-text {
     @apply flex-1 min-w-0 px-3 py-2 text-[length:var(--fs-body)] text-fg bg-surface cursor-default select-none;
@@ -1476,23 +1400,11 @@
   .nav-kbd-active {
     @apply data-[kbd-active=true]:bg-[var(--nav-hover-bg)] data-[kbd-active=true]:text-[var(--nav-fg)] data-[kbd-active=true]:ring-2 data-[kbd-active=true]:ring-inset data-[kbd-active=true]:ring-[var(--nav-fg-muted)];
   }
-  .table-plain {
-    @apply w-full border-collapse;
-  }
-  .table-label-cell {
-    @apply bg-surface w-2/5 text-left;
-  }
   .baseline-line {
     @apply flex items-baseline justify-between gap-4 py-1.5 border-b border-border-soft;
   }
-  .page-bleed {
-    @apply -mx-8 -mt-8;
-  }
   .pick-row-active {
     @apply bg-surface ring-2 ring-inset ring-[var(--field-focus-border)];
-  }
-  .inert-region {
-    @apply [&_button]:pointer-events-none [&_input]:pointer-events-none [&_select]:pointer-events-none [&_textarea]:pointer-events-none [&_a]:pointer-events-none select-none;
   }
   .tray-anchor {
     @apply absolute inset-x-0;
@@ -1503,18 +1415,9 @@
   .tray-above {
     @apply bottom-full mb-3 max-h-[calc(100dvh-var(--spacing)*24)];
   }
-  .summary-value {
-    @apply min-w-0 break-words;
-  }
-  .footer-bar-pad {
-    @apply px-4 py-4 sm:px-8;
-  }
   /* A step's reference note (its `belowCard`): plain text just under the step card, in the card's column. Inset by the card's padding so it lines up with the content inside the card; its bottom margin is pulled in so the note sits close. */
   .below-card-note {
     @apply mx-8 px-6 -mt-4 mb-6;
-  }
-  .step-header {
-    @apply min-h-[var(--size-step-header-min-h)] mb-4;
   }
   .profile-band-flush {
     @apply border-b bg-[var(--title-band-bg)] text-on-dark p-5;
@@ -1524,9 +1427,6 @@
   }
   .demo-field {
     @apply rounded-[var(--radius-button)] border border-border bg-bg px-2 py-1 text-[length:var(--fs-caption)];
-  }
-  .customer-view-btn {
-    @apply !border-transparent !shadow-none !bg-[var(--customer-view-bg)] !text-[var(--customer-view-fg)] enabled:hover:!bg-[var(--customer-view-bg-hover)];
   }
   /* The Customer Representative checkbox: the Customer view button's tint and text colour, around the checkbox and its label. */
   .representative-toggle {
@@ -1576,14 +1476,8 @@
   .stack-end {
     @apply items-end text-right shrink-0;
   }
-  .map-fill {
-    @apply flex-1 min-h-80;
-  }
   .fit-contain {
     @apply w-full h-full object-contain;
-  }
-  .stat-value {
-    @apply text-[length:var(--fs-body)] leading-tight text-fg;
   }
   .choice-row {
     @apply relative flex items-center gap-3 flex-row justify-start rounded-[var(--radius-card)] border p-4;
@@ -1782,76 +1676,12 @@
 .offer-accent {
     @apply text-[var(--offer-fg)];
   }
-  /* The eligibility results the agent must act on, inline on the step: one card per result: a border all round and a wash in the outcome's tone - no strip on one side.
-     The layout: the icon sits in its own full-height panel flush with the card's left edge (the card clips it to its rounded corners), and the text beside it carries the padding. */
-  .eligibility-alert {
-    @apply flex items-stretch overflow-hidden rounded-[var(--radius-card)] border;
-  }
-  .eligibility-alert > :not(.eligibility-alert-icon) {
-    @apply p-5;
-  }
-  /* The result's icon panel: a column the height of the card filled in the outcome's colour, the icon centred in it in the card's own wash (so it reads as cut out of the panel). */
-  .eligibility-alert-icon {
-    @apply flex w-[var(--size-alert-icon-w)] shrink-0 items-center justify-center text-[var(--alert-wash)];
-  }
-  .eligibility-alert-icon > svg {
-    @apply size-[var(--size-alert-icon)];
-  }
-  .eligibility-alert-hard-stop .eligibility-alert-icon {
-    @apply bg-[color-mix(in_oklab,var(--danger-solid),var(--bg)_var(--alert-panel-soften))];
-  }
-  /* One hue and one icon per outcome, so each is told apart at a glance: hard stop red (cross), soft stop amber (warning triangle), approval violet (clock), advisory blue (info), pass green (tick). */
-  .eligibility-alert-soft-stop .eligibility-alert-icon {
-    @apply bg-[color-mix(in_oklab,var(--warn-solid),var(--bg)_var(--alert-panel-soften))];
-  }
-  .eligibility-alert-approval-routing .eligibility-alert-icon {
-    @apply bg-[color-mix(in_oklab,var(--info-solid),var(--bg)_var(--alert-panel-soften))];
-  }
-  .eligibility-alert-pass .eligibility-alert-icon {
-    @apply bg-[color-mix(in_oklab,var(--success-solid),var(--bg)_var(--alert-panel-soften))];
-  }
-  .eligibility-alert-advisory .eligibility-alert-icon {
-    @apply bg-[color-mix(in_oklab,var(--advisory-solid),var(--bg)_var(--alert-panel-soften))];
-  }
-  .eligibility-alert-hard-stop {
-    --alert-wash: var(--tone-danger-bg-soft);
-    @apply border-danger bg-[var(--alert-wash)];
-  }
-  .eligibility-alert-soft-stop {
-    --alert-wash: var(--tone-warn-bg-soft);
-    @apply border-[var(--warn)] bg-[var(--alert-wash)];
-  }
-  .eligibility-alert-approval-routing {
-    --alert-wash: var(--tone-info-bg);
-    @apply border-[var(--info-solid)] bg-[var(--alert-wash)];
-  }
-  .eligibility-alert-pass {
-    --alert-wash: var(--tone-success-bg-soft);
-    @apply border-success bg-[var(--alert-wash)];
-  }
-  /* A check still running: a neutral card - grey border and wash, a dark tile. */
-  .eligibility-alert-pending {
-    --alert-wash: var(--surface);
-    @apply border-border bg-[var(--alert-wash)];
-  }
-  .eligibility-alert-pending .eligibility-alert-icon {
-    @apply bg-[var(--charcoal-panel)];
-  }
-  .eligibility-alert-advisory {
-    --alert-wash: var(--info-banner-bg);
-    @apply border-[var(--advisory-solid)] bg-[var(--alert-wash)];
-  }
   /* A control pinned to the top-right corner of the customer pop-up's step card, in the title's row (the card is `relative`). */
   .mirror-corner {
     @apply absolute right-6 top-6;
   }
   /* The pop-up's step section: it is the positioned parent, so its corner control sits at the section's own top right, level with its heading (no card padding to offset). */
-  .mirror-section {
-    @apply relative;
-  }
-  .mirror-section .mirror-corner {
-    @apply right-0 top-0;
-  }
+
   /* The CAF & Signature terms container: one fixed height whatever the amount of text - more scrolls inside it and never grows it or moves the page. Air above and below the text,
      and the vertical scrollbar always drawn (a classic, always-visible bar rather than the system's fade-away overlay one) so it is clear there is more to read. */
   .caf-terms-scroll {

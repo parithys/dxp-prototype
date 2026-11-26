@@ -1,5 +1,5 @@
 import { isClosedTicket } from '../../../lib/statusTone';
-import { Button, Icon } from 'dxp-ui';
+import { Button, Icon, str } from 'dxp-ui';
 import { useMemo, useState } from 'react';
 import { useNavigate } from '../../../lib/router';
 import { TicketCreationModal, type NewTicketValue } from '../../../components/patterns/TicketCreationModal';
@@ -9,7 +9,6 @@ import type { CustomerService } from '../../../engines/customerServicesEngine';
 import { ActionButton, FilterSelect, GridTable, IconTile, KpiGrid, KpiTile, LinkAction, Pill, Panel, DetailRows, SearchBox, StatusPill, TabPage } from './C360Kit';
 import { IC, fmtDate, fmtDateTime, type Tone } from './c360KitModel';
 import { Dv } from '../demoValues';
-import { str } from '../../../lib/values';
 import { currentAgentId } from '../../../stores/currentAgent';
 import { useEntityOps } from '../../../services/entityHooks';
 

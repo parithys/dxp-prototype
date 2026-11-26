@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Badge, Button, Checkbox, ChoiceCards, CloseButton, CountryMarker, DataTable, type Column, Drawer, EmptyState, ErrorBanner, Icon, IconButton, Input, DateInput, Modal, OverlayPortal, Pagination, PanelIcon, PhoneNumberInput, Radio, SearchField, OptionToggle, Switch, Select, StatusPortal, StatusSlot, StatusSlotProvider, SignaturePad, Spinner, NestedTabs, PageLevelTabs, TabStrip, Tabs, Textarea, Tooltip, TooltipGroup, VodafoneMark, VodafoneWordmark, BOOK_ICON, CARD_ICON, DOWNLOAD, GLOBE_ICON_ALT, HELP_CIRCLE, SHIELD_ICON, TRASH, Card, Label } from 'dxp-ui';
+import { Badge, BOOK_ICON, Button, Card, CARD_ICON, Checkbox, ChoiceCards, CloseButton, type Column, CountryMarker, DataTable, DateInput, DOWNLOAD, Drawer, EmptyState, ErrorBanner, GLOBE_ICON_ALT, HELP_CIRCLE, Icon, IconButton, Input, Label, Modal, NestedTabs, OptionToggle, OverlayPortal, PageHeader, PageLevelTabs, Pagination, PanelIcon, PhoneNumberInput, Radio, SearchField, Select, SHIELD_ICON, SignaturePad, Spinner, StarStat, StatusPortal, StatusSlot, StatusSlotProvider, Switch, Tabs, TabStrip, Textarea, Tooltip, TooltipGroup, TRASH, VodafoneMark, VodafoneWordmark } from 'dxp-ui';
 import { ConnectionTypeTag } from '../../components/primitives/ConnectionTypeTag';
 import { CARD_HIGHLIGHT, CARD_IDLE, CARD_SELECTED, SelectedCardTexture, SelectedPlanFigure, SelectedTick } from '../../components/primitives/offerCardParts';
 import { ServiceTypeTag } from '../../components/primitives/ServiceTypeTag';
@@ -9,8 +9,6 @@ import { ValidationStatus } from '../../components/patterns/ValidationStatus';
 import { SERVICE_TYPE_TAGS, type ServiceTypeTagKey } from '../../lib/serviceTypeTag';
 import { CONNECTION_TAG } from '../../lib/connectionType';
 import { badgeVariantFor } from '../../lib/statusTone';
-import { PageHeader } from '../../components/patterns/PageHeader';
-import { StarStat } from '../../components/domain/StarStat';
 import { ComponentCatalogue } from './ComponentCatalogue';
 import { UI_LIBRARY_GROUPS } from './uiLibraryCoverage';
 import { notificationActions } from '../../stores/notificationSlice';

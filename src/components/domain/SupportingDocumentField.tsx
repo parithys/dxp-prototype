@@ -1,10 +1,7 @@
-import { TRASH, IconButton } from 'dxp-ui';
+import { DocumentCaptureActions, forgetDocumentFile, IconButton, pdfPageCountOfFile, readFileAsDataUrl, rememberDocumentFile, TRASH, uploadFileProblem } from 'dxp-ui';
 import { useState } from 'react';
-import { DocumentCaptureActions } from './DocumentCaptureActions';
-import { UPLOAD_RULES, uploadFileProblem } from './documentUploadRules';
-import { forgetDocumentFile, readFileAsDataUrl, rememberDocumentFile } from '../../lib/documentFileStore';
+import { UPLOAD_RULES } from './documentUploadRules';
 import { fileSizeLabel } from '../../lib/format';
-import { pdfPageCountOfFile } from '../../lib/pdfPageCount';
 import type { AdditionalDocument } from './AdditionalDocumentsUpload';
 
 /**

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { CHAT, Badge, Button, Modal, Textarea } from 'dxp-ui';
+import { Badge, Button, CHAT, Modal, OrderConfirmationScreen, Textarea } from 'dxp-ui';
 import { resolveLocationServiceability } from '../../engines/fibreServiceability';
 import type { AddressParts, FibreServiceability } from '../../engines/fibreServiceability';
 import { useNavigate } from '../../lib/router';
 import { notificationActions } from '../../stores/notificationSlice';
-import { OrderConfirmationScreen } from './OrderConfirmationScreen';
 import { EsimActivationPanel } from '../domain/EsimActivationPanel';
 
 import { logActivity } from '../../engines/activityEngine';

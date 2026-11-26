@@ -1,11 +1,10 @@
-import { Icon } from 'dxp-ui';
+import { Icon, strOrEmpty as str } from 'dxp-ui';
 import { contactInformationResolvers } from '../sections/contactInformationResolvers';
 import { Card, Pill, type Ctx } from './TelesalesOverview';
 import { asText, dateTime } from './telesalesOverviewModel';
 import { HeaderButton, SectionHeader, StatStrip, TableCard, WideBlock } from './TelesalesKit';
 import { ICON, pillFor } from './telesalesKitModel';
 import { demoOf, arr, type Rec } from './shared';
-import { strOrEmpty as str } from '../../../lib/values';
 import { catalogOf } from './billingShared';
 import type { ReactNodeLike } from './billingShared';
 

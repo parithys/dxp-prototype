@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import type { WizardStep } from './guidedWizardTypes';
 import { entityOps } from '../../../services/entityOps';
+import { type WizardStep } from 'dxp-ui';
 
 export function useDraftStepSync(
   isMirror: boolean,

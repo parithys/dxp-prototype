@@ -1,5 +1,5 @@
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { at } from '../summaryKit';
+import { type SummaryField } from 'dxp-ui';
 
 /** The Multi-SIMs provisioned, one line each (they share the Primary SIM's number). */
 export const multiSimSummary: SummaryField[] = [

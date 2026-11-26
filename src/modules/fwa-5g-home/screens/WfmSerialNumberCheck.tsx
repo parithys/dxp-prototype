@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { DualPlaySerialCheckStep } from '../../../components/patterns/DualPlaySerialCheckStep';
 import type { DualPlaySerialValue } from '../../../components/patterns/DualPlaySerialCheckStep';
-import { Button, Badge, Card } from 'dxp-ui';
+import { Badge, Button, Card, PageHeader } from 'dxp-ui';
 import { notificationActions } from '../../../stores/notificationSlice';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 import { useAction } from '../../../stores/hooks';
 import { useEntityOps, useEntityRecords } from '../../../services/entityHooks';
 

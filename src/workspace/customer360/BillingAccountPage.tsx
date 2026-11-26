@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { EmptyState, Badge, Button, Input, DateInput, Select, Icon, Tooltip, CHEVRON_LEFT } from 'dxp-ui';
+import { Badge, Button, CHEVRON_LEFT, DateInput, EmptyState, EntityMissing, Icon, Input, PageHeader, Select, Tooltip } from 'dxp-ui';
 import { useCustomerCreditBreakdown } from './useCreditLimitBreakdown';
 import { RestrictedCustomerNotice } from '../../components/patterns/RestrictedCustomerNotice';
 import { canViewCustomerSegment } from '../../engines/agentPrivilegeEngine';
@@ -13,9 +13,7 @@ import { SupportingDocumentField } from '../../components/domain/SupportingDocum
 import type { AdditionalDocument } from '../../components/domain/AdditionalDocumentsUpload';
 import { requirementForCondition } from '../../engines/journeyDocuments';
 import { BILL_TYPES, isValidVatExpiry } from '../../components/patterns/billingAccountModel';
-import { PageHeader } from '../../components/patterns/PageHeader';
 import { useSubmitGuard } from '../../hooks/useSubmit';
-import { EntityMissing } from '../../components/patterns/EntityMissing';
 import { formatAmountAny } from '../../lib/format';
 import { useAction, useAppSelector } from '../../stores/hooks';
 import { useEntityOps } from '../../services/entityHooks';

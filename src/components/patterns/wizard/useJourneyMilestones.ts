@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { holdUntilStep, reconcileMilestones, milestoneStateEqual, reachOnEvent, routeAnnouncements } from '../../../engines/milestoneEngine';
 import type { JourneyMilestones, MilestoneDef, MilestoneEvent, MilestoneState } from '../../../engines/milestoneEngine';
 import { notificationActions } from '../../../stores/notificationSlice';
-import type { WizardStep } from './guidedWizardTypes';
 import { store } from '../../../stores/store';
+import { type WizardStep } from 'dxp-ui';
 
 export const MILESTONES_KEY = 'milestones';
 export const MILESTONE_TOAST_MS = 4000;

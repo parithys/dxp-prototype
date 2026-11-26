@@ -1,11 +1,11 @@
 import { defaultBillLimitQar, formatQar, VAT_RATE } from '../../engines/postpaidPricing';
 import { numberWaiverLabel } from '../../engines/numberWaiver';
 import type { SimTypeValue } from '../domain/SimTypeStep';
-import type { SummaryTable } from './CheckoutSummaryTables';
 import type { CheckoutSummaryDerived } from './useCheckoutSummary';
 import { formatQarAny } from '../../lib/format';
 import { toLocalMsisdn } from '../domain/msisdnPickerModel';
 import { addonSummaryLabel, simSerialRows } from './checkoutSummaryRows';
+import { type SummaryTable } from 'dxp-ui';
 
 interface DetailedTablesArgs extends CheckoutSummaryDerived {
   customerName: string | undefined;

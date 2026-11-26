@@ -1,8 +1,8 @@
 import { ID_TYPES } from '../../../data/idTypes';
-import type { SummaryField } from './stepSummary';
 // The nested-value reader and QAR formatter every step summary shares (one definition, in the capability summary kit).
 import { at, qar, type Values } from '../../../capabilities/summaryKit';
 import { toLocalMsisdn } from '../../domain/msisdnPickerModel';
+import { type SummaryField } from 'dxp-ui';
 
 // Summary field sets shared by the journeys. Each builder takes the draft-values key the journey stores the step's
 // value under, so the same set serves journeys that name it differently.

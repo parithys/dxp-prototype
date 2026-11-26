@@ -2,13 +2,12 @@ import { badgeVariantFor } from '../../lib/statusTone';
 import { useRestrictedCustomers } from '../../hooks/useRestrictedCustomers';
 import { RestrictedRowsNotice } from '../../components/patterns/RestrictedRowsNotice';
 import { useEffect, useState } from 'react';
-import { Button, Modal, DataTable, Badge, Icon, ErrorBanner, SearchField, STAR, TRASH, WARNING } from 'dxp-ui';
+import { Badge, Button, DataTable, ErrorBanner, Icon, Modal, PageHeader, SearchField, STAR, TRASH, WARNING } from 'dxp-ui';
 import { useSubmitGuard } from '../../hooks/useSubmit';
 import { notificationActions } from '../../stores/notificationSlice';
 import { Link, useNavigate, useSearchParams } from '../../lib/router';
 
 import { isVisibleToAgent } from '../../engines/agentTaskEngine';
-import { PageHeader } from '../../components/patterns/PageHeader';
 import { formatDateTime } from '../../lib/format';
 import { useAction, useAppSelector } from '../../stores/hooks';
 import { FilterSelect } from '../customer360/sections/C360Kit';

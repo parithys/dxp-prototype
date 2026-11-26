@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { GuidedActivationWizard, idLookupStep } from '../../../capabilities';
 import type { IdLookupValue } from '../../../components/patterns/idLookupModel';
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
-import { attachSummaries } from '../../../components/patterns/wizard/stepSummary';
 import * as sums from '../../../components/patterns/wizard/commonSummaries';
-import { Button, Card } from 'dxp-ui';
+import { attachSummaries, Button, Card, type WizardStep } from 'dxp-ui';
 import { MAX_RESERVATIONS_PER_AGENT, toLocalMsisdn } from '../../../components/domain/msisdnPickerModel';
 import { FREE_NUMBER_PRICE_CEILING_QAR } from '../../../engines/postpaidPricing';
 import { formatQar } from '../../../lib/format';

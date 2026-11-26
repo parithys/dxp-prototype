@@ -5,9 +5,9 @@
 // workspace/customer360/demoValues.tsx.
 import type { Customer360Data } from '../../engines/customer360Engine';
 import type { CustomerService } from '../../engines/customerServicesEngine';
-import { str } from '../../lib/values';
 import { outstandingBalance } from '../../engines/billingBalance';
 import { isBusinessSegment } from '../../engines/businessSegment';
+import { str } from 'dxp-ui';
 
 export interface DemoCtx {
   data: Customer360Data;

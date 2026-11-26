@@ -1,11 +1,8 @@
-import { IconButton, Select, Icon, DOC, TRASH } from 'dxp-ui';
+import { DOC, DocumentCaptureActions, Icon, IconButton, pdfPageCountOfFile, Select, TRASH, uploadFileProblem, useConfirmedRemoval } from 'dxp-ui';
 import { fileSizeLabel } from '../../lib/format';
-import { pdfPageCountOfFile } from '../../lib/pdfPageCount';
 import { useState } from 'react';
-import { DocumentCaptureActions } from './DocumentCaptureActions';
 import { ID_TYPES } from '../../data/idTypes';
-import { UPLOAD_RULES, uploadFileProblem } from './documentUploadRules';
-import { useConfirmedRemoval } from './useConfirmedRemoval';
+import { UPLOAD_RULES } from './documentUploadRules';
 
 export interface CafDocument {
   /** Local id - these are session artefacts, not persisted records. */

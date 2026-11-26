@@ -3,19 +3,18 @@ import { simTypeStep, addressSummary, billingStep, cafSignatureStep, checkoutSum
 import { InstallationAddressForm, InstallationAddressStep, NumberDevicesStep } from './FixedStepViews';
 import { DeviceScanPanel } from './DeviceScan';
 import { isDeviceScanComplete, scansInJourney, serviceTypeOfOrder, validatedDevices } from './activationMode';
-import { isFwaService, type IndoorUnitDetails } from './fixedActivationModel';
+import { isFixedNumberAutoAllocated, isFwaService, type IndoorUnitDetails } from './fixedActivationModel';
 import { InstallationAddressView } from './InstallationAddressView';
 import { isInstallationAddressValid } from './installationAddress';
 import type { ZsbAddressValue } from '../../../components/patterns/ZsbAddressStep';
 import { appointmentBookingStep } from '../../../capabilities';
-import type { SummaryField } from '../../../components/patterns/wizard/stepSummary';
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
 import { appointmentSummary } from '../../../components/patterns/wizard/commonSummaries';
 import {
   serviceTypeLabel,
   type FixedInstallationValue,
   type FixedDevice,
 } from './fixedActivationModel';
+import { type SummaryField, type WizardStep } from 'dxp-ui';
 
 type Values = Record<string, unknown>;
 const at = (v: Values, ...path: string[]): unknown => path.reduce<unknown>((o, k) => (o && typeof o === 'object' ? (o as Values)[k] : undefined), v);
@@ -77,8 +76,10 @@ export function fixedNumberStep(): WizardStep {
       { key: 'msisdn', label: 'Fixed Line Number', type: 'text', value: (v) => at(v, 'msisdn') },
       { key: 'devices', label: 'Devices', type: 'text', optional: true, value: (v) => ((at(v, 'devices') as FixedDevice[] | undefined) ?? []).map((d) => d.name).join(', ') || undefined },
     ],
-    render: ({ values, setValue }) => <NumberDevicesStep values={values} setValue={setValue} />,
+    render: ({ values, setValue, goNext }) => <NumberDevicesStep values={values} setValue={setValue} goNext={goNext} />,
     isValid: (values) => Boolean(values.msisdn),
+    // No number reserved for the customer: the system allocates one and Continue passes over this page, which stays in the rail for the agent to view or change the number.
+    autoPass: isFixedNumberAutoAllocated,
   };
 }
 

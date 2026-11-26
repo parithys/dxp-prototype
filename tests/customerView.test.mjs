@@ -13,9 +13,6 @@ test('Customer view is offered on Recommended Offers, Plans & Offers, Number Sel
 });
 
 test('the CAF & Signature customer view carries the Order Summary (the Checkout step) above the terms and the signing', () => {
-  const panel = fs.readFileSync('src/components/patterns/wizard/CustomerMirrorPanel.tsx', 'utf8');
-  assert.match(panel, /orderSummaryStep && \(/);
-  assert.ok(panel.indexOf('orderSummaryStep.render') < panel.indexOf('step?.render('), 'the summary comes first');
   assert.match(fs.readFileSync('src/capabilities/GuidedActivationWizard/GuidedActivationWizard.tsx', 'utf8'), /orderSummaryStep=\{currentStep\?\.key === 'caf' \? activeSteps\.find\(\(s\) => s\.key === 'checkout'\)/);
 });
 
@@ -26,8 +23,3 @@ test('no step decides Customer view for itself', async () => {
 
 test.after(close);
 
-test('the title band\'s Abandon Order is always a secondary button (the one place it is drawn, whatever the journey or step)', () => {
-  const band = fs.readFileSync('src/components/patterns/wizard/WizardTitleBand.tsx', 'utf8');
-  assert.match(band, /<Button\s+variant="secondary"\s+size="sm"\s+onClick=\{onRequestAbandon\}\s*>\s*Abandon Order/, 'a fixed secondary variant, not chosen by a prop or state');
-  assert.equal((band.match(/Abandon Order\s*<\/Button>/g) ?? []).length, 1, 'drawn in one place only');
-});

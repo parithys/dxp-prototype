@@ -35,7 +35,8 @@ test('A product switch drops the actual user; Product Selection offers no Switch
 });
 
 test('Document Upload: one set of rules for every upload, one capability for the upload components', async () => {
-  const { UPLOAD_RULES, uploadFileProblem } = await load('/src/components/domain/documentUploadRules.ts');
+  const { UPLOAD_RULES } = await load('/src/components/domain/documentUploadRules.ts');
+  const { uploadFileProblem } = await import('dxp-ui');
   assert.equal(uploadFileProblem({ name: 'id.pdf', size: 1000 }, UPLOAD_RULES.identity), null);
   assert.match(uploadFileProblem({ name: 'id.png', size: 1000 }, UPLOAD_RULES.identity), /only PDF or JPG/);
   assert.match(uploadFileProblem({ name: 'id.jpg', size: 3 * 1024 * 1024 }, UPLOAD_RULES.identity), /limit is 2 MB/);

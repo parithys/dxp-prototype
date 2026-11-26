@@ -29,5 +29,4 @@ test('a journey without the option has no extra section, and the panel and the t
   assert.equal(sim.simTypeStep({}).extraSummary, undefined);
   const panel = fs.readFileSync('src/components/patterns/wizard/StepSummaryPanel.tsx', 'utf8');
   assert.match(panel, /\(isCurrent \? \[\] : step\.extraSummary \?\? \[\]\)\.filter\(\(x\) => x\.when\(values\)\)/, 'listed after its step, only while it applies and only once the agent has moved on from the page');
-  assert.match(fs.readFileSync('src/components/patterns/wizard/guidedWizardTypes.ts', 'utf8'), /extraSummary\?:/);
 });

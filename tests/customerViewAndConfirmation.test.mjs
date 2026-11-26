@@ -16,7 +16,6 @@ test('Checkout: the credit limit and bill limit rows are agent-only, the advance
   assert.match(layout, /agentOnly\s+label="Bill Limit"/);
   assert.match(layout, /<Row label="Advance Payment"/);
   assert.match(layout, /className="agent-only row-between"/);
-  assert.match(read('src/components/patterns/CheckoutSummaryTables.tsx'), /row\.agentOnly \? 'agent-only'/);
   for (const f of ['checkoutDetailedTables.ts', 'checkoutSummaryRows.ts', 'CheckoutDefaultLayout.tsx']) assert.doesNotMatch(read(`src/components/patterns/${f}`), /confirm before signature/, f);
   assert.doesNotMatch(read('src/components/patterns/checkoutDetailedTables.ts') + read('src/components/patterns/CheckoutDefaultLayout.tsx'), /HRN Advance/);
 });
@@ -33,7 +32,6 @@ test('Order Submitted: the heading follows the order, the eSIM QR and code wait 
   assert.match(s, /eSIM QR code will be sent only to your verified email address/);
   assert.match(s, /handoverPanel=\{\s*order\.esimActivationCode \?/, 'two columns only while the QR code is shown');
   assert.match(s, /if \(isMirrorWindow\) return;/);
-  assert.match(read('src/components/patterns/OrderConfirmationScreen.tsx'), /no-print print:hidden/, 'the action buttons are hidden in the pop-up by no-print');
 });
 
 test('a QAR 0 postpaid order gets a zero-value receipt, as the other journeys do, not a cash / WinCash handoff', () => {

@@ -1,8 +1,8 @@
 import { PAYMENT_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { Payment, PaymentActions, PaymentEWalletBalance } from './Payment';
 import type { CheckoutTotals } from '../../components/patterns/checkoutSummaryModel';
 import type { WinCashPaymentValue } from '../../components/patterns/WinCashPaymentStep';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * The figure Checkout already computed and read back to the customer (values.checkoutTotals, published by its

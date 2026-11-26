@@ -1,9 +1,8 @@
 import { useRestrictedCustomers } from '../../../hooks/useRestrictedCustomers';
 import { RestrictedRowsNotice } from '../../../components/patterns/RestrictedRowsNotice';
 import { badgeVariantFor, isSlaStopped } from '../../../lib/statusTone';
-import { TabStrip, DataTable, Badge, Button, Select, Checkbox, ErrorBanner, SearchField, Card } from 'dxp-ui';
+import { Badge, Button, Card, Checkbox, DataTable, ErrorBanner, PageHeader, SearchField, Select, TabStrip } from 'dxp-ui';
 import { useNavigate, useSearchParams } from '../../../lib/router';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 import { useMemo, useState } from 'react';
 import { notificationActions } from '../../../stores/notificationSlice';
 import { evaluateRule } from '../../../engines/ruleEngine';

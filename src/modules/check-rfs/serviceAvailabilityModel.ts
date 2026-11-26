@@ -136,15 +136,15 @@ export function deviceReuseOf(unit: Pick<AvailabilityUnit, 'device'>): DeviceReu
   return { status: zeroTouch === undefined ? 'unknown-model' : zeroTouch ? 'zero-touch' : 'no-zero-touch', model: d.model };
 }
 
-/** The tags the result puts beside the device model (Reusable green, Zero Touch blue, so the two read apart): Reusable and Zero Touch where they hold, Not Reusable where it cannot be reused, Zero Touch Unknown where the model is not mapped. */
+/** The tags the result puts beside the device model (Instant Activation where the model supports it, Not Reusable where the device cannot be reused; a reusable device has no tag). */
 export function deviceReuseTags(r: DeviceReuse): { label: string; tone: 'success' | 'info' | 'neutral' }[] {
   switch (r.status) {
     case 'none': return [];
     case 'not-reusable': return [{ label: 'Not Reusable', tone: 'neutral' }];
-    case 'zero-touch': return [{ label: 'Reusable', tone: 'success' }, { label: 'Instant Activation', tone: 'info' }];
-    case 'no-zero-touch': return [{ label: 'Reusable', tone: 'success' }];
-    // The model is not mapped, so Instant Activation is unknown: nothing is said about it (only the tag for a model known to support it is shown).
-    case 'unknown-model': return [{ label: 'Reusable', tone: 'success' }];
+    case 'zero-touch': return [{ label: 'Instant Activation', tone: 'info' }];
+    // A reusable device carries no tag of its own; only Not Reusable is called out. Where the model is not mapped, Instant Activation is unknown and nothing is said about it.
+    case 'no-zero-touch':
+    case 'unknown-model': return [];
   }
 }
 

@@ -77,7 +77,23 @@ export const FIXED_NUMBER_TABS_BY_ROLE: Record<string, readonly NumberTab[]> = {
   'ROLE-05': ['Free'],
 };
 export const fixedNumberTabsFor = (roleId: string): readonly NumberTab[] => FIXED_NUMBER_TABS_BY_ROLE[roleId] ?? ['Reserved', 'Free', 'Blocked'];
-export const FIXED_NUMBER_PICKER: NumberPickerProfile = { pool: 'fixed-line-numbers', tabsFor: fixedNumberTabsFor, lockIn: false, planEntitlement: false, selectHeld: false };
+/**
+ * The Fixed Line Number picker: Reserved, Free and Blocked where the customer has a number reserved (`withReserved`, opening on Reserved), otherwise Free and Blocked; never Star.
+ * `chooseHeld`: the reserved number is chosen for the agent when the picker opens (the step opened with no number), not when the agent comes back to change one.
+ */
+export const fixedNumberPicker = (withReserved: boolean, chooseHeld: boolean = withReserved): NumberPickerProfile => ({
+  pool: 'fixed-line-numbers',
+  tabsFor: (roleId) => fixedNumberTabsFor(roleId).filter((t) => withReserved || t !== 'Reserved'),
+  lockIn: false,
+  planEntitlement: false,
+  // Opened for a customer with a reserved number: that number is chosen for the agent. Coming back to change a number never swaps it for a held one.
+  selectHeld: withReserved && chooseHeld,
+});
+
+export const FIXED_NUMBER_PICKER: NumberPickerProfile = fixedNumberPicker(true);
+
+/** A Fixed Line Number the system allocated (none was reserved for the customer): Continue passes over Number Selection, which the agent can still open to view or change it. */
+export const isFixedNumberAutoAllocated = (values: Record<string, unknown>): boolean => values.msisdnSource === 'auto' && Boolean(values.msisdn);
 
 export interface FixedDevice {
   name: string;

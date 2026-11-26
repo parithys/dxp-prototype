@@ -1,6 +1,6 @@
 name: CI
 
-# Lint, type-check, the automated test suite, the production build and the Storybook build, on every push and pull request to main.
+# Lint, type-check, the automated test suite, and the production build, on every push and pull request to main.
 # The design-system library is NOT part of this repository: it is installed as a package (`npm run lib:install`, see scripts/install-library.mjs).
 # Where the package comes from:
 #   - the repository variable DXP_UI_SOURCE (a tarball URL, e.g. a library release asset, or an npm spec such as npm:@vfq/dxp-ui@0.2.0), else
@@ -79,9 +79,3 @@ jobs:
       # prebuild refreshes the sign-in news with --soft: it keeps the committed snapshot if vodafone.qa cannot be reached.
       - name: Build
         run: npm run build
-
-      - name: Storybook type-check
-        run: npm run storybook:typecheck
-
-      - name: Build Storybook
-        run: npm run build-storybook

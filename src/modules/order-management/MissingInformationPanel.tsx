@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { AdditionalDocumentsUpload, DocumentCaptureActions, UPLOAD_RULES, uploadFileProblem, type AdditionalDocument } from '../../capabilities';
-import { Badge, Button, Textarea } from 'dxp-ui';
-import { SignatureCapture } from '../../components/patterns/SignatureCapture';
-import { readFileAsDataUrl } from '../../lib/documentFileStore';
+import { Badge, Button, readFileAsDataUrl, SignatureCapture, Textarea } from 'dxp-ui';
 import { isMissingInformationComplete, type MissingInformationAnswer, type MissingInformationRequest } from '../../engines/approvalAuthority';
 import type { OrderAttachment } from './attachmentModel';
 

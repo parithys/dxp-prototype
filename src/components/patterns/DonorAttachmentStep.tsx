@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { detectSignatureMode } from './cafTypes';
-import { SignatureCapture } from './SignatureCapture';
-import { Badge, Card } from 'dxp-ui';
+import { Badge, Card, SignatureCapture } from 'dxp-ui';
 import { newMnpFormNumber, normalizePortInNumber } from '../../data/portInRules';
 import { mnpFormMissing, mnpFormSnapshotKey } from './donorModel';
 import type { DonorAttachmentValue, MnpFormInput, MnpFormType } from './donorModel';

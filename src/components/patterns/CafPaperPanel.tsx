@@ -1,16 +1,7 @@
 import { useState } from 'react';
-import { Icon, IconButton, Button, detectDeviceType, DOC, PRINT_ICON, TRASH } from 'dxp-ui';
-import { DocumentCaptureActions } from '../domain/DocumentCaptureActions';
-import { UPLOAD_RULES, uploadFileProblem } from '../domain/documentUploadRules';
-import { useConfirmedRemoval } from '../domain/useConfirmedRemoval';
-import { forgetDocumentFile, readFileAsDataUrl, rememberDocumentFile } from '../../lib/documentFileStore';
+import { Button, CameraCaptureButton, detectDeviceType, DOC, DocumentCaptureActions, FilePagesPreview, forgetDocumentFile, Icon, IconButton, pdfFromImageFiles, pdfPageCountOfFile, PRINT_ICON, readFileAsDataUrl, rememberDocumentFile, scannedFileName, TRASH, uploadFileProblem, useConfirmedRemoval, useDocumentScan } from 'dxp-ui';
+import { UPLOAD_RULES } from '../domain/documentUploadRules';
 import { formatBytes } from '../../lib/format';
-import { FilePagesPreview } from '../domain/FileImagePreview';
-import { pdfFromImageFiles } from '../../lib/pdfFromImages';
-import { pdfPageCountOfFile } from '../../lib/pdfPageCount';
-import { scannedFileName } from '../../lib/documentScan';
-import { CameraCaptureButton } from '../domain/CameraCaptureButton';
-import { useDocumentScan } from '../domain/useDocumentScan';
 
 /** A signed paper copy that was uploaded: the metadata is kept with the journey, the content in the session's file store (by id). */
 export interface PaperCafCopy {

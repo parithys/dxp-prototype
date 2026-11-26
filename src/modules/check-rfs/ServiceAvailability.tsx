@@ -69,7 +69,7 @@ function SplitterWarning({ unit, bar = false }: { unit: AvailabilityUnit; bar?: 
 /** The device already at the unit (the feasibility response), with whether it can be reused and, from UIM's model mapping, whether it supports Zero Touch activation. */
 function DeviceReuse({ unit, inline = false, extra }: { unit: AvailabilityUnit; inline?: boolean; extra?: ReactNode }) {
   const reuse = deviceReuseOf(unit);
-  // In the result panel (`inline`) the device is just its tags - Reusable, Instant Activation - and nothing at all where there is no device; a unit card names the model too.
+  // In the result panel (`inline`) the device is just its tags (Instant Activation) and nothing at all where there is no device; a unit card names the model too.
   if (inline) return reuse.status === 'none' ? null : <span className="cluster gap-1.5">{deviceReuseTags(reuse).map((t) => <span key={t.label} className={`badge ${TAG_CLASS[t.tone]}`}>{t.label}</span>)}</span>;
   // `extra`: a tag that sits in the same row as the device's own (a unit's splitter warning).
   if (reuse.status === 'none') return <div className="divider-top mt-3 pt-3 stack gap-1.5"><p className="caption-muted">No existing device at this location</p>{extra}</div>;
@@ -95,7 +95,7 @@ function UnitBody({ unit, selectable, selected, onInterested, busy }: { unit: Av
         <span className="value-text-lg font-bold">{label}</span>
         <span className="caption-muted">Floor {unit.floor}</span>
         {onInterested && (
-          // The same action as the Interested button at the foot of the card (it raises the same lead); a bordered icon button so it can sit in the header. It must not also select the unit.
+          // Raises a lead for the unit's location; a bordered icon button in the header. The card is a control of its own (it selects the unit), so this must not also select it.
           <span className="ml-auto">
             <Tooltip content="Create Lead" placement="top">
               <Button variant="secondary" size="icon" className="btn-icon-bordered text-fg size-9" aria-label={`Create Lead: interested in ${label}`} disabled={busy} onClick={(e) => { e.stopPropagation(); onInterested(); }} onKeyDown={(e) => e.stopPropagation()}>
@@ -117,14 +117,6 @@ function UnitBody({ unit, selectable, selected, onInterested, busy }: { unit: Av
         {unit.sla && <span>SLA {unit.sla} Hours</span>}
       </div>
       <DeviceReuse unit={unit} extra={<SplitterWarning unit={unit} />} />
-      {onInterested && (
-        <div className="row justify-end mt-auto pt-3">
-          {/* The card is a control of its own (it selects the unit), so this button must not also select it. */}
-          <Button variant="secondary" size="sm" disabled={busy} onClick={(e) => { e.stopPropagation(); onInterested(); }} onKeyDown={(e) => e.stopPropagation()}>
-            Interested
-          </Button>
-        </div>
-      )}
       {selectable && selected && unit.state === 'In Service' && (
         <p className="row gap-1.5 mt-3 caption-muted text-[var(--warn-text)]">
           <Icon path={WARNING_ALT} className="size-3.5 shrink-0" />

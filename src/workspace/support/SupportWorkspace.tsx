@@ -1,7 +1,6 @@
-import { Tabs, type TabItem } from 'dxp-ui';
+import { PageHeader, type TabItem, Tabs } from 'dxp-ui';
 import { TicketsDashboard } from '../../modules/trouble-ticketing-complaints/screens/TicketsDashboard';
 import { TicketApprovalQueue } from '../../modules/trouble-ticketing-complaints/screens/TicketApprovalQueue';
-import { PageHeader } from '../../components/patterns/PageHeader';
 
 // Cross-customer ticket queue - the standalone counterpart to Customer 360's
 // Tickets tab (same `trouble-tickets` records, unfiltered here vs. filtered

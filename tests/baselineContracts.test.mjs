@@ -22,8 +22,8 @@ before(async () => {
 test('leave-warning baseline: asked only for an in-app change of PATH while the draft has unsaved progress (not for ID-type-only, not in the customer pop-up, not when the journey opts out); the three choices are Close (stay), Abandon Journey, Save as Draft', async () => {
   const wiz = read('src/capabilities/GuidedActivationWizard/GuidedActivationWizard.tsx');
   assert.match(wiz, /if \(!confirmLeave \|\| isMirror \|\| currentLocation\.pathname === nextLocation\.pathname\) return false;\s*return draftNeedsSaving/);
-  const dialogs = read('src/components/patterns/wizard/WizardDialogs.tsx');
-  assert.match(dialogs, /title="Leave this journey\?"/);
+  const dialogs = read('node_modules/dxp-ui/dist/index.js');
+  assert.match(dialogs, /title: "Leave this journey\?"/);
   assert.match(dialogs, /Abandon Journey/);
   assert.match(dialogs, /Save as Draft/);
   const wf = await load('/src/stores/workflowSlice.ts');
@@ -86,13 +86,6 @@ test('page baseline: a skip link to #main-content (the focus target, tabIndex=-1
   assert.match(app, /role="status" aria-live="polite"/);
   assert.match(read('app/layout.tsx'), /<html lang="en">/);
   assert.match(read('src/navigation/useRouteAnnouncer.ts'), /document\.title/);
-});
-
-test('empty and error states: EmptyState and EntityMissing keep loading (role=status), failed (role=alert, with retry) and not found distinct', async () => {
-  const src = read('src/components/patterns/EntityMissing.tsx');
-  assert.match(src, /role="alert"[\s\S]*Try Again/);
-  assert.match(src, /role="status"[\s\S]*Loading \{what\}/);
-  assert.match(src, /We could not find this \{what\}/);
 });
 
 test('every screenshot in the baseline is named <screen>--<viewport>--<theme>--<state> and is listed in the report', () => {

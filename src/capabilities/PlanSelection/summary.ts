@@ -1,5 +1,5 @@
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { at } from '../summaryKit';
+import { type SummaryField } from 'dxp-ui';
 
 export const planChoiceSummary: SummaryField[] = [
   { key: 'plan', label: 'Plan', type: 'select', labelFrom: { kind: 'products', idField: 'productId', labelField: 'name' }, value: (v) => at(v, 'productId') },

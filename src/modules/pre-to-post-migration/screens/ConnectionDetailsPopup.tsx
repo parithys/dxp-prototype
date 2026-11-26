@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 import { loadCustomerLines } from '../../../capabilities';
 import type { CustomerLine } from '../../../capabilities';
 import { useAppSelector } from '../../../stores/hooks';
-import { Card } from 'dxp-ui';
+import { Card, PageHeader } from 'dxp-ui';
 
 // SCR-075: Connection Details Popup - a shared pre-journey guardrail reused
 // identically across FWA, MNP, Postpaid Cross-Sales, and Pre-to-Post

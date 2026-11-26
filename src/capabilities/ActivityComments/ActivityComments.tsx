@@ -1,4 +1,4 @@
-import { ActivityCommentsStep } from '../../components/patterns/ActivityCommentsStep';
+import { CommentsField } from 'dxp-ui';
 import { Select } from 'dxp-ui';
 
 /**
@@ -7,7 +7,7 @@ import { Select } from 'dxp-ui';
  * came in - the channel.
  *
  * Journeys mount THIS component (usually through activityStep in wizard/wizardSteps); none of them mounts
- * ActivityCommentsStep or lays out the channel picker itself.
+ * CommentsField or lays out the channel picker itself.
  *
  *   channel   when given, the channel the interaction came through is chosen above the comments.
  */
@@ -18,7 +18,7 @@ export interface ActivityCommentsProps {
 }
 
 export function ActivityComments({ value, onChange, channel }: ActivityCommentsProps) {
-  if (!channel) return <ActivityCommentsStep value={value} onChange={onChange} />;
+  if (!channel) return <CommentsField value={value} onChange={onChange} />;
   return (
     <div className="space-y-4">
       <Select
@@ -27,7 +27,7 @@ export function ActivityComments({ value, onChange, channel }: ActivityCommentsP
         onChange={(e) => channel.onChange(e.target.value)}
         options={channel.options.map((c) => ({ value: c, label: c }))}
       />
-      <ActivityCommentsStep value={value} onChange={onChange} />
+      <CommentsField value={value} onChange={onChange} />
     </div>
   );
 }

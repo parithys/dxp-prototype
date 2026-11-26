@@ -2,7 +2,7 @@ import { DevInfoOverlay } from './workspace/administration/DevInfoOverlay';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { Button } from 'dxp-ui';
+import { Button, ErrorBoundary } from 'dxp-ui';
 import { configActions } from './stores/configSlice';
 
 import { Sidebar } from './navigation/Sidebar';
@@ -11,10 +11,10 @@ import { PersonaSwitcher } from './navigation/PersonaSwitcher';
 import { UniversalSearchShortcut } from './navigation/UniversalSearchButton';
 import { ToastContainer } from './capabilities';
 import { LoginPage } from './auth/LoginPage';
-import { ErrorBoundary } from './components/ErrorBoundary';
 import { MAIN_ID, useRouteAnnouncer } from './navigation/useRouteAnnouncer';
 import { useRouteScroll } from './navigation/useRouteScroll';
 import { useAction, useAppSelector } from './stores/hooks';
+import { appPath } from './lib/basePath';
 
 // The application's host-independent pieces: AppBootstrap (boot, theme, language, error and login gates) and Shell (sidebar, header,
 // announcer, toasts around the page). src/next/AppFrame.tsx wires them around the page Next.js routes to.
@@ -95,7 +95,7 @@ export function Shell({ children }: { children: ReactNode }) {
               hidden file inputs). Otherwise they resolve against the viewport and land a full scroll-offset below their
               card, inflating the scrollable height. */}
           <main id={MAIN_ID} tabIndex={-1} className="app-main">
-            <ErrorBoundary resetKey={pathname}>
+            <ErrorBoundary resetKey={pathname} homeHref={appPath('/')}>
               {children}
             </ErrorBoundary>
           </main>

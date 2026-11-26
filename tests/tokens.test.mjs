@@ -16,7 +16,6 @@ test('tokens: no dead tokens (declared but never read)', () => {
 
 // The application's own tokens (src/app-tokens.css): a raw colour there needs a dark value too, or an entry here with the reason it is the same in both themes.
 const APP_CONSTANT_ACROSS_THEMES = {
-  '--summary-milestone': 'Step Summary progress fill and milestone disc; same orange in both themes',
   '--login-bg': 'login hero is dark in both themes',
   '--toast-dot-info': 'dot on the dark toast',
   '--white-glass-10': 'glass fill on a dark surface',

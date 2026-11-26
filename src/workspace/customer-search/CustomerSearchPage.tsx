@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from '../../lib/router';
 import { CustomerSearchResults, MIN_QUERY_LENGTH } from './CustomerSearchResults';
 import { useCustomerSearch } from './useCustomerSearch';
-import { SearchField, Button, Icon, SEARCH_LARGE } from 'dxp-ui';
-import { PageHeader } from '../../components/patterns/PageHeader';
+import { Button, Icon, PageHeader, SEARCH_LARGE, SearchField } from 'dxp-ui';
 
 
 

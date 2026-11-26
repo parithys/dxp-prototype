@@ -1,11 +1,9 @@
 import { UPLOAD_RULES } from './documentUploadRules';
 import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Button, Icon, detectDeviceType, UPLOAD_ICON } from 'dxp-ui';
+import { Button, CameraCaptureButton, detectDeviceType, Icon, ScanFailureNotice, UPLOAD_ICON } from 'dxp-ui';
 import { ID_UPLOAD_ACCEPT, idCaptureOptions, idFileProblem, readIdFile } from './idUploadModel';
 import type { IdUploadResult, UploadedIdFile } from './idUploadModel';
-import { ScanFailureNotice } from './ScanFailureNotice';
-import { CameraCaptureButton } from './CameraCaptureButton';
 
 
 /**

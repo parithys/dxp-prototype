@@ -1,4 +1,4 @@
-import { escapeHtml, printHtmlDocument } from '../../lib/printDocument';
+import { escapeHtml, printHtmlDocument } from 'dxp-ui';
 
 // The Customer Application Form on paper, for a customer who signs with a pen: the Primary form (the Primary Terms & Conditions) and, when a Secondary Contact is on the line, the
 // Supplementary form (the Supplementary Terms & Conditions). Each ends in a signature block. The signed copies are scanned or uploaded back on the CAF & Signature page.

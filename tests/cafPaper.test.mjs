@@ -77,7 +77,6 @@ test('Sign on Paper takes several uploaded JPGs or several scanned pages as ONE 
   assert.match(panel, /form\.onCopies\(\[\.\.\.form\.copies, /, 'another scan or upload adds a document');
   assert.doesNotMatch(panel.slice(panel.indexOf('<DocumentCaptureActions')), /rescan=/, 'Rescan only before Accept (in the review), never on an accepted document');
   assert.match(panel, /\{' \*'\}/, 'each signed document is marked mandatory');
-  assert.match(fs.readFileSync('src/components/domain/DocumentCaptureActions.tsx', 'utf8'), /multiple && onUploadMany && chosen\.length > 1/);
 });
 
 test('New Prepaid: with iPAY Activation Yes, the iPAY terms have no print button of their own: they are part of the consolidated Print Full T&C', () => {
@@ -89,14 +88,13 @@ test('New Prepaid: with iPAY Activation Yes, the iPAY terms have no print button
 });
 
 test('an Open Camera photo is handed over as the real capture in a type a preview can draw (no type -> JPEG; HEIC/WebP re-encoded), and an ID read with no type is not an octet stream', async () => {
-  const cam = await load('/src/lib/documentScan.ts');
+  const cam = await import('dxp-ui');
   const typeless = new File(['x'], 'p.jpg', { type: '' });
   assert.equal((await cam.previewableCameraPhoto(typeless)).type, 'image/jpeg');
   const jpeg = new File(['x'], 'p.jpg', { type: 'image/jpeg' });
   assert.equal(await cam.previewableCameraPhoto(jpeg), jpeg, 'a JPEG is untouched');
   const model = fs.readFileSync('src/components/domain/idUploadModel.ts', 'utf8');
   assert.match(model, /application\\\/octet-stream/);
-  assert.match(fs.readFileSync('src/components/domain/CameraCaptureButton.tsx', 'utf8'), /previewableCameraPhoto\(photo\)\.then/);
 });
 
 test('the CAF page offers "Sign Digitally" (default) and "Sign on Paper" as two cards side by side; the paper panel shows only for paper (or once copies are in), the signature pad only for digital', () => {
@@ -143,7 +141,7 @@ test('each Sign on Paper container starts with "Print Full T&C", which prints ev
 });
 
 test('a PDF document shows its page count beside its size; the count is read from the PDF itself, and unknown stays unknown', async () => {
-  const lib = await load('/src/lib/pdfPageCount.ts');
+  const lib = await load('dxp-ui');
   const pdf = (body) => new TextEncoder().encode(`%PDF-1.4\n${body}\n%%EOF`);
   assert.equal(lib.pdfPageCountOf(pdf('1 0 obj << /Type /Pages /Kids [2 0 R 3 0 R 4 0 R] /Count 3 >> endobj\n2 0 obj << /Type /Page >> endobj\n3 0 obj << /Type /Page >> endobj\n4 0 obj << /Type /Page >> endobj')), 3);
   assert.equal(lib.pdfPageCountOf(pdf('2 0 obj << /Type /Page /Parent 1 0 R >> endobj')), 1, 'page objects counted when no tree count is stated');

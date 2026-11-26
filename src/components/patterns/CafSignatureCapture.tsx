@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Icon, Button, Checkbox, Badge, OptionToggle, PEN_ICON, PRINT_ICON } from 'dxp-ui';
+import { Badge, Button, Checkbox, Icon, OptionToggle, PEN_ICON, PRINT_ICON, SignatureCapture } from 'dxp-ui';
 import { SelectedTick } from '../primitives/offerCardParts';
-import { SignatureCapture } from './SignatureCapture';
 import { CafDocumentUpload } from '../domain/CafDocumentUpload';
 import type { CafDocument } from '../domain/CafDocumentUpload';
 import { AdditionalDocumentsUpload } from '../domain/AdditionalDocumentsUpload';

@@ -6,7 +6,7 @@ export { AdditionalDocumentsUpload } from '../../components/domain/AdditionalDoc
 export type { AdditionalDocument } from '../../components/domain/AdditionalDocumentsUpload';
 export { CafDocumentUpload } from '../../components/domain/CafDocumentUpload';
 export type { CafDocument } from '../../components/domain/CafDocumentUpload';
-export { UPLOAD_RULES, uploadFileProblem } from '../../components/domain/documentUploadRules';
-export type { UploadRules } from '../../components/domain/documentUploadRules';
-export { DocumentCaptureActions } from '../../components/domain/DocumentCaptureActions';
+export { UPLOAD_RULES } from '../../components/domain/documentUploadRules';
+export { DocumentCaptureActions, uploadFileProblem } from 'dxp-ui';
+export type { UploadRules } from 'dxp-ui';
 export { SupportingDocumentField } from '../../components/domain/SupportingDocumentField';

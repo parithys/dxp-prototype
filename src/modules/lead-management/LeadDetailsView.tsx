@@ -1,11 +1,10 @@
-import { EntityMissing } from '../../components/patterns/EntityMissing';
 import { useEffect, useState } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useSearchParams } from '../../lib/router';
 import { useGetLeadQuery, useUpdateLeadMutation } from '../../services/apiSlice';
 import type { UpdateLeadArgs } from '../../services/types';
 import { notificationActions } from '../../stores/notificationSlice';
-import { Badge, Button, Select, Textarea, Input, DateInput, Card } from 'dxp-ui';
+import { Badge, Button, Card, DateInput, EntityMissing, Input, Select, Textarea } from 'dxp-ui';
 import { Drawer } from '../../capabilities';
 import { useSubmitGuard } from '../../hooks/useSubmit';
 import { useAction } from '../../stores/hooks';

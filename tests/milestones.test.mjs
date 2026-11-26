@@ -170,7 +170,7 @@ test('auto-dismiss: a toast with autoDismissMs closes itself', async () => {
 });
 
 test('the step summary marks a milestone step with a flag in place of the tick, and only that step', async () => {
-  const { StepSummarySection } = await load('/src/components/patterns/wizard/StepSummarySection.tsx');
+  const { StepSummarySection } = await import('dxp-ui');
   const row = (milestone) => html(h(StepSummarySection, { title: 'Customer Verification', open: false, onToggle() {}, milestone }, null));
   const plain = row(false);
   const flagged = row(true);

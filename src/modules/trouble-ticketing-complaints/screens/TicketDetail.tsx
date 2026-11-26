@@ -1,8 +1,7 @@
 
 import { useRestrictedCustomers } from '../../../hooks/useRestrictedCustomers';
 import { RestrictedCustomerNotice } from '../../../components/patterns/RestrictedCustomerNotice';
-import { EntityMissing } from '../../../components/patterns/EntityMissing';
-import { Tabs, Card } from 'dxp-ui';
+import { Card, EntityMissing, Tabs } from 'dxp-ui';
 import { evaluateRule } from '../../../engines/ruleEngine';
 import { canResolveTicket, canReassignTicketQueue, canSeeTicketAuditTrail } from '../../../engines/agentPrivilegeEngine';
 import { REOPEN_WINDOW_DAYS } from '../../../data/reference/ticketReferenceData';

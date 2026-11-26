@@ -56,7 +56,19 @@ test('the picker profile reads the Fixed Line Number pool and no role is ever of
   assert.deepEqual(model.fixedNumberTabsFor('ROLE-01'), ['Reserved', 'Free', 'Blocked']);
 });
 
-test('a number held for the customer is listed on the Reserved tab and can be chosen there, but is not chosen for the agent when the picker opens', () => {
+test('Number Selection is passed over for a system-allocated number, and coming back to change it offers no Reserved or Star tab', () => {
+  assert.equal(model.isFixedNumberAutoAllocated({ msisdn: '+97444000001', msisdnSource: 'auto' }), true);
+  assert.equal(model.isFixedNumberAutoAllocated({ msisdn: '+97444000001', msisdnSource: 'selected' }), false, 'a number the agent chose is not passed over');
+  assert.equal(model.isFixedNumberAutoAllocated({ msisdnSource: 'auto' }), false, 'nothing allocated yet');
+  assert.equal(model.isFixedNumberAutoAllocated({}), false, 'a customer with a reserved number has none allocated, so the page is shown');
+  assert.deepEqual(model.fixedNumberPicker(true).tabsFor('ROLE-01'), ['Reserved', 'Free', 'Blocked']);
+  for (const role of personas) {
+    const tabs = model.fixedNumberPicker(false).tabsFor(role.id);
+    assert.ok(tabs.length > 0 && !tabs.includes('Reserved') && !tabs.includes('Star'), role.id);
+  }
+});
+
+test('a number held for the customer is listed on the Reserved tab and can be chosen there, and is chosen for the agent when the step opens', () => {
   assert.equal(model.FIXED_NUMBER_PICKER.heldSelectable, undefined, 'held numbers are selectable');
   assert.ok(pool.some((n) => n.status === 'Reserved' && n.reservedForQid), 'a held number exists to choose');
   const view = fs.readFileSync('src/modules/fixed-line-fibre/fixedActivation/FixedStepViews.tsx', 'utf8');
@@ -71,13 +83,17 @@ test('the mobile pickers are unchanged: the pool defaults to the mobile numbers 
   assert.doesNotMatch(prepaid, /fixed-line-numbers|selectHeld/);
   const postpaid = fs.readFileSync('src/modules/new-connection/postpaidSteps.tsx', 'utf8');
   assert.doesNotMatch(postpaid, /fixed-line-numbers|selectHeld/);
-  assert.equal(model.FIXED_NUMBER_PICKER.selectHeld, false, 'opening the chooser does not replace the allocated number with a held one');
+  assert.equal(model.fixedNumberPicker(false).selectHeld, false, 'opening the chooser to change a number does not replace it with a held one');
+  assert.equal(model.fixedNumberPicker(true, false).selectHeld, false, 'coming back to change a number keeps its Reserved tab but does not swap the number');
+  assert.deepEqual(model.fixedNumberPicker(true, false).tabsFor('ROLE-01'), ['Reserved', 'Free', 'Blocked']);
+  assert.equal(model.fixedNumberPicker(true).selectHeld, true, 'a number reserved for the customer is chosen for the agent when the step opens');
 });
 
 test('a number reserved for the customer is not replaced by an allocation: the selection opens on its Reserved tab for the agent to choose from', () => {
   const view = fs.readFileSync('src/modules/fixed-line-fibre/fixedActivation/FixedStepViews.tsx', 'utf8');
-  assert.match(view, /if \(held\) return;/, 'no allocation while a number is held');
+  assert.match(view, /if \(msisdn \|\| held\) return;/, 'no allocation while a number is held');
   assert.match(view, /status === 'Reserved' && Boolean\(customerIdNumber\)/);
-  assert.match(view, /!msisdn && heldForCustomer/);
-  assert.match(view, /Select a Fixed Line Number/);
+  assert.match(view, /openedFresh && heldForCustomer/);
+  assert.doesNotMatch(view, /Select a Fixed Line Number/, 'no heading or description above the tabs when a number is reserved');
+  assert.match(view, /\{!showHeldPicker && \(/);
 });

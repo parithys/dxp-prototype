@@ -13,7 +13,7 @@ import { requirementForCondition } from '../../engines/journeyDocuments';
 import type { AdditionalDocument } from '../DocumentUpload';
 import { isBillingAccountValid } from '../../components/patterns/billingAccountModel';
 import type { BillingAccountValue } from '../../components/patterns/billingAccountModel';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
+import { type WizardStep } from 'dxp-ui';
 
 // "Billing Profile" (2026-09-28 request) - Step 3, immediately
 // after Communication Address. NOT a revival of the old Billing

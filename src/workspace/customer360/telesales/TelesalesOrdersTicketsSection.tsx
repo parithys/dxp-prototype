@@ -1,13 +1,12 @@
 import { isClosedTicket } from '../../../lib/statusTone';
 import { FilterSelect } from '../sections/C360Kit';
-import { SearchField } from 'dxp-ui';
+import { SearchField, strOrEmpty as str } from 'dxp-ui';
 import { useState } from 'react';
 import { Card, Pill, type Ctx } from './TelesalesOverview';
 import { dateTime } from './telesalesOverviewModel';
 import { ActionList, BarChart, HeaderButton, PillTabs, SectionHeader, StatStrip, Table, TableCard, TileLinks, WideBlock } from './TelesalesKit';
 import { ICON, pillFor } from './telesalesKitModel';
 import { rowDate, type Rec } from './shared';
-import { strOrEmpty as str } from '../../../lib/values';
 import { PAGE } from './listShared';
 import { Pagination } from '../../../capabilities';
 

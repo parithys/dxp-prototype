@@ -2,12 +2,10 @@ import { isNumberWaiver } from '../../engines/numberWaiver';
 import type { ReactNode } from 'react';
 import { effectiveCreditLimitQar } from '../../components/patterns/billingAccountModel';
 import { CHECKOUT_LABEL, SUBSCRIPTIONS_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { CheckoutSummary, PrepaidCheckout, PrepaidOrderSummary } from './CheckoutSummary';
 import { PrepaidCartBody } from './PrepaidCartBody';
 import { allLines, isCartValid } from '../../components/patterns/prepaidCartModel';
 import type { PrepaidCheckoutTotals, PrepaidLine } from '../../components/patterns/prepaidCartModel';
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { at } from '../summaryKit';
 import { checkoutSummary } from './summary';
 import type { BillingAccountValue } from '../../components/patterns/billingAccountModel';
@@ -15,6 +13,7 @@ import type { EligibilityResult } from '../../components/domain/eligibilityTypes
 import type { SimTypeValue } from '../../components/domain/SimTypeStep';
 import type { GuidedContactValue } from '../../components/patterns/guidedContactModel';
 import { formatQar } from '../../lib/format';
+import { type SummaryField, type WizardStep } from 'dxp-ui';
 
 /**
  * Checkout summary: reads the order's facts from the standard value keys (contact, billingAccount, productId,

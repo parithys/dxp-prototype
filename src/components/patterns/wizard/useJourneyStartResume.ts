@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from '../../../lib/router';
 import { workflowActions } from '../../../stores/workflowSlice';
-import type { DraftOrderRecord, WizardStep } from './guidedWizardTypes';
+import type { DraftOrderRecord } from './guidedWizardTypes';
 import { withoutIdVerification } from './resumeModel';
 import { useAction } from '../../../stores/hooks';
 import { getEntity, listEntities } from '../../../services/entityOps';
+import { type WizardStep } from 'dxp-ui';
 
 /** Draft value naming the customer a journey was opened for. */
 

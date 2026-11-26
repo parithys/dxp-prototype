@@ -1,4 +1,4 @@
-import { SearchField, Icon, TabStrip, Button } from 'dxp-ui';
+import { Button, Icon, SearchField, strOrEmpty as str, TabStrip } from 'dxp-ui';
 import { overallCreditLimitOf } from '../creditLimitView';
 import { FilterSelect } from '../sections/C360Kit';
 import { useState } from 'react';
@@ -9,7 +9,6 @@ import { Card, KV, Pill, type Ctx } from './TelesalesOverview';
 import { dateTime } from './telesalesOverviewModel';
 import { ActionList, HeaderButton, SectionHeader, StatStrip, TableCard, WideBlock } from './TelesalesKit';
 import { ICON, pillFor, yesNo } from './telesalesKitModel';
-import { strOrEmpty as str } from '../../../lib/values';
 import { arr, rowDate, activityEntries } from './shared';
 import { formatQarAny } from '../../../lib/format';
 
