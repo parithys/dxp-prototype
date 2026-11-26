@@ -1,6 +1,6 @@
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { at } from '../summaryKit';
 import { paperCopiesOf } from '../../engines/journeyDocuments';
+import { type SummaryField } from 'dxp-ui';
 
 export const cafSummary: SummaryField[] = [
   { key: 'type', label: 'CAF Type', type: 'text', value: (v) => at(v, 'caf', 'cafType') },

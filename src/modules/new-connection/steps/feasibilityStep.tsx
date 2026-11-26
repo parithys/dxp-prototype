@@ -1,10 +1,9 @@
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
-import type { SummaryField } from '../../../components/patterns/wizard/stepSummary';
 import { SERVICE_FEASIBILITY_LABEL } from '../../../data/stepLabels';
 import { AVAILABILITY_STATUS } from '../../../data/reference/serviceAvailabilityData';
 import type { RfsCheckValue } from '../rfsStart';
 import { BackToCheckRfs } from './BackToCheckRfs';
 import type { ProductStepContext } from './ProductSelection';
+import { type SummaryField, type WizardStep } from 'dxp-ui';
 
 // Service Feasibility as a step of New Home Connection: the Check RFS result the journey started from, kept in the Journey Summary after the agent moves on (Contact, Recommended Offers, Service
 // Feasibility, Recommended Offers, ...). The check was made on Check RFS, so there is nothing to do here: the journey opens past it, and Back (or Edit) from the page after it returns to Check RFS

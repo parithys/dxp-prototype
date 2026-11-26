@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button } from 'dxp-ui';
-import { SummaryTables } from './CheckoutSummaryTables';
-import type { SummaryTable } from './CheckoutSummaryTables';
+import { Button, type SummaryTable, SummaryTables } from 'dxp-ui';
 import { cartTotals, priceLine } from './prepaidCartModel';
 import type { PrepaidCheckoutTotals, PrepaidLine, PricingExtra, PricingProduct, PricingRecharge } from './prepaidCartModel';
 import { prepaidOrderErrors } from './prepaidOrderValidation';

@@ -1,5 +1,3 @@
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
-import { attachSummaries } from '../../../components/patterns/wizard/stepSummary';
 import type { GuidedContactValue } from '../../../capabilities';
 import {
   cafSignatureStep,
@@ -17,6 +15,7 @@ import type { CrossSalesValue, PrepaidCheckoutTotals } from '../../../capabiliti
 import type { EligibilityResult } from '../../../components/domain/eligibilityTypes';
 import type { DeviceType } from 'dxp-ui';
 import * as sums from '../../../components/patterns/wizard/commonSummaries';
+import { attachSummaries, type WizardStep } from 'dxp-ui';
 
 /**
  * What the New Prepaid number picker shows: the tabs a ROLE may see (Retail Sales every number, Mass Market Free only), no sorting, no Star lock-in, and no pack entitlement -

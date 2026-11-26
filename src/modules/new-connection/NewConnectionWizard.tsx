@@ -115,6 +115,17 @@ export function NewConnectionWizard({
     setConfirmedOrder(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);
+  // A Check RFS result waits in this draft (`pendingHome`) only for the run that came from Check RFS (it opens with `startFresh` and the result as `startValues`). The page opened any other way
+  // (the dashboard, the sidebar) with nobody identified yet is not that run: an old result left in the draft is dropped, so a New Home offer chosen here goes to Check RFS for its own check
+  // instead of opening past a Service Feasibility the agent never saw.
+  useEffect(() => {
+    const st = location.state as { startFresh?: boolean; startValues?: unknown; resumeOrderId?: string } | null;
+    if (st?.startFresh || st?.startValues || st?.resumeOrderId) return;
+    const values = selectDraft(store.getState(), WIZARD_ID).values;
+    if (values.pendingHome === undefined || (values.contact as { moiResult?: unknown } | undefined)?.moiResult) return;
+    store.dispatch(workflowActions.patchDraft(WIZARD_ID, { unset: ['pendingHome'] }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // New Home Connection has no Contact page of its own: every New Connection journey identifies the customer on the common Contact page (/start-connection), which does the customer-level
   // checks once and leads to Recommended Offers, from where New Home starts. A home journey opened with nobody identified (the journey card, Customer 360, Sales, the home URL) therefore goes
   // there - for the existing customer's route when the customer is known. Not when it is being resumed (a Draft Order re-verifies the ID in place), when it was opened with values carried (from

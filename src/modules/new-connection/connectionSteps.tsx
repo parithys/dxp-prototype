@@ -1,4 +1,3 @@
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { billingStep, customerQualificationStep, isRepresentativeOrder, representativeContactStep, representativeHeaderAction, representativeIdentityStep, serviceAddressStep } from '../../capabilities';
 import type { GuidedContactValue } from '../../components/patterns/guidedContactModel';
 import type { QualificationContext } from '../../capabilities';
@@ -25,6 +24,7 @@ import { planTypeOfHomeProduct } from '../../components/patterns/homePlanModel';
 import { IdTypeApprovalNotice } from './steps/IdTypeApprovalNotice';
 import { homeKindStep } from './steps/HomeKindStep';
 import type { ProductStepContext } from './steps/ProductSelection';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * Lets the page after a Recommended Offer carry the ID type's approval notice (see IdTypeApprovalNotice): every product step can be that page, and only the first to

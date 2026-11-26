@@ -1,5 +1,5 @@
 import type { PassportVisa } from '../../../data/passportVisa';
-import { Button, Icon } from 'dxp-ui';
+import { Button, Icon, str } from 'dxp-ui';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Customer360Data } from '../../../engines/customer360Engine';
@@ -9,7 +9,6 @@ import { IC, fmtDate } from './c360KitModel';
 import type { Tone } from './c360KitModel';
 import { contactInformationResolvers } from './contactInformationResolvers';
 import { Dv } from '../demoValues';
-import { str } from '../../../lib/values';
 
 type Rec = Record<string, unknown>;
 const dash = (v: ReactNode | undefined | null): ReactNode => (v === undefined || v === null || v === '' ? <span className="text-muted">-</span> : v);

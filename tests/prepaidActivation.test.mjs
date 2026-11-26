@@ -197,7 +197,7 @@ test('separation: New Prepaid has no Address, Billing, Secondary Contact, pack d
 // SIM Selection comes before Number Selection in New Prepaid (Mobile Prepaid BRSD sequence). The expected order is written from the requirement.
 test('New Prepaid sequence: Addons (with the recharge) -> SIM -> Number -> Order Summary -> CAF -> Payment; a Pre-Paired SIM passes over Number', async () => {
   const { prepaidSteps } = await load('/src/modules/mobile-prepaid/screens/prepaidSteps.tsx');
-  const nav = await load('/src/components/patterns/wizard/wizardNavigation.ts');
+  const nav = await import('dxp-ui');
   const steps = prepaidSteps({ device: 'web' });
   const keys = steps.map((x) => x.key);
   const at = (k) => keys.indexOf(k);

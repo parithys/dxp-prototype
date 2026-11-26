@@ -30,8 +30,8 @@ test('leave-journey: the guard is the app-owned useBlocker; the prompt is a Moda
   assert.match(hooks, /export function useBlocker\(fn: BlockerFn\)/);
   assert.match(hooks, /window\.addEventListener\('beforeunload', onUnload\)/);
   assert.match(hooks, /Browser Back\/Forward CANNOT be intercepted/);
-  const dialogs = read('src/components/patterns/wizard/WizardDialogs.tsx');
-  assert.match(dialogs, /title="Leave this journey\?"/);
+  const dialogs = read('node_modules/dxp-ui/dist/index.js');
+  assert.match(dialogs, /title: "Leave this journey\?"/);
   for (const label of ['Abandon Journey', 'Save as Draft']) assert.ok(dialogs.includes(label), label);
 });
 

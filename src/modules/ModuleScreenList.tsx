@@ -1,5 +1,4 @@
-import { SearchField, Badge, Icon, Button, CHEVRON_LEFT, OPEN_ARROW, SEARCH_ICON, Card } from 'dxp-ui';
-import { PageHeader } from '../components/patterns/PageHeader';
+import { Badge, Button, Card, CHEVRON_LEFT, Icon, OPEN_ARROW, PageHeader, SEARCH_ICON, SearchField } from 'dxp-ui';
 import { useState } from 'react';
 import { NotFound } from './NotFound';
 import { useParams, Link } from '../lib/router';

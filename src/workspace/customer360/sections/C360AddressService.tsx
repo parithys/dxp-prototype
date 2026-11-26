@@ -1,8 +1,7 @@
 import { isClosedTicket } from '../../../lib/statusTone';
-import { Button, Icon } from 'dxp-ui';
+import { Button, Icon, OsmEmbed } from 'dxp-ui';
 import { useEffect, useState } from 'react';
 import { useNavigate } from '../../../lib/router';
-import { OsmEmbed } from '../../../components/domain/OsmEmbed';
 import type { Customer360Data } from '../../../engines/customer360Engine';
 import type { CustomerService, ServiceCategory } from '../../../engines/customerServicesEngine';
 import { AddressEditDrawer, type AddressRecord } from './AddressSection';

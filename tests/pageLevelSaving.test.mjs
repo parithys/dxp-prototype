@@ -41,6 +41,4 @@ test('submitting or abandoning removes the saved Draft Order and its Draft Order
 test('the Summary marks a finished page with the green tick: no step row is flagged as a milestone', () => {
   const w = read('src/capabilities/GuidedActivationWizard/GuidedActivationWizard.tsx');
   assert.doesNotMatch(w, /milestoneSteps/);
-  const section = read('src/components/patterns/wizard/StepSummarySection.tsx');
-  assert.match(section, /text-success/);
 });

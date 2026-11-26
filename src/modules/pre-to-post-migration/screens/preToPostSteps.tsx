@@ -1,4 +1,3 @@
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
 import {
   billingStep,
   cafSignatureStep,
@@ -12,6 +11,7 @@ import {
 import type { QualificationContext } from '../../../capabilities';
 import type { PostpaidStepContext } from '../../new-connection/postpaidSteps';
 import { resetChoices } from '../../mobile-service-changes/serviceChangeSteps';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * Prepaid to Postpaid Conversion, on the same shared steps as New Mobile Postpaid: Customer Verification (the

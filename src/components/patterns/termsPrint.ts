@@ -1,7 +1,7 @@
 
-import { escapeHtml, printHtmlDocument } from '../../lib/printDocument';
 import type { OrderTerms, TncSection } from './cafTermsModel';
 import { listEntities } from '../../services/entityOps';
+import { escapeHtml, printHtmlDocument } from 'dxp-ui';
 
 interface PrintableOrder {
   orderId: string;

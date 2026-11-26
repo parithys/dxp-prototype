@@ -2,7 +2,7 @@ import { defaultCreditLimitForSegment } from '../../../engines/hrnConfiguration'
 import { creditSegmentOf, customerCategoryOf } from '../../../engines/creditLimit';
 import { creditBreakdownOf } from '../creditLimitView';
 import { canChangePrimaryContact, contactName, primaryContactOf } from '../primaryContactModel';
-import { Button, TabStrip, Icon } from 'dxp-ui';
+import { Button, Icon, num, str, TabStrip } from 'dxp-ui';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { computeBillingSummary, withinBillHistoryWindow, type Customer360Data } from '../../../engines/customer360Engine';
@@ -15,7 +15,6 @@ import { fmtDate, fmtDateTime, IC, qar, toneFor } from './c360KitModel';
 import type { Tone } from './c360KitModel';
 import { isTonPending } from '../../../lib/statusTone';
 import { Dv } from '../demoValues';
-import { str, num } from '../../../lib/values';
 
 const ADJUSTMENT_TERMINAL = new Set(['Approved', 'Rejected', 'Failed']);
 

@@ -1,7 +1,7 @@
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { at } from '../summaryKit';
 import { extraStbCount, stbLabel, type HomeIptvSelection } from '../../engines/homeIptv';
 import { extendersSummaryText, type HomeExtendersSelection } from '../../engines/homeExtenders';
+import { type SummaryField } from 'dxp-ui';
 
 /** What the Addons page of a postpaid or prepaid journey adds to the Journey Summary: the add-ons, the discount and the bill limit, each only once chosen. */
 export const addonsSummary: SummaryField[] = [

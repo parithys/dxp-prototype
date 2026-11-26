@@ -4,12 +4,12 @@ import type { HomeExtendersSelection } from '../../engines/homeExtenders';
 import type { EligibilityResult } from '../domain/eligibilityTypes';
 import type { SimTypeValue } from '../domain/SimTypeStep';
 import type { CheckoutTotals, TncLegalFacts } from './checkoutSummaryModel';
-import { SummaryTables } from './CheckoutSummaryTables';
 import { CheckoutDefaultLayout } from './CheckoutDefaultLayout';
 import { buildDetailedTables } from './checkoutDetailedTables';
 import { insertRowsAfter } from './checkoutSummaryRows';
 import { useCheckoutSummary } from './useCheckoutSummary';
 import type { AddonBillingFrequency } from '../../engines/addonCategories';
+import { SummaryTables } from 'dxp-ui';
 
 interface CheckoutSummaryStepProps {
   /** A home order's IPTV choice (see engines/homeIptv.ts). */

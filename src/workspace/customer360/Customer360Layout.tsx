@@ -1,5 +1,5 @@
 import { vipTagOf } from '../../data/customerSegments';
-import { EmptyState, Button, Tooltip, Tabs, type TabItem } from 'dxp-ui';
+import { Button, EmptyState, EntityMissing, type TabItem, Tabs, Tooltip } from 'dxp-ui';
 import { overallCreditLimitOf } from './creditLimitView';
 import { creditRiskPatch, type BigDataCreditRisk, type CreditRiskSource } from '../../engines/creditLimit';
 import { isClosedTicket } from '../../lib/statusTone';
@@ -61,7 +61,6 @@ import { AuditTrailSection } from './sections/AuditTrailSection';
 import { AddressSection } from './sections/AddressSection';
 import { ContactSection } from './sections/ContactSection';
 import { DevicePenaltyPolicy, StarNumberPenaltyPolicy } from './sections/penaltyViewResolvers';
-import { EntityMissing } from '../../components/patterns/EntityMissing';
 import { formatQarAny, formatAmountAny } from '../../lib/format';
 import { useAction, useAppSelector } from '../../stores/hooks';
 import { entityOps, listEntities } from '../../services/entityOps';

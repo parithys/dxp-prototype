@@ -1,10 +1,9 @@
 import { badgeVariantFor } from '../../../lib/statusTone';
 import { useState } from 'react';
 import { useNavigate } from '../../../lib/router';
-import { Badge, Button, Card } from 'dxp-ui';
+import { Badge, Button, Card, PageHeader } from 'dxp-ui';
 import { workflowActions } from '../../../stores/workflowSlice';
 import { notificationActions } from '../../../stores/notificationSlice';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 import { formatQarAny } from '../../../lib/format';
 import { store } from '../../../stores/store';
 import { useAction } from '../../../stores/hooks';

@@ -1,17 +1,15 @@
 
 import { useRestrictedCustomers } from '../../hooks/useRestrictedCustomers';
 import { RestrictedCustomerNotice } from '../../components/patterns/RestrictedCustomerNotice';
-import { EntityMissing } from '../../components/patterns/EntityMissing';
 import { badgeVariantFor } from '../../lib/statusTone';
 import { formatDateTime } from '../../lib/format';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from '../../lib/router';
 import { DRAFT_ORDERS_PATH } from '../../capabilities';
-import { Badge, Button, Select, Card } from 'dxp-ui';
+import { Badge, Button, Card, EntityMissing, PageHeader, Select } from 'dxp-ui';
 
 import { canAssignTasks } from '../../engines/agentPrivilegeEngine';
 import { notificationActions } from '../../stores/notificationSlice';
-import { PageHeader } from '../../components/patterns/PageHeader';
 import { useSubmitGuard } from '../../hooks/useSubmit';
 import { useAction, useAppSelector } from '../../stores/hooks';
 import { useEntityOps, useEntityRecords, useKindPending } from '../../services/entityHooks';

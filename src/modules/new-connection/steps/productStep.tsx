@@ -1,9 +1,8 @@
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
 import { canUseFeature } from '../../../engines/personaEngine';
 
 import { HOME_CONNECTION_FEATURE, canStartProduct } from '../productAccess';
 import { JourneyCardButton, NewJourneyButtons, SERVICE_JOURNEYS, crossSalesSummary } from '../../../capabilities';
-import { ICONS_HOME, Card } from 'dxp-ui';
+import { Card, ICONS_HOME, type WizardStep } from 'dxp-ui';
 import { StartCards } from './StartCards';
 import { ProductSelection } from './ProductSelection';
 import type { ProductStepContext } from './ProductSelection';

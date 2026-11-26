@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AddonsSelection } from '../../capabilities';
 import { SelectedAddonsHeader } from '../../components/patterns/wizard/SelectedAddonsHeader';
-import { useMinWidth, EmptyState, Button, Card } from 'dxp-ui';
-import { PageHeader } from '../../components/patterns/PageHeader';
+import { Button, Card, EmptyState, PageHeader, useMinWidth } from 'dxp-ui';
 import { RestrictedCustomerNotice } from '../../components/patterns/RestrictedCustomerNotice';
 import { canViewCustomerSegment } from '../../engines/agentPrivilegeEngine';
 import { familyOwnerLine, packageLinesOf, packagePlanId, primaryLine1Activated } from '../../engines/familyPackage';

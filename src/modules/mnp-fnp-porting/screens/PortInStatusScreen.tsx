@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { WARNING, Badge, type BadgeVariant, Button, DataTable, ErrorBanner, Modal, Select } from 'dxp-ui';
+import { Badge, type BadgeVariant, Button, DataTable, ErrorBanner, Modal, PageHeader, Select, WARNING } from 'dxp-ui';
 import { Link, useNavigate, useSearchParams } from '../../../lib/router';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 import { SHOW_DEMO_CONTENT } from '../../../data/synthetic/syntheticMarker';
 import { REJECTION_REASONS, type PortInOrderStatus } from '../../../data/portInRules';
 import { approvePortIn, cancelPortIn, isAwaitingNpas, quickDraftValues, rejectPortIn } from '../../../engines/portInEngine';

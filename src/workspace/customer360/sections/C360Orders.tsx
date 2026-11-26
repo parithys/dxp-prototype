@@ -2,14 +2,13 @@ import { Pagination } from '../../../capabilities';
 import { useMemo, useState } from 'react';
 import { useCanStartNewConnection, useStartNewConnection } from '../useStartNewConnection';
 import { useNavigate } from '../../../lib/router';
-import { Icon, TabStrip } from 'dxp-ui';
+import { Icon, str, TabStrip } from 'dxp-ui';
 import type { Customer360Data } from '../../../engines/customer360Engine';
 import type { CustomerService } from '../../../engines/customerServicesEngine';
 import { ActionButton, DetailRows, FilterSelect, GridTable, Panel, Pill, SearchBox, TabPage, ViewPill } from './C360Kit';
 import { IC, fmtDate, fmtDateTime, usePaging } from './c360KitModel';
 import type { Tone } from './c360KitModel';
 import { Dv } from '../demoValues';
-import { str } from '../../../lib/values';
 import { isTonPending, orderBucket } from '../../../lib/statusTone';
 
 type Rec = Record<string, unknown>;

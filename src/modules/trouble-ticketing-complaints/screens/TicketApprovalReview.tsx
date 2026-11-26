@@ -1,17 +1,15 @@
 
 import { useRestrictedCustomers } from '../../../hooks/useRestrictedCustomers';
 import { RestrictedCustomerNotice } from '../../../components/patterns/RestrictedCustomerNotice';
-import { EntityMissing } from '../../../components/patterns/EntityMissing';
 import { formatDateTime } from '../../../lib/format';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from '../../../lib/router';
-import { Button, Badge, Select, Textarea, Card } from 'dxp-ui';
+import { Badge, Button, Card, EntityMissing, PageHeader, Select, Textarea } from 'dxp-ui';
 import { Drawer } from '../../../capabilities';
 
 import { notificationActions } from '../../../stores/notificationSlice';
 import { isVisibleToAgent } from '../../../engines/agentTaskEngine';
 import { TICKET_APPROVAL_ELIGIBLE_JOB_TITLES, APPROVAL_REJECT_REASONS, APPROVAL_RETURN_REASONS } from '../../../data/reference/ticketReferenceData';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 import { useAction, useAppSelector } from '../../../stores/hooks';
 import { useEntityOps, useEntityRecords, useKindPending } from '../../../services/entityHooks';
 import { listEntities } from '../../../services/entityOps';

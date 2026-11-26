@@ -1,12 +1,11 @@
 import { isBusinessSegment } from '../../../engines/businessSegment';
-import { Button, Icon } from 'dxp-ui';
+import { Button, Icon, strOrEmpty as str } from 'dxp-ui';
 import { useState } from 'react';
 import { accountInformationResolvers } from '../sections/accountInformationResolvers';
 import { Card, KV, Label, Pill, Value, type Ctx } from './TelesalesOverview';
 import { asText, dateTime, num } from './telesalesOverviewModel';
 import { ActionList, Avatar, HeaderButton, HeaderLink, SectionHeader, TableCard } from './TelesalesKit';
 import { ICON, pillFor, yesNo } from './telesalesKitModel';
-import { strOrEmpty as str } from '../../../lib/values';
 import { demoOf, arr, rowDate, activityEntries, toneColor } from './shared';
 
 // ============================================================================ Account

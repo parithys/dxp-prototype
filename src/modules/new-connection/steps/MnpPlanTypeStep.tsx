@@ -1,5 +1,4 @@
-import { ChoiceCards, ICON_CARD, ICON_PHONE } from 'dxp-ui';
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
+import { ChoiceCards, ICON_CARD, ICON_PHONE, type WizardStep } from 'dxp-ui';
 import { ProductEligibility } from './ProductEligibility';
 import { productEligibilityClear, selectMnpType } from './productChoice';
 import type { ProductStepContext } from './ProductSelection';

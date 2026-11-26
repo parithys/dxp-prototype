@@ -1,8 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "oxc"],
-  // Storybook is a separate tool chain (npm run storybook): its config and stories are not part of the application's lint run.
-  "ignorePatterns": [".storybook/**", "storybook/**", "storybook-static/**"],
   "rules": {
     "react/rules-of-hooks": "error",
     // Every native <button> declares its type (a bare one submits a form): the same rule tests/ui.test.mjs guards by source scan.

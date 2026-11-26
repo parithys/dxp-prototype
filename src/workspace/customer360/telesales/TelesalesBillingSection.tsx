@@ -1,4 +1,4 @@
-import { Button, Icon } from 'dxp-ui';
+import { Button, Icon, strOrEmpty as str } from 'dxp-ui';
 import { computeBillingSummary } from '../../../engines/customer360Engine';
 import { accountInformationResolvers } from '../sections/accountInformationResolvers';
 import { contactInformationResolvers } from '../sections/contactInformationResolvers';
@@ -7,7 +7,6 @@ import { dateTime, num } from './telesalesOverviewModel';
 import { ActionList, BarChart, HeaderButton, SectionHeader, Table } from './TelesalesKit';
 import { ICON, pillFor, yesNo } from './telesalesKitModel';
 import { rowDate, demoOf, arr, type Rec } from './shared';
-import { strOrEmpty as str } from '../../../lib/values';
 import { qar, monthLabel } from './billingShared';
 import { formatQarAny } from '../../../lib/format';
 

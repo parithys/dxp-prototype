@@ -1,10 +1,10 @@
 import { ACTUAL_USER_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import type { GuidedContactValue } from '../../components/patterns/guidedContactModel';
 import { ActualUser } from './ActualUser';
 import { isActualUserValid } from './actualUserModel';
 import type { ActualUserValue } from './actualUserModel';
 import { actualUserSummary } from './summary';
+import { type WizardStep } from 'dxp-ui';
 
 /** Who will use the line, stored under `actualUser`. Continues when the primary customer uses it, or the actual user is fully identified. */
 export function actualUserStep(opts: { primaryIdNumber?: (values: Record<string, unknown>) => string | undefined } = {}): WizardStep {

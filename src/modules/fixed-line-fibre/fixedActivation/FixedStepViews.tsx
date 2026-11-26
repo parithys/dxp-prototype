@@ -9,7 +9,7 @@ import { BARCODE_ICON, Button, Icon, Input, CHECK, FIBER, FWA_INDOOR, FWA_OUTDOO
 import { ServiceAddress } from '../../../capabilities';
 import type { ZsbAddressValue } from '../../../components/patterns/ZsbAddressStep';
 import { resolveFibreServiceability } from '../../../engines/fibreServiceability';
-import { FIXED_NUMBER_PICKER, FIXED_SERVICE_TYPES, checkIndoorUnitSerial, devicesFor, indoorUnitsInStock, normaliseIndoorUnitSerial, type FixedDevice, type IndoorUnitDetails, type FixedInstallationValue, type FixedServiceType } from './fixedActivationModel';
+import { fixedNumberPicker, FIXED_SERVICE_TYPES, checkIndoorUnitSerial, devicesFor, indoorUnitsInStock, normaliseIndoorUnitSerial, type FixedDevice, type IndoorUnitDetails, type FixedInstallationValue, type FixedServiceType } from './fixedActivationModel';
 
 type Values = Record<string, unknown>;
 
@@ -228,10 +228,10 @@ export function IndoorUnitSerial({ values, setValue }: { values: Values; setValu
   );
 }
 
-// Number & Devices: a Fixed Line Number is allocated from the Free pool when the page opens and shown as the order's number; the agent may keep it or, if the customer wants a different one, open
-// Number Selection (the same capability as Mobile Postpaid, over the Fixed Line Number pool and without Star numbers) to search and choose another. The devices that follow from the service type are
+// Number & Devices: with a number reserved for the customer the page is shown (Reserved, Free, Blocked, opening on Reserved). With none, a Fixed Line Number is allocated from the Free pool and the journey
+// moves straight on. The agent can come back to view it or, if the customer wants a different one, choose another (the same capability as Mobile Postpaid, over the Fixed Line Number pool, Free and Blocked only). The devices that follow from the service type are
 // recorded on the order (not listed on this page).
-export function NumberDevicesStep({ values, setValue }: { values: Values; setValue: (f: string, v: unknown) => void }) {
+export function NumberDevicesStep({ values, setValue, goNext }: { values: Values; setValue: (f: string, v: unknown) => void; goNext?: () => void }) {
   const serviceType = (values.installation as FixedInstallationValue | undefined)?.serviceType;
   const devices = values.devices as FixedDevice[] | undefined;
   const msisdn = values.msisdn as string | undefined;
@@ -246,16 +246,31 @@ export function NumberDevicesStep({ values, setValue }: { values: Values; setVal
   // Free number is allocated whenever the order has none (on opening, or after the agent clears a chosen number).
   const customerIdNumber = (values.contact as { idNumber?: string } | undefined)?.idNumber;
   const [heldForCustomer, setHeldForCustomer] = useState(false);
+  // Opened with no number (the agent arriving forward): with none reserved the system allocates one and moves straight on, so the page is never shown. Opened with a number (the agent coming back to
+  // view or change it) the page stays. Fixed when the step opens: clearing the number later must not move the agent on.
+  const openedWithoutNumber = useRef(!msisdn);
+  const [openedFresh] = useState(() => !msisdn);
+  // A number reserved for the customer is chosen for the agent when the page opens (the most recent hold) and stays on show on its Reserved tab, selected, for the agent to keep or swap for another reserved or Free number.
+  const showHeldPicker = openedFresh && heldForCustomer;
+  const advanceOnAllocation = useRef(false);
   useEffect(() => {
-    if (msisdn) return;
+    if (advanceOnAllocation.current && msisdn && source === 'auto') {
+      advanceOnAllocation.current = false;
+      goNext?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [msisdn, source]);
+  useEffect(() => {
     let live = true;
     void listEntities<MsisdnRecord>('fixed-line-numbers').then((all) => {
       if (!live) return;
       const held = all.some((n) => n.status === 'Reserved' && Boolean(customerIdNumber) && (n as { reservedForQid?: string }).reservedForQid === customerIdNumber);
       setHeldForCustomer(held);
-      if (held) return;
+      // Held numbers are known whether or not the order has a number; an allocation is only for an order with none and nothing reserved.
+      if (msisdn || held) return;
       const n = autoAllocatedFreeNumber(all);
       if (n) {
+        if (openedWithoutNumber.current) advanceOnAllocation.current = true;
         setValue('msisdn', n.msisdn);
         setValue('msisdnSource', 'auto');
         setPoolEmpty(false);
@@ -269,13 +284,8 @@ export function NumberDevicesStep({ values, setValue }: { values: Values; setVal
   return (
     <div className="space-y-6">
       <section className="space-y-3">
-        {/* A number reserved for the customer: nothing is allocated; the selection opens on its Reserved tab for the agent to choose from. */}
-        {!msisdn && heldForCustomer ? (
-          <div>
-            <h3 className="title title-lg font-semibold mb-2">Select a Fixed Line Number</h3>
-            <p className="caption-secondary" role="status">A Fixed Line Number is reserved for this customer. Choose it, or another number.</p>
-          </div>
-        ) : (
+        {/* A number reserved for the customer: nothing is allocated; the selection opens on its Reserved tab, with no heading of its own above the tabs. */}
+        {!showHeldPicker && (
           <div className="split">
             <div>
               <h3 className="title title-lg font-semibold mb-2">{source === 'selected' ? 'Selected Fixed Line Number' : 'Allocated Fixed Line Number'}</h3>
@@ -287,10 +297,10 @@ export function NumberDevicesStep({ values, setValue }: { values: Values; setVal
             </Button>
           </div>
         )}
-        {(choosing || (poolEmpty && !msisdn) || (!msisdn && heldForCustomer)) && (
+        {(choosing || (poolEmpty && !msisdn) || showHeldPicker) && (
           <NumberSelection
             value={msisdn}
-            profile={FIXED_NUMBER_PICKER}
+            profile={fixedNumberPicker(heldForCustomer, openedFresh)}
             customerIdNumber={customerIdNumber}
             onChange={(next) => {
               // Choosing the selected number again clears it: the Free pool allocates the next one, or - with a number reserved for the customer - the selection opens again.

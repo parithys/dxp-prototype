@@ -1,10 +1,9 @@
-import { Tabs, type TabItem } from 'dxp-ui';
+import { PageHeader, type TabItem, Tabs } from 'dxp-ui';
 import { RoleAccessSection } from './RoleAccessSection';
 import { BellNotificationsSection } from './BellNotificationsSection';
 import { BulkNotesConfigSection } from './BulkNotesConfigSection';
 import { CapabilityLibrarySection } from './CapabilityLibrarySection';
 import { UiComponentsLibrarySection } from './UiComponentsLibrarySection';
-import { PageHeader } from '../../components/patterns/PageHeader';
 
 // The home for backoffice/config-oriented capabilities: the role/access
 // directory (existing) plus Agent 360's Bell Notification (BIN) and Bulk

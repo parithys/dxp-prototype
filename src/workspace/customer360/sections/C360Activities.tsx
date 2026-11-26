@@ -1,5 +1,5 @@
 import { Pagination } from '../../../capabilities';
-import { Button, Icon } from 'dxp-ui';
+import { Button, Icon, str } from 'dxp-ui';
 import { useMemo, useState } from 'react';
 import { useNavigate } from '../../../lib/router';
 import type { Customer360Data } from '../../../engines/customer360Engine';
@@ -7,7 +7,6 @@ import type { CustomerService } from '../../../engines/customerServicesEngine';
 import { ActionButton, DetailRows, FilterSelect, IconTile, KpiGrid, KpiTile, Panel, Pill, SearchBox, StatusPill, TabPage } from './C360Kit';
 import { IC, fmtDate, fmtDateTime, qar, usePaging, type Tone } from './c360KitModel';
 import { Dv } from '../demoValues';
-import { str } from '../../../lib/values';
 
 const ORDER_DETAIL_ROUTE = '/order-management/order-approval-detail-attachments-order-details-activities-a';
 const DAY = 86_400_000;

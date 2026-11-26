@@ -1,6 +1,6 @@
 import { RECHARGE_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { RechargeSelection } from './RechargeSelection';
+import { type WizardStep } from 'dxp-ui';
 
 type Values = Record<string, unknown>;
 

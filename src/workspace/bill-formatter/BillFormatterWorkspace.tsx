@@ -1,4 +1,4 @@
-import { PageHeader } from '../../components/patterns/PageHeader';
+import { PageHeader } from 'dxp-ui';
 
 // The Bill Formatter workspace: a dedicated page reached from the left navigation. Empty for now - only the page title section.
 export function BillFormatterWorkspace() {

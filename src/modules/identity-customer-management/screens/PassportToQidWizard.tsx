@@ -1,6 +1,5 @@
 import { useNavigate } from '../../../lib/router';
 import * as sums from '../../../components/patterns/wizard/commonSummaries';
-import { attachSummaries } from '../../../components/patterns/wizard/stepSummary';
 import { CustomerIdentification } from '../../../capabilities';
 import { CUSTOMER_IDENTIFICATION_LABEL } from '../../../data/stepLabels';
 import { PassportOwnerCheck } from './PassportOwnerCheck';
@@ -8,9 +7,8 @@ import { passportToQidWrites, qidProblem, type PassportCheck } from '../passport
 import { qidDocumentRecord } from '../../../components/patterns/idLinkModel';
 import type { IdLookupValue } from '../../../components/patterns/idLookupModel';
 import { GuidedActivationWizard } from '../../../capabilities';
-import { Input, PhoneNumberInput, Badge, Card } from 'dxp-ui';
+import { attachSummaries, Badge, Card, Input, PhoneNumberInput, SignatureCapture } from 'dxp-ui';
 import { QidImageUpload, type QidImageUploadValue } from '../../../capabilities';
-import { SignatureCapture } from '../../../components/patterns/SignatureCapture';
 import { useState } from 'react';
 import { notificationActions } from '../../../stores/notificationSlice';
 import { useAction } from '../../../stores/hooks';

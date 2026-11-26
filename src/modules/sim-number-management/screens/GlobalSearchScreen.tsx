@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from '../../../lib/router';
-import { Input, Button, useEnterToSubmit, Card } from 'dxp-ui';
+import { Button, Card, Input, PageHeader, useEnterToSubmit } from 'dxp-ui';
 import { NewSimSwapWizard } from './NewSimSwapWizard';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 
 // SCR-195: Global Search - UJ-090: "Click Global Search icon -> Enter MSISDN
 // and click Go -> Click SIM Swap option." The SIM Swap wizard itself has no

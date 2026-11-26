@@ -2,7 +2,8 @@
  * Uploading the identity document as an alternative to scanning it: the files a customer's ID can arrive as, and how one is read.
  * One definition for every ID type, so the rules are the same wherever Customer Verification is used.
  */
-import { UPLOAD_RULES, uploadFileProblem } from './documentUploadRules';
+import { UPLOAD_RULES } from './documentUploadRules';
+import { uploadFileProblem } from 'dxp-ui';
 
 export const ID_UPLOAD_ACCEPT = UPLOAD_RULES.identity.accept;
 export const ID_UPLOAD_MAX_BYTES = UPLOAD_RULES.identity.maxBytes;

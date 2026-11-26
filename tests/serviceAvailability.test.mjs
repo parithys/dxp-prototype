@@ -105,9 +105,9 @@ test('device reuse and Zero Touch: read from the feasibility response and UIM\'s
   for (const [device, status] of table) assert.equal(model.deviceReuseOf({ device }).status, status, JSON.stringify(device));
   assert.equal(data.DEVICE_ZERO_TOUCH['Acme CPE X1'], undefined, 'an unmapped model stays unknown');
   const tags = (device) => model.deviceReuseTags(model.deviceReuseOf({ device })).map((t) => t.label);
-  assert.deepEqual(tags({ model: 'ZTE F670L', reusable: true }), ['Reusable', 'Instant Activation']);
-  assert.deepEqual(tags({ model: 'Nokia G-240W-C', reusable: true }), ['Reusable'], 'reusable, but the model does not support Zero Touch');
-  assert.deepEqual(tags({ model: 'Acme CPE X1', reusable: true }), ['Reusable'], 'a model not mapped for Instant Activation says nothing about it');
+  assert.deepEqual(tags({ model: 'ZTE F670L', reusable: true }), ['Instant Activation'], 'a reusable device carries no Reusable tag');
+  assert.deepEqual(tags({ model: 'Nokia G-240W-C', reusable: true }), [], 'reusable, but the model does not support Zero Touch');
+  assert.deepEqual(tags({ model: 'Acme CPE X1', reusable: true }), [], 'a model not mapped for Instant Activation says nothing about it');
   assert.deepEqual(tags({ model: 'ZTE F670L', reusable: false }), ['Not Reusable']);
   assert.deepEqual(tags(undefined), []);
   // Through the lookup: unit 101 of Al Waab has a reusable Zero Touch device, 202 none.
@@ -128,7 +128,7 @@ test('the splitter warnings the feasibility response gives are shown as they com
   assert.equal(model.splitterWarningOf(look('kid', { kid: 'KID-66840240-1402' }).units[0]), 'Splitter Not Mapped');
 });
 
-test('the unit cards carry an Interested button that raises a lead for the unit\'s location without selecting the unit', async () => {
+test('the unit cards carry a Create Lead icon button (no text Interested button) that raises a lead for the unit\'s location without selecting the unit', async () => {
   const fs = await import('node:fs');
   const sa = fs.readFileSync('src/modules/check-rfs/ServiceAvailability.tsx', 'utf8');
   assert.match(sa, /createRecord\('leads', \{[\s\S]*createdVia: 'Check RFS - Interested'[\s\S]*customerName: leadName\.trim\(\)[\s\S]*mobileNumber: leadMobile[\s\S]*kid: u\.kid[\s\S]*vfid: u\.vfid/);
@@ -136,6 +136,7 @@ test('the unit cards carry an Interested button that raises a lead for the unit\
   assert.match(sa, /if \(!u \|\| !result \|\| !b \|\| leadBusy \|\| !leadNameOk \|\| !leadMobileOk\) return;/);
   assert.match(sa, /title="Customer Details"[\s\S]*label="Name"\s+required[\s\S]*label="Mobile Number"\s+required/);
   assert.match(sa, /e\.stopPropagation\(\); onInterested\(\);/, 'the click is the button\'s own, not the card\'s selection');
+  assert.doesNotMatch(sa, /^\s*Interested\s*$/m, 'no text Interested button on the unit card');
   // The card holds a button, so it is not itself a button (no nested buttons).
   assert.match(sa, /<div\s+key=\{u\.kid\}\s+role="radio"/);
 });

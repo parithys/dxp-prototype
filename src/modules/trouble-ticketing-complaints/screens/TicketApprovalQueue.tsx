@@ -1,11 +1,10 @@
 import { useRestrictedCustomers } from '../../../hooks/useRestrictedCustomers';
 import { RestrictedRowsNotice } from '../../../components/patterns/RestrictedRowsNotice';
 import { useNavigate } from '../../../lib/router';
-import { DataTable, Badge, Button, ErrorBanner } from 'dxp-ui';
+import { Badge, Button, DataTable, ErrorBanner, PageHeader } from 'dxp-ui';
 
 import { isVisibleToAgent } from '../../../engines/agentTaskEngine';
 import { TICKET_APPROVAL_ELIGIBLE_JOB_TITLES } from '../../../data/reference/ticketReferenceData';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 import { useAppSelector } from '../../../stores/hooks';
 import { useEntityError, useEntityOps, useEntityRecords, useKindPending } from '../../../services/entityHooks';
 

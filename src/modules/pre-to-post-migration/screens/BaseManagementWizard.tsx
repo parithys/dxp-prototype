@@ -2,13 +2,12 @@ import { CUSTOMER_IDENTIFICATION_LABEL } from '../../../data/stepLabels';
 import { defaultCreditLimitFor } from '../../../engines/creditLimit';
 import { useNavigate } from '../../../lib/router';
 import * as sums from '../../../components/patterns/wizard/commonSummaries';
-import { attachSummaries } from '../../../components/patterns/wizard/stepSummary';
 import { GuidedActivationWizard } from '../../../capabilities';
 import { CustomerIdentification } from '../../../capabilities';
 import { activityStep } from '../../../capabilities';
 import type { IdLookupValue } from '../../../components/patterns/idLookupModel';
 import { BillLimitEditor } from '../../../components/domain/BillLimitEditor';
-import { Input, Select, Card } from 'dxp-ui';
+import { attachSummaries, Card, Input, Select } from 'dxp-ui';
 import { notificationActions } from '../../../stores/notificationSlice';
 
 import { formatQarAny, formatQar } from '../../../lib/format';

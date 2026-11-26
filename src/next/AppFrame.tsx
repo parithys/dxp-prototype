@@ -7,11 +7,11 @@ import type { ReactNode } from 'react';
 import { Provider } from 'react-redux';
 import '../modules/registerAllScreens';
 import { AppBootstrap, Shell } from '../App';
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import { LinkProvider, Spinner, detectDeviceType, trackInputModality } from 'dxp-ui';
+import { detectDeviceType, ErrorBoundary, LinkProvider, Spinner, trackInputModality } from 'dxp-ui';
 import { Link } from '../lib/router';
 import { applyDemoContentSetting } from '../data/synthetic/syntheticMarker';
 import { store } from '../stores/store';
+import { appPath } from '../lib/basePath';
 
 export function AppFrame({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -28,7 +28,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
     <Provider store={store}>
       {/* The library's DataTable draws row links through the application's router link (blockers and location state included). */}
       <LinkProvider value={Link}>
-      <ErrorBoundary>
+      <ErrorBoundary homeHref={appPath('/')}>
         <Suspense fallback={<div className="p-8 text-fg-2">Loading VFQ DXP…</div>}>
           <AppBootstrap>
             <Shell>

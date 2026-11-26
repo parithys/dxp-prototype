@@ -1,5 +1,5 @@
 import { formatDateTime, formatQar } from '../../lib/format';
-import { EmptyState, TabStrip, Pagination, pageWindow, Button, Badge, Icon, IconButton, Tooltip, Select, Checkbox, SearchField, CLEAR_ICON, SORT_PRICE_DESC, SORT_PRICE_ASC } from 'dxp-ui';
+import { Badge, Button, Checkbox, CLEAR_ICON, EmptyState, Icon, IconButton, pageWindow, Pagination, SearchField, Select, SORT_PRICE_ASC, SORT_PRICE_DESC, StarStat, TabStrip, Tooltip } from 'dxp-ui';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { notificationActions } from '../../stores/notificationSlice';
 import { CARD_IDLE, CARD_SELECTED, SelectedTick, SelectedCardTexture } from '../primitives/offerCardParts';
@@ -8,7 +8,6 @@ import { getPersona } from '../../engines/configEngine';
 import { FREE_NUMBER_PRICE_CEILING_QAR, STAR_NUMBER_ENTITLEMENT_MULTIPLIER, roundedEntitlementQar, starNumberOverageQar } from '../../engines/postpaidPricing';
 import { TAB_LABELS, TAB_ORDER, PORTAL_TAB_ORDER, RETAIL_SALES_PERSONA_ID, toLocalMsisdn, MAX_RESERVATIONS_PER_AGENT, PAGE_SIZE, FREE_PAGE_SIZE, FREE_SORT_OPTIONS, SEARCH_MODE_OPTIONS, DEFAULT_SEARCH_MODE, matchesNumberSearch, matchesPriceRange, priceBound, hasRepeatingPairPattern, searchError, SORTERS, STAT_ICONS, blockedForViewer } from './msisdnPickerModel';
 import type { MsisdnRecord, NumberPickerProfile, NumberTab, SearchMode, SortKey } from './msisdnPickerModel';
-import { StarStat } from './StarStat';
 import { chargeAfterWaiverQar } from '../../engines/numberWaiver';
 import { store } from '../../stores/store';
 import { useAppSelector } from '../../stores/hooks';
@@ -260,7 +259,7 @@ export function MsisdnPicker({ refreshKey = 0, selected, onSelect, onDeselect, w
     if (selected && myReserved.some((n) => n.msisdn === selected)) return;
     onSelect(latest.msisdn, chargeFor(latest.priceQAR));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [numbersLoaded, myReserved.length]);
+  }, [numbersLoaded, myReserved.length, profile?.selectHeld]);
 
   // Star and Free both get a sort control (Free joined 2026-09-30, number-
   // only - see FREE_SORT_OPTIONS). Reserved still gets none: an agent holds

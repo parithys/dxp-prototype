@@ -1,5 +1,5 @@
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { at, qar } from '../summaryKit';
+import { type SummaryField } from 'dxp-ui';
 
 export const checkoutSummary: SummaryField[] = [
   { key: 'due', label: 'Total Payable Today', type: 'text', value: (v) => qar(at(v, 'checkoutTotals', 'dueTodayQar')) },

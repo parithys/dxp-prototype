@@ -1,8 +1,8 @@
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { at } from '../summaryKit';
 import type { ActualUserValue } from './actualUserModel';
 import { actualUserIdentity } from './actualUserModel';
 import { toLocalMsisdn } from '../../components/domain/msisdnPickerModel';
+import { type SummaryField } from 'dxp-ui';
 
 const identityOf = (v: Record<string, unknown>) => actualUserIdentity(v.actualUser as ActualUserValue | undefined);
 

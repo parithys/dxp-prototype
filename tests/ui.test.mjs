@@ -64,7 +64,6 @@ test('guard: every hand-written <button> declares a type (so it never submits a 
 // two-column key-value read-back, and the dark "Monthly summary" / "Pack summary" receipts.
 const NON_DATA_TABLES = [
   'capabilities/CrossSellOffers/OfferDetailsDrawer.tsx',
-  'components/patterns/CheckoutSummaryTables.tsx',
   'capabilities/AddonsSelection/PrepaidAddonsStep.tsx',
 ];
 test('guard: data tables use DataTable - a raw <table> is only for the allow-listed key-value / legal tables', () => {

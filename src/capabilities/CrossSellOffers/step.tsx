@@ -3,7 +3,6 @@ import { crossSalesSummary } from './summary';
 import type { NavigateFunction } from '../../lib/router';
 import type { EntityKind } from '../../engines/mockDataEngine';
 import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { notificationActions } from '../../stores/notificationSlice';
 
 import { CrossSalesStep } from './CrossSalesStep';
@@ -13,6 +12,7 @@ import { NewJourneyButtons } from './JourneyActions';
 import { journeyLabel } from './serviceJourneys';
 import type { OfferJourneys } from './serviceJourneys';
 import { store } from '../../stores/store';
+import { type WizardStep } from 'dxp-ui';
 
 /** What the Offers step needs from its journey. */
 

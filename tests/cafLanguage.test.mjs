@@ -149,7 +149,6 @@ test('the toggle names the two languages; the pop-up chooses, the agent\'s scree
   assert.match(sig, /loadCafContent\(cafJourney, 'primary', language\), loadCafContent\(cafJourney, 'secondary', language\)/, 'both parties\' documents, in the language');
   assert.match(sig, /direction=\{inCustomerPopup\}/, 'only the pop-up is laid out right to left');
   assert.match(sig, /className="mirror-corner">\s*<CafLanguageToggle/, 'the toggle sits at the top right, in the title row');
-  assert.match(read('src/components/patterns/wizard/CustomerMirrorPanel.tsx'), /relative w-full p-6/, 'the card is the corner\'s positioning context');
   assert.match(read('src/hooks/useCustomerPopup.ts'), /mirror'\) === '1'/);
   const capture = read('src/components/patterns/CafSignatureCapture.tsx');
   assert.match(capture, /termsLanguage: lang/);
@@ -186,7 +185,6 @@ test('the terms sit in a dedicated fixed-height container that scrolls, with the
   const css = uiComponentsCss();
   assert.match(css, /\.caf-terms-scroll \{\s*@apply h-\[var\(--size-caf-terms-h\)\] overflow-y-scroll py-6;/, 'padding above and below; the vertical scrollbar always shown');
   assert.match(css, /\.caf-terms-scroll::-webkit-scrollbar \{\s*width: var\(--size-scrollbar\);/, 'a classic scrollbar, so it stays visible');
-  assert.match(read('src/components/patterns/wizard/CustomerMirrorPanel.tsx'), /step\?\.key === 'caf' \? 'sm:min-h-14'/, 'the title row is tall enough for the language toggle: no overlap');
   assert.match(tokensCss(), /--size-caf-terms-h: 21\.875rem;/);
   const twoCol = src.slice(src.indexOf('if (supplementaryTerms'), src.indexOf('if (signed)'));
   assert.ok(twoCol.indexOf("t('primaryContact')") > twoCol.indexOf('caf-terms-scroll') && twoCol.indexOf("t('primaryContact')") > twoCol.indexOf('</div>\n              <div className="pad-row">'), 'the contact line follows the scrolling container');

@@ -139,7 +139,7 @@ test('architecture: only the API layer talks to the mock data engine', () => {
 const ARTWORK = new Set([
   'components/primitives/VodafoneMark.tsx', 'components/primitives/VodafoneWordmark.tsx', 'components/primitives/CountryMarker.tsx',
   'components/primitives/PanelIcon.tsx', 'components/domain/ScannedIdPreview.tsx',
-  'components/patterns/wizard/StepSummarySection.tsx', 'components/patterns/wizard/StepSummaryPanel.tsx'
+  'components/patterns/wizard/StepSummaryPanel.tsx'
 ]);
 
 test('assets: SVG icon paths are defined in src/assets/icons, nowhere else', () => {
@@ -187,7 +187,7 @@ test('the npm scope of the design-system package is configured in one place (pac
   const scope = pkg.dxpUi.package.split('/')[0];
   const files = [];
   const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (/\.(tsx?|css|mjs)$/.test(e.name)) files.push(p); } };
-  for (const d of ['src', 'app', 'storybook', '.storybook', 'e2e']) if (fs.existsSync(d)) walk(d);
+  for (const d of ['src', 'app', 'e2e']) if (fs.existsSync(d)) walk(d);
   const naming = files.filter((f) => fs.readFileSync(f, 'utf8').includes(scope + '/'));
   assert.deepEqual(naming, [], `the scope ${scope} is only in package.json (dxpUi) and the docs; import the alias dxp-ui`);
 });

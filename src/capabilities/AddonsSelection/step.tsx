@@ -1,8 +1,6 @@
 import { isIptvComplete, type HomeIptvSelection } from '../../engines/homeIptv';
 import { HomeFreeAddonsApplier } from './HomeFreeAddonsApplier';
 import { extenderSerialsComplete, type HomeExtendersSelection } from '../../engines/homeExtenders';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
 import type { GuidedContactValue } from '../../components/patterns/guidedContactModel';
 import { DEFAULT_SERVICE_OPTIONS } from '../../components/patterns/serviceOptions';
@@ -19,6 +17,7 @@ import { SpendFlag } from './SpendFlag';
 import { addonsSummary, homeAddonsSummary } from './summary';
 import { ApplyAddonDiscountAction } from './ApplyAddonDiscountAction';
 import type { AppliedAddonDiscounts } from '../../engines/addonDiscounts';
+import { type SummaryField, type WizardStep } from 'dxp-ui';
 
 type Values = Record<string, unknown>;
 

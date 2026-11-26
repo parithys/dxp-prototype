@@ -1,20 +1,11 @@
-import { IconButton, detectDeviceType, Input, Select, Button, Drawer, Icon, CHEVRON_DOWN, DOC, SORT_ASC_ICON, TRASH, Card } from 'dxp-ui';
-import { FileImagePreview, FilePagesPreview } from './FileImagePreview';
-import { useDocumentScan } from './useDocumentScan';
+import { Button, Card, CHEVRON_DOWN, detectDeviceType, DOC, DocumentCaptureActions, DocumentFileMeta, documentFileOf, Drawer, FileImagePreview, FilePagesPreview, forgetDocumentFile, Icon, IconButton, Input, pdfFromImageFiles, pdfPageCountOfFile, readFileAsDataUrl, rememberDocumentFile, RemoveDocumentDialog, scannedFileName, Select, SORT_ASC_ICON, TRASH, uploadFileProblem, useDocumentScan } from 'dxp-ui';
 import { scannerTypeFor } from '../../engines/documentScanner';
-import { pdfFromImageFiles } from '../../lib/pdfFromImages';
-import { scannedFileName } from '../../lib/documentScan';
 import { fileSizeLabel, pagesLabel } from '../../lib/format';
-import { pdfPageCountOfFile } from '../../lib/pdfPageCount';
-import { DocumentFileMeta } from './DocumentFileMeta';
 import { useEffect, useRef, useState } from 'react';
-import { DocumentCaptureActions } from './DocumentCaptureActions';
 import { ScannedIdPreview } from './ScannedIdPreview';
-import { UPLOAD_RULES, uploadFileProblem } from './documentUploadRules';
-import { documentFileOf, forgetDocumentFile, readFileAsDataUrl, rememberDocumentFile } from '../../lib/documentFileStore';
+import { UPLOAD_RULES } from './documentUploadRules';
 import type { DocumentRequirement, JourneyDocument } from '../../engines/journeyDocuments';
 import { mandatoryDocumentLabels } from '../../engines/journeyDocuments';
-import { RemoveDocumentDialog } from './RemoveDocumentDialog';
 
 const escapeXml = (t: string) => t.replace(/[<>&"']/g, '');
 /** Stand-in for a scan whose image was not kept: says what it is and that it is a specimen. */

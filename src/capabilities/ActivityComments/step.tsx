@@ -1,6 +1,6 @@
 import { ACTIVITY_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { ActivityComments } from './ActivityComments';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * Activity: the agent's comments, stored under `comments`. Required by default; `required: false` for journeys where

@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { SCAN_DOCUMENT_TITLE } from './scanDocumentLabels';
-import { Button, Icon, Spinner, detectDeviceType, SCAN_CORNERS, Card } from 'dxp-ui';
+import { Button, Card, detectDeviceType, Icon, SCAN_CORNERS, ScanFailureNotice, Spinner } from 'dxp-ui';
 import { ScannedIdPreview } from './ScannedIdPreview';
 import { capturedFromCard } from './scannedIdModel';
-import { ScanFailureNotice } from './ScanFailureNotice';
 import { IdFileUpload } from './IdFileUpload';
 import { applyIdUpload, idCaptureOptions } from './idUploadModel';
 import { SYNTHETIC_CLASS } from '../../data/synthetic/syntheticMarker';

@@ -1,27 +1,20 @@
 import { Fragment, useState } from 'react';
 import { useBlocker, useLocation } from '../../lib/router';
 import { draftNeedsSaving, workflowActions, selectDraft } from '../../stores/workflowSlice';
-import { AbandonDialog, LeaveJourneyDialog, SaveExitDialog } from '../../components/patterns/wizard/WizardDialogs';
-import { CustomerMirrorPanel } from '../../components/patterns/wizard/CustomerMirrorPanel';
-import { WizardTitleBand } from '../../components/patterns/wizard/WizardTitleBand';
 import { SelectedAddonsHeader } from '../../components/patterns/wizard/SelectedAddonsHeader';
-import { WizardStepHeader } from '../../components/patterns/wizard/WizardStepHeader';
-import { WizardFooter } from '../../components/patterns/wizard/WizardFooter';
-import { WizardStepPanel } from '../../components/patterns/wizard/WizardStepPanel';
 import { StepSummaryPanel } from '../../components/patterns/wizard/StepSummaryPanel';
-import { useEnterToSubmit, useMinWidth, Card } from 'dxp-ui';
+import { AbandonDialog, Card, CustomerMirrorPanel, deriveWizardNav, LeaveJourneyDialog, SaveExitDialog, useEnterToSubmit, useMinWidth, useStepFocus, WizardFooter, WizardStepHeader, WizardStepPanel, WizardTitleBand } from 'dxp-ui';
 import { useJourneyStartResume } from '../../components/patterns/wizard/useJourneyStartResume';
 import { useDraftStepSync } from '../../components/patterns/wizard/useDraftStepSync';
 import { useCustomerViewShare } from '../../components/patterns/wizard/useCustomerViewShare';
 import { useMirrorChannel } from '../../components/patterns/wizard/useMirrorChannel';
-import { useStepFocus } from '../../components/patterns/wizard/useStepFocus';
 import { useWizardStepNavigation } from '../../components/patterns/wizard/useWizardStepNavigation';
 import { useJourneyMilestones } from '../../components/patterns/wizard/useJourneyMilestones';
 import { useWizardDraftActions } from '../../components/patterns/wizard/useWizardDraftActions';
-import { deriveWizardNav } from '../../components/patterns/wizard/wizardNavigation';
 import type { GuidedActivationWizardProps } from '../../components/patterns/wizard/guidedWizardTypes';
 import { store } from '../../stores/store';
 import { useAction, useAppSelector } from '../../stores/hooks';
+import { hasCustomerView } from '../../components/patterns/wizard/customerViewPolicy';
 
 // Pattern 1: Guided Multi-Step Wizard - the single most-repeated shape in the
 // entire corpus (SCR-043–050, SCR-121–134, SCR-152–162, SCR-190–192, etc.).
@@ -196,7 +189,7 @@ export function GuidedActivationWizard({
     };
     return (
       <div className="p-8">
-        <CustomerMirrorPanel step={currentStep} orderSummaryStep={currentStep?.key === 'caf' ? activeSteps.find((s) => s.key === 'checkout') : undefined} values={draft.values} interactive={interactive} onSetValue={mirrorSetValue} />
+        <CustomerMirrorPanel step={currentStep} orderSummaryStep={currentStep?.key === 'caf' ? activeSteps.find((s) => s.key === 'checkout') : undefined} values={draft.values} interactive={interactive} onSetValue={mirrorSetValue} reserveCornerHeight={currentStep?.key === 'caf'} />
       </div>
     );
   }
@@ -333,6 +326,7 @@ export function GuidedActivationWizard({
           <WizardStepHeader
             currentStep={currentStep}
             allowCustomerView={allowCustomerView}
+            hasCustomerView={hasCustomerView}
             viewOpen={viewOpen}
             toggleCustomerView={toggleCustomerView}
             stepHeadingRef={stepHeadingRef}

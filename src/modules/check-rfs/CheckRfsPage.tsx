@@ -1,12 +1,11 @@
-import { PageHeader } from '../../components/patterns/PageHeader';
 import { StepSummaryPanel, type CompletedSummaryStep } from '../../components/patterns/wizard/StepSummaryPanel';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { contactSummary } from '../../capabilities';
 import { CUSTOMER_IDENTIFICATION_LABEL } from '../../data/stepLabels';
 import { useLocation } from '../../lib/router';
 import { homeStartOf } from '../new-connection/rfsStart';
 import { SERVICE_FEASIBILITY_LABEL } from '../../data/stepLabels';
 import { ServiceAvailability } from './ServiceAvailability';
+import { PageHeader, type WizardStep } from 'dxp-ui';
 
 // Check RFS (ready for service): the Fibre & Home entry point that checks fibre or FWA availability at an address. It is reached
 // straight from the journey card, with no customer verification first - an availability check needs an address, not a customer.

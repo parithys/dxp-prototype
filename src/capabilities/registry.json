@@ -53,7 +53,7 @@
       "components/domain/idUploadModel.ts",
       "components/domain/PassportScanSections.tsx",
       "components/domain/qidImageUploadModel.ts",
-      "components/domain/ScanFailureNotice.tsx"
+      "components/primitives/ScanFailureNotice.tsx"
     ],
     "previewable": true,
     "publicApi": []
@@ -157,7 +157,7 @@
       "components/patterns/CafSignatureCapture.tsx",
       "components/patterns/CafPaperPanel.tsx",
       "components/patterns/cafPrint.ts",
-      "components/patterns/KeyInformationPanel.tsx"
+      "components/primitives/KeyInformationPanel.tsx"
     ],
     "previewable": true,
     "publicApi": [
@@ -179,7 +179,7 @@
     "summary": "The order read-back before signing and payment (plan, add-ons, discount, number, billing, monthly and one-off totals); publishes the totals and read-back rows the CAF and Payment reuse. An optional panel above it (the port-in validation gate). Includes the prepaid cart (Add another subscription) and the prepaid checkout, which a prepaid port-in also uses with its own lines, details and fees.",
     "parts": [
       "components/patterns/CheckoutSummaryStep.tsx",
-      "components/patterns/CheckoutSummaryTables.tsx",
+      "components/primitives/CheckoutSummaryTables.tsx",
       "components/patterns/CheckoutDefaultLayout.tsx",
       "components/patterns/useCheckoutSummary.ts",
       "components/patterns/checkoutSummaryModel.ts",
@@ -243,7 +243,7 @@
     "stepLabel": "ACTIVITY_LABEL",
     "summary": "The closing note on the actions performed, with an optional channel.",
     "parts": [
-      "components/patterns/ActivityCommentsStep.tsx"
+      "components/primitives/CommentsField.tsx"
     ],
     "previewable": true,
     "publicApi": []
@@ -259,7 +259,7 @@
     "summary": "The confirmation page for a submitted activation (facts, status, follow-on actions, eSIM handover, email) and the confirmed-order shape journeys hand it.",
     "parts": [
       "components/patterns/ActivationCompleteScreen.tsx",
-      "components/patterns/OrderConfirmationScreen.tsx",
+      "components/primitives/OrderConfirmationScreen.tsx",
       "capabilities/ActivationComplete/AddConnectionModal.tsx"
     ],
     "previewable": true,
@@ -482,7 +482,7 @@
       "components/domain/AdditionalDocumentsUpload.tsx",
       "components/domain/CafDocumentUpload.tsx",
       "components/domain/SupportingDocumentField.tsx",
-      "components/domain/DocumentCaptureActions.tsx",
+      "components/primitives/DocumentCaptureActions.tsx",
       "components/domain/documentUploadRules.ts"
     ],
     "previewable": true,

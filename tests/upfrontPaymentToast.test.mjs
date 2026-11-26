@@ -49,6 +49,5 @@ test('the upfront payment row carries the info treatment (blue edge, wash and ic
 
 test('the Approximate Bill Explainer is the agent\'s: its table is marked agent-only, so the customer view (mirror window) hides it', () => {
   assert.match(fs.readFileSync('src/components/patterns/checkoutDetailedTables.ts', 'utf8'), /title: 'Approximate Bill Explainer',\s*\/\/[^\n]*\n\s*agentOnly: true/);
-  assert.match(fs.readFileSync('src/components/patterns/CheckoutSummaryTables.tsx', 'utf8'), /t\.agentOnly \? 'agent-only' : ''/);
   assert.match(presetCss(), /\.mirror-window \.agent-only \{\s*display: none !important;/);
 });

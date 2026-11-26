@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from '../../../lib/router';
-import { Input, Select, Button, Badge, Card, Checkbox, Label } from 'dxp-ui';
+import { Badge, Button, Card, Checkbox, Input, Label, PageHeader, Select } from 'dxp-ui';
 import { evaluateRule } from '../../../engines/ruleEngine';
 import { notificationActions } from '../../../stores/notificationSlice';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 import { useAction } from '../../../stores/hooks';
 import { useEntityOps } from '../../../services/entityHooks';
 

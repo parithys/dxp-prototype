@@ -9,9 +9,9 @@ import { AddDiscountAction } from './AddDiscountAction';
 import { CustomiseAddonsAction } from './CustomiseAddonsAction';
 import { EligibilityChecksList } from '../../components/domain/EligibilityRows';
 import { buildEligibilityRows } from '../../components/domain/eligibilityRowsModel';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import type { CustomerTypeValue } from '../CustomerType/customerTypeModel';
 import { isCustomerTypeValid } from '../CustomerType/customerTypeModel';
+import { type WizardStep } from 'dxp-ui';
 
 /** What the postpaid plan steps need from their journey. */
 export interface PostpaidPlanContext {

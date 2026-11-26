@@ -237,7 +237,7 @@
   "layer": "Domain component",
   "scope": "Shared",
   "paths": [
-   "src/components/domain/ScanFailureNotice.tsx"
+   "src/components/primitives/ScanFailureNotice.tsx"
   ],
   "area": "components/domain (3)",
   "files": 3
@@ -479,7 +479,7 @@
   "layer": "Domain component",
   "scope": "Shared",
   "paths": [
-   "src/components/domain/CameraCaptureButton.tsx"
+   "src/components/primitives/CameraCaptureButton.tsx"
   ],
   "area": "components/domain (2), components/patterns (1)",
   "files": 3
@@ -501,7 +501,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/CustomerViewButton.tsx"
+   "src/components/primitives/CustomerViewButton.tsx"
   ],
   "area": "capabilities/ActivationComplete (1), components/patterns (1)",
   "files": 2
@@ -512,7 +512,7 @@
   "layer": "Domain component",
   "scope": "Shared",
   "paths": [
-   "src/components/domain/DocumentCaptureActions.tsx"
+   "src/components/primitives/DocumentCaptureActions.tsx"
   ],
   "area": "components/domain (3), capabilities/CustomerQualification (1), capabilities/EligibilityGate (1), capabilities/NumberSelection (1), components/patterns (1), modules/order-management (1)",
   "files": 8
@@ -1496,7 +1496,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/ActivityCommentsStep.tsx"
+   "src/components/primitives/CommentsField.tsx"
   ],
   "area": "capabilities/ActivityComments (1)",
   "files": 1
@@ -1773,7 +1773,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/CustomerMirrorPanel.tsx"
+   "src/components/primitives/CustomerMirrorPanel.tsx"
   ],
   "area": "capabilities/GuidedActivationWizard (1)",
   "files": 1
@@ -1971,7 +1971,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/KeyInformationPanel.tsx"
+   "src/components/primitives/KeyInformationPanel.tsx"
   ],
   "area": "capabilities/CafSignature (1)",
   "files": 1
@@ -2304,7 +2304,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/StepSummarySection.tsx"
+   "src/components/primitives/StepSummarySection.tsx"
   ],
   "area": "components/patterns (1)",
   "files": 1
@@ -2971,7 +2971,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/SignatureCapture.tsx"
+   "src/components/primitives/SignatureCapture.tsx"
   ],
   "area": "components/patterns (3), modules/order-management (1), modules/identity-customer-management (1)",
   "files": 5
@@ -3015,7 +3015,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/SummaryFieldRow.tsx"
+   "src/components/primitives/SummaryFieldRow.tsx"
   ],
   "area": "components/patterns (1)",
   "files": 1
@@ -3724,7 +3724,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/PageHeader.tsx"
+   "src/components/primitives/PageHeader.tsx"
   ],
   "area": "workspace/customer360 (3), modules/pre-to-post-migration (3), modules/trouble-ticketing-complaints (3), workspace/tasks (2), workspace/administration (2), modules/sim-number-management (2) +14 more",
   "files": 30
@@ -3867,7 +3867,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/StandaloneStepPage.tsx"
+   "src/components/primitives/StandaloneStepPage.tsx"
   ],
   "area": "modules/sim-number-management (1)",
   "files": 1
@@ -3989,7 +3989,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/WizardTitleBand.tsx"
+   "src/components/primitives/WizardTitleBand.tsx"
   ],
   "area": "capabilities/GuidedActivationWizard (1), components/patterns (1), modules/sim-number-management (1)",
   "files": 3
@@ -4088,7 +4088,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/EntityMissing.tsx"
+   "src/components/primitives/EntityMissing.tsx"
   ],
   "area": "workspace/customer360 (2), modules/trouble-ticketing-complaints (2), workspace/tasks (1), modules/order-management (1), modules/lead-management (1), modules/sim-number-management (1)",
   "files": 8
@@ -4143,7 +4143,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/OrderConfirmationScreen.tsx"
+   "src/components/primitives/OrderConfirmationScreen.tsx"
   ],
   "area": "components/patterns (1)",
   "files": 1
@@ -4198,7 +4198,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/WizardDialogs.tsx"
+   "src/components/primitives/WizardDialogs.tsx"
   ],
   "area": "capabilities/GuidedActivationWizard (1)",
   "files": 1
@@ -4420,7 +4420,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/WizardDialogs.tsx"
+   "src/components/primitives/WizardDialogs.tsx"
   ],
   "area": "capabilities/GuidedActivationWizard (1)",
   "files": 1
@@ -4552,7 +4552,7 @@
   "layer": "Domain component",
   "scope": "Shared",
   "paths": [
-   "src/components/domain/RemoveDocumentDialog.tsx"
+   "src/components/primitives/RemoveDocumentDialog.tsx"
   ],
   "area": "components/domain (2), capabilities/CustomerQualification (1)",
   "files": 3
@@ -4563,7 +4563,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/WizardDialogs.tsx"
+   "src/components/primitives/WizardDialogs.tsx"
   ],
   "area": "capabilities/GuidedActivationWizard (1)",
   "files": 1
@@ -4706,7 +4706,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/WizardStepHeader.tsx"
+   "src/components/primitives/WizardStepHeader.tsx"
   ],
   "area": "capabilities/GuidedActivationWizard (1), components/patterns (1)",
   "files": 2
@@ -4717,7 +4717,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/WizardStepPanel.tsx"
+   "src/components/primitives/WizardStepPanel.tsx"
   ],
   "area": "capabilities/GuidedActivationWizard (1), components/patterns (1)",
   "files": 2
@@ -5004,7 +5004,7 @@
   "layer": "Domain component",
   "scope": "Shared",
   "paths": [
-   "src/components/domain/DocumentFileMeta.tsx"
+   "src/components/primitives/DocumentFileMeta.tsx"
   ],
   "area": "capabilities/CustomerQualification (1), components/domain (1)",
   "files": 2
@@ -5048,7 +5048,7 @@
   "layer": "Domain component",
   "scope": "Shared",
   "paths": [
-   "src/components/domain/FileImagePreview.tsx"
+   "src/components/primitives/FileImagePreview.tsx"
   ],
   "area": "capabilities/CustomerQualification (1), components/domain (1)",
   "files": 2
@@ -5059,7 +5059,7 @@
   "layer": "Domain component",
   "scope": "Shared",
   "paths": [
-   "src/components/domain/FileImagePreview.tsx"
+   "src/components/primitives/FileImagePreview.tsx"
   ],
   "area": "components/patterns (1), components/domain (1)",
   "files": 2
@@ -5147,7 +5147,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/StepSummarySection.tsx"
+   "src/components/primitives/StepSummarySection.tsx"
   ],
   "area": "(file-local)",
   "files": 0
@@ -5236,7 +5236,7 @@
   "layer": "Domain component",
   "scope": "Shared",
   "paths": [
-   "src/components/domain/OsmEmbed.tsx"
+   "src/components/primitives/OsmEmbed.tsx"
   ],
   "area": "workspace/customer360 (1)",
   "files": 1
@@ -5313,7 +5313,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/StepSummarySection.tsx"
+   "src/components/primitives/StepSummarySection.tsx"
   ],
   "area": "(file-local)",
   "files": 0
@@ -5467,7 +5467,7 @@
   "layer": "Domain component",
   "scope": "Shared",
   "paths": [
-   "src/components/domain/StarStat.tsx"
+   "src/components/primitives/StarStat.tsx"
   ],
   "area": "workspace/administration (1), components/domain (1)",
   "files": 2
@@ -5577,7 +5577,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/wizard/WizardFooter.tsx"
+   "src/components/primitives/WizardFooter.tsx"
   ],
   "area": "capabilities/GuidedActivationWizard (1), components/patterns (1)",
   "files": 2
@@ -5846,7 +5846,7 @@
   "layer": "Pattern",
   "scope": "Shared",
   "paths": [
-   "src/components/patterns/CheckoutSummaryTables.tsx"
+   "src/components/primitives/CheckoutSummaryTables.tsx"
   ],
   "area": "components/patterns (2)",
   "files": 2

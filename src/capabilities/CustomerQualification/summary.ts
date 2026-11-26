@@ -1,7 +1,7 @@
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { ID_TYPES } from '../../data/idTypes';
 import { at } from '../summaryKit';
 import { toLocalMsisdn } from '../../components/domain/msisdnPickerModel';
+import { type SummaryField } from 'dxp-ui';
 
 const idTypeLabels = Object.fromEntries(ID_TYPES.map((t) => [t.type, t.label]));
 

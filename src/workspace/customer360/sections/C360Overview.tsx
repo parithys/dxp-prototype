@@ -8,7 +8,7 @@ import { isBusinessSegment } from '../../../engines/businessSegment';
 import { useState } from 'react';
 import { QueryFlowCard } from '../queryFlow/QueryFlowCard';
 import type { ReactNode } from 'react';
-import { Icon, Button } from 'dxp-ui';
+import { Button, Icon, strOrEmpty as str } from 'dxp-ui';
 import { computeBillingSummary, type Customer360Data } from '../../../engines/customer360Engine';
 import { groupServicesByCategory, isActiveService, type CustomerService } from '../../../engines/customerServicesEngine';
 import { connectionTag } from '../../../lib/connectionType';
@@ -20,7 +20,6 @@ import type { Tone } from './c360KitModel';
 import { RevealValue } from '../fieldAccess';
 import { useFieldAccess } from '../fieldAccessContext';
 import { Dv } from '../demoValues';
-import { strOrEmpty as str } from '../../../lib/values';
 import { formatQar, formatQarAny } from '../../../lib/format';
 
 import { blacklistReasonText } from '../../../engines/blacklistReasons';

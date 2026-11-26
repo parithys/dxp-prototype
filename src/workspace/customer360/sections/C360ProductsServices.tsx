@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { useCanStartNewConnection, useStartNewConnection } from '../useStartNewConnection';
 import { RevealValue } from '../fieldAccess';
 import { useFieldAccess } from '../fieldAccessContext';
-import { Badge, Icon, Card, Button } from 'dxp-ui';
+import { Badge, Button, Card, Icon, num, str } from 'dxp-ui';
 import { UssdPushPreferenceEdit } from './UssdPushPreferenceEdit';
 import type { Customer360Data } from '../../../engines/customer360Engine';
 import { isActiveService } from '../../../engines/customerServicesEngine';
@@ -19,7 +19,6 @@ import { FamilyPackagePanel } from './FamilyPackagePanel';
 import { Dv } from '../demoValues';
 import { ConnectionTypeTag } from '../../../components/primitives/ConnectionTypeTag';
 import { connectionTag } from '../../../lib/connectionType';
-import { str, num } from '../../../lib/values';
 
 const dash = (v: ReactNode | undefined | null): ReactNode => (v === undefined || v === null || v === '' ? '-' : v);
 

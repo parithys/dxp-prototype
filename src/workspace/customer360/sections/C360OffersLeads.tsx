@@ -1,4 +1,4 @@
-import { Button, Icon } from 'dxp-ui';
+import { Button, Icon, str } from 'dxp-ui';
 import { useState } from 'react';
 import { useNavigate } from '../../../lib/router';
 import type { Customer360Data } from '../../../engines/customer360Engine';
@@ -6,7 +6,6 @@ import type { CustomerService } from '../../../engines/customerServicesEngine';
 import { ActionButton, GridTable, IconTile, KpiGrid, KpiTile, Panel, Pill, StatusPill, TabPage, type GridCol } from './C360Kit';
 import { IC, fmtDate, qar, type Tone } from './c360KitModel';
 import { Dv } from '../demoValues';
-import { str } from '../../../lib/values';
 
 type Rec = Record<string, unknown>;
 const arr = (v: unknown): Rec[] => (Array.isArray(v) ? (v as Rec[]) : []);

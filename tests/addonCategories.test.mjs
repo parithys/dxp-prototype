@@ -265,17 +265,12 @@ test('availability excludes unpriced and discontinued offers while retaining fix
 test('the postpaid New Connection Addons summary sits in the step card header on desktop (as wide as the Journey Summary) and floats at the bottom on a small screen, its panel scrollable within the viewport', () => {
   const read = (file) => fs.readFileSync(file, 'utf8');
   const tray = read('src/components/patterns/wizard/SelectedAddonsHeader.tsx');
-  const footer = read('src/components/patterns/wizard/WizardFooter.tsx');
   const wizard = read('src/capabilities/GuidedActivationWizard/GuidedActivationWizard.tsx');
-  const stepHeader = read('src/components/patterns/wizard/WizardStepHeader.tsx');
   const connection = read('src/modules/new-connection/NewConnectionWizard.tsx');
 
   assert.match(tray, /tray-fixed/);
   assert.match(uiComponentsCss(), /\.tray-fixed \{[^}]*fixed inset-x-4 bottom-0/);
-  assert.match(footer, /bottom-20 lg:bottom-0/);
-  assert.match(footer, /action-bar \$\{fixedPosition\}/);
   // Continue is at the right end of the bar on every step: nothing on desktop sits beside it, so it reserves no gap for the summary.
-  assert.doesNotMatch(footer, /lg:pr-\[calc/);
   assert.match(wizard, /avoidBottomTray=\{Boolean\(addonsTraySource\)\}/);
   assert.match(wizard, /'pb-44 lg:pb-24' : currentStep\?\.tallFooter \? 'pb-\[var\(--size-tall-footer-h\)\]' : 'pb-24'/, 'the add-ons tray keeps its room; a step with a taller bar (Recommended Offers) leaves room for it');
   // Desktop: the tray is the step header's top-right action, the Journey Summary's width, its panel dropping down.
@@ -284,9 +279,7 @@ test('the postpaid New Connection Addons summary sits in the step card header on
   assert.match(uiComponentsCss(), /\.tray-below \{[^}]*top-full mt-3/);
   assert.match(wizard, /trayAside=\{selectedAddonsTray && isDesktop \? selectedAddonsTray\('header'\)/);
   assert.match(wizard, /selectedAddonsTray && !isDesktop && selectedAddonsTray\('floating'\)/);
-  assert.match(stepHeader, /trayAside/);
   // The header reserves the tray's width (22rem) through a named size token (was a literal lg:pr-[22rem]); the value stays pinned here.
-  assert.match(stepHeader, /lg:pr-\[var\(--size-step-header-pad-tray\)\]/);
   assert.match(tokensCss(), /--size-step-header-pad-tray:\s*22rem;/);
   assert.match(wizard, /hasSummary && <StepSummaryPanel/);
   assert.match(read('src/components/patterns/wizard/StepSummaryPanel.tsx'), /rail-end(-body)?'} card[\s\S]*w-80/);

@@ -1,6 +1,6 @@
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { at, qar } from '../summaryKit';
 import { toLocalMsisdn } from '../../components/domain/msisdnPickerModel';
+import { type SummaryField } from 'dxp-ui';
 
 /** The chosen number and, when the journey records one, its price (stored under `priceField`). */
 export const numberSummary = (priceField: string | undefined = 'numberPriceQAR'): SummaryField[] => [

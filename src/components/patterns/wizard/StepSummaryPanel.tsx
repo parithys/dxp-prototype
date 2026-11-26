@@ -2,15 +2,11 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { formatDate } from '../../../lib/format';
 import { summaryPanelActions } from '../../../stores/summaryPanelSlice';
-import { Icon, PanelIcon, Tooltip } from 'dxp-ui';
-import { StepSummarySection } from './StepSummarySection';
-import { SummaryFieldRow } from './SummaryFieldRow';
-import { formatSummaryValue } from './stepSummary';
+import { formatSummaryValue, Icon, PanelIcon, StepSummarySection, type SummaryField, SummaryFieldRow, type SummaryLabelSource, Tooltip, type WizardStep } from 'dxp-ui';
 import { stepIcon } from '../../../assets/icons/stepIcons';
-import type { SummaryField, SummaryLabelSource } from './stepSummary';
-import type { WizardStep } from './guidedWizardTypes';
 import { useAction, useAppSelector } from '../../../stores/hooks';
 import { listEntities } from '../../../services/entityOps';
+import type { EntityKind } from '../../../engines/mockDataEngine';
 
 export interface CompletedSummaryStep {
   index: number;
@@ -32,7 +28,7 @@ function useSummaryLabels(fields: SummaryField[]) {
   useEffect(() => {
     let cancelled = false;
     for (const s of sources) {
-      void listEntities<Record<string, unknown>>(s.kind).then((rows) => {
+      void listEntities<Record<string, unknown>>(s.kind as EntityKind).then((rows) => {
         if (cancelled) return;
         const map: Record<string, string> = {};
         for (const r of rows) map[String(r[s.idField])] = String(r[s.labelField] ?? r[s.idField]);

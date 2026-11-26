@@ -1,5 +1,4 @@
-import { ChoiceCards } from 'dxp-ui';
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
+import { ChoiceCards, type WizardStep } from 'dxp-ui';
 import { HOME_PRODUCTS } from '../products';
 import type { HomeProduct } from '../products';
 import { HOME_PRODUCT_ICON } from './homeProductIcon';

@@ -1,6 +1,4 @@
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
 import * as sums from '../../../components/patterns/wizard/commonSummaries';
-import { attachSummaries } from '../../../components/patterns/wizard/stepSummary';
 import { billingStep, cafSignatureStep, checkoutSummaryStep, paymentStep, prepaidCheckoutStep, planSelectionStep, postpaidAddonsStep, postpaidPlanStep, prepaidAddonsStep, serviceAddressStep, simSerialStep } from '../../../capabilities';
 import type { PostpaidStepContext } from '../../new-connection/postpaidSteps';
 import { mnpPlanTypeStep } from '../../new-connection/steps/MnpPlanTypeStep';
@@ -19,6 +17,7 @@ import type { DonorDetailsValue } from '../../../components/patterns/donorModel'
 import { DonorAttachmentStep } from '../../../components/patterns/DonorAttachmentStep';
 import { mnpFormSigned } from '../../../components/patterns/donorModel';
 import type { DonorAttachmentValue } from '../../../components/patterns/donorModel';
+import { attachSummaries, type WizardStep } from 'dxp-ui';
 
 // The MNP port-in steps, after Customer Verification and Product Selection (the first two steps of New Connection, which
 // MNP shares with the other products; the Postpaid/Prepaid choice is made on the product step and kept as `mnpType`).

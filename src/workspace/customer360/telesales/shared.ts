@@ -1,7 +1,7 @@
 import { type Ctx } from './TelesalesOverview';
 import { dateTime } from './telesalesOverviewModel';
-import { strOrEmpty as str } from '../../../lib/values';
 import { formatQarAny } from '../../../lib/format';
+import { strOrEmpty as str } from 'dxp-ui';
 
 export type Rec = Record<string, unknown>;
 

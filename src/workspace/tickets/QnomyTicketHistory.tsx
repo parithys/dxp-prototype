@@ -4,8 +4,7 @@ import { RestrictedRowsNotice } from '../../components/patterns/RestrictedRowsNo
 import { useMemo, useState } from 'react';
 
 import { mobileMatches, purposeOfVisit } from '../../engines/qnomyQueueEngine';
-import { DataTable, Badge, ErrorBanner, TabStrip, type Column } from 'dxp-ui';
-import { PageHeader } from '../../components/patterns/PageHeader';
+import { Badge, type Column, DataTable, ErrorBanner, PageHeader, TabStrip } from 'dxp-ui';
 import { useAppSelector } from '../../stores/hooks';
 import { useEntityError, useEntityLoading, useEntityRecords } from '../../services/entityHooks';
 

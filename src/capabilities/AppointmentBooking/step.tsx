@@ -1,8 +1,8 @@
 import { APPOINTMENT_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { AppointmentBooking } from './AppointmentBooking';
 import { isAppointmentComplete } from '../../components/patterns/appointmentModel';
 import type { AppointmentBookingValue } from '../../components/patterns/appointmentModel';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * Appointment booking, stored under `appointment`; complete once a cluster, date and time slot are chosen and, when the customer asked

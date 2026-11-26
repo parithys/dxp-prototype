@@ -1,9 +1,8 @@
 import { badgeVariantFor } from '../../lib/statusTone';
 import { useNavigate } from '../../lib/router';
 import { useGetLeadsQuery } from '../../services/apiSlice';
-import { Button, DataTable, Badge, ErrorBanner } from 'dxp-ui';
+import { Badge, Button, DataTable, ErrorBanner, PageHeader } from 'dxp-ui';
 import type { Lead } from './types';
-import { PageHeader } from '../../components/patterns/PageHeader';
 
 export type LeadScope = 'my' | 'created' | 'team' | 'all' | 'contact';
 

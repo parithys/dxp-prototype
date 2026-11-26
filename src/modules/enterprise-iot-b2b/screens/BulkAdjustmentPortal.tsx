@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { BulkOperationPortal } from '../../../components/patterns/BulkOperationPortal';
 import type { BulkRow } from '../../../components/patterns/BulkOperationPortal';
 import { notificationActions } from '../../../stores/notificationSlice';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 import { useAction } from '../../../stores/hooks';
 import { useEntityOps } from '../../../services/entityHooks';
+import { PageHeader } from 'dxp-ui';
 
 // SCR-001: Bulk Adjustment Portal (DXP, Target State) - UJ-001 "Bulk Adjustment
 // Submission (Target State)," high confidence: agent uses a bulk adjustment

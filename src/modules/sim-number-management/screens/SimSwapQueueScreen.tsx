@@ -1,11 +1,9 @@
-import { EntityMissing } from '../../../components/patterns/EntityMissing';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from '../../../lib/router';
-import { DataTable, Badge, Button, ErrorBanner, Select, Textarea } from 'dxp-ui';
+import { Badge, Button, DataTable, EntityMissing, ErrorBanner, PageHeader, Select, Textarea } from 'dxp-ui';
 import { Drawer } from '../../../capabilities';
 import { useSubmitGuard } from '../../../hooks/useSubmit';
 import { notificationActions } from '../../../stores/notificationSlice';
-import { PageHeader } from '../../../components/patterns/PageHeader';
 
 import { ORDER_AWAITING_DECISION, approvalBlockMessage, isSimSwapAwaitingDecision, simSwapDecisionAuthority } from '../../../engines/approvalAuthority';
 import { useAction, useAppSelector } from '../../../stores/hooks';

@@ -1,14 +1,13 @@
 import { FilterSelect } from '../sections/C360Kit';
 import { overallCreditLimitOf } from '../creditLimitView';
 import { useState } from 'react';
-import { Icon, Label } from 'dxp-ui';
+import { Icon, Label, strOrEmpty as str } from 'dxp-ui';
 import { buildAssetsFieldResolver } from '../sections/assetsResolvers';
 import { Card, Pill, Ring, type Ctx } from './TelesalesOverview';
 import { dateTime } from './telesalesOverviewModel';
 import { BarChart, Field, PillTabs, SectionHeader, StatStrip, TableCard } from './TelesalesKit';
 import { ICON, yesNo } from './telesalesKitModel';
 import { rowDate, demoOf, arr, type Rec } from './shared';
-import { strOrEmpty as str } from '../../../lib/values';
 import { catalogOf, qar } from './billingShared';
 import { formatQarAny } from '../../../lib/format';
 

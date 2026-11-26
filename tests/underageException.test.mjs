@@ -126,7 +126,8 @@ test('after the Exception Request, Continue is not held for a Special Discount, 
 
 test('View All Journey Documents lists an uploaded document under Additional Documents, counted and openable', async () => {
   const { AdditionalDocumentsUpload } = await load('/src/components/domain/AdditionalDocumentsUpload.tsx');
-  const { rememberDocumentFile } = await load('/src/lib/documentFileStore.ts');
+  // The instance the component itself imports (the package is loaded natively, not through the Vite loader).
+  const { rememberDocumentFile } = await import('dxp-ui');
   rememberDocumentFile('d1', { dataUrl: 'data:application/pdf;base64,AA==', fileName: 'order.pdf' });
   const docs = [{ id: 'd1', label: 'Court Type Order', fileName: 'order.pdf', sizeBytes: 10, requirementId: 'court-type-order' }];
   const out = html(h(AdditionalDocumentsUpload, { documents: docs, onChange() {}, journeyDocuments: [{ id: 'id-front', label: 'QID Document (Front)', source: 'Customer Verification · Scanned', fileName: 'f.png' }] }));

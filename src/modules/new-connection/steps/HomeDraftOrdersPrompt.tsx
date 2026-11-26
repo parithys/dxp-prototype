@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Button, Badge, Modal, FILE } from 'dxp-ui';
+import { Badge, Button, FILE, Modal, type WizardStep } from 'dxp-ui';
 import { CARD_IDLE, CARD_SELECTED, SelectedTick } from '../../../components/primitives/offerCardParts';
-import type { WizardStep } from '../../../components/patterns/wizard/guidedWizardTypes';
 import { workflowActions } from '../../../stores/workflowSlice';
 import { notificationActions } from '../../../stores/notificationSlice';
 import { store } from '../../../stores/store';

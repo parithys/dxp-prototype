@@ -1,4 +1,3 @@
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import type { CrossSalesValue } from '../../capabilities';
 import type { CustomerBenefit } from '../../engines/customerBenefitEngine';
 import {
@@ -28,6 +27,7 @@ import { FamilyPlanApplier } from '../../components/patterns/FamilyPackageNotice
 import type { PostpaidPlan } from '../../components/patterns/postpaidPlanModel';
 import { linesOfCustomer } from '../../engines/familyPackage';
 import { FamilyPackageActiveGate } from './FamilyPackageActiveGate';
+import { type WizardStep } from 'dxp-ui';
 
 /** What the postpaid steps need from the journey: the plan catalogue and the customer's benefits. */
 export interface PostpaidStepContext {

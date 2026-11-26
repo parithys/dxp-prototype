@@ -1,17 +1,10 @@
-import { IconButton, Button, Card, Icon, SCAN_CORNERS, TRASH, detectDeviceType } from 'dxp-ui';
+import { Button, Card, detectDeviceType, DocumentFileMeta, FileImagePreview, fileTypeOfMime, forgetDocumentFile, Icon, IconButton, pdfPageCountOfFile, readFileAsDataUrl, rememberDocumentFile, RemoveDocumentDialog, SCAN_CORNERS, scannedFileName, TRASH, useDocumentScan } from 'dxp-ui';
 import { useEffect, useRef, useState } from 'react';
 import { CustomerIdentification } from '../CustomerIdentification/CustomerIdentification';
 import { AdditionalDocumentsUpload, DocumentCaptureActions, UPLOAD_RULES, uploadFileProblem } from '../DocumentUpload';
 import type { AdditionalDocument } from '../DocumentUpload';
 import { useDemoReaderCustomer } from '../ActualUser/useDemoReaderCustomer';
-import { fileTypeOfMime, scannedFileName } from '../../lib/documentScan';
-import { useDocumentScan } from '../../components/domain/useDocumentScan';
-import { RemoveDocumentDialog } from '../../components/domain/RemoveDocumentDialog';
-import { FileImagePreview } from '../../components/domain/FileImagePreview';
-import { forgetDocumentFile, readFileAsDataUrl, rememberDocumentFile } from '../../lib/documentFileStore';
 import { fileSizeLabel } from '../../lib/format';
-import { pdfPageCountOfFile } from '../../lib/pdfPageCount';
-import { DocumentFileMeta } from '../../components/domain/DocumentFileMeta';
 import { idTypesFor } from '../../data/idTypes';
 import { AUTHORIZATION_DOCUMENT_TYPES, MANDATORY_AUTHORIZATION_DOCUMENT, DEMO_AUTHORIZED_PERSON_IDS, representativeProblem } from './representative';
 import { listEntities } from '../../services/entityOps';

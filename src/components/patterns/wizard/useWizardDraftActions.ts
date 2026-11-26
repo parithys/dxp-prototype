@@ -5,12 +5,12 @@ import { notificationActions } from '../../../stores/notificationSlice';
 
 import { logActivity } from '../../../engines/activityEngine';
 import { customerContextActions } from '../../../stores/customerContextSlice';
-import type { WizardStep } from './guidedWizardTypes';
 import { newTaskId } from '../../../lib/taskId';
 import { store } from '../../../stores/store';
 import { currentAgentId } from '../../../stores/currentAgent';
 import { useAction } from '../../../stores/hooks';
 import { entityOps, listEntities } from '../../../services/entityOps';
+import { type WizardStep } from 'dxp-ui';
 
 // Draft orders and their tasks are written through the entity slice, so the lists the dashboard, task list and inbox have cached see them (writing the
 // engine directly left those lists stale until a reload).

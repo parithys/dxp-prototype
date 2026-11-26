@@ -1,9 +1,8 @@
-import { IconButton, Button, Input, Drawer, CloseButton, Icon, INFO, TRASH } from 'dxp-ui';
+import { Button, CloseButton, Drawer, forgetDocumentFile, Icon, IconButton, INFO, Input, readFileAsDataUrl, rememberDocumentFile, TRASH } from 'dxp-ui';
 import { useState } from 'react';
 import { chargeAfterWaiverQar, waivedQar, waiverAmountProblem, type NumberWaiver } from '../../engines/numberWaiver';
 import { formatQar } from '../../engines/postpaidPricing';
 import { DocumentCaptureActions, UPLOAD_RULES, uploadFileProblem, type AdditionalDocument } from '../DocumentUpload';
-import { forgetDocumentFile, readFileAsDataUrl, rememberDocumentFile } from '../../lib/documentFileStore';
 import { formatBytes } from '../../lib/format';
 
 /**

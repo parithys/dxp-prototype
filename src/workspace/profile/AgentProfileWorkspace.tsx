@@ -8,8 +8,7 @@ import { passwordPolicyError } from '../../auth/passwordPolicy';
 import { downloadCsv } from '../../engines/csvExport';
 import { isInternalAgentPersona } from '../../engines/agentPrivilegeEngine';
 import { grantedFeaturesFor } from '../../engines/personaEngine';
-import { Input, Button, Badge, Select, Card } from 'dxp-ui';
-import { PageHeader } from '../../components/patterns/PageHeader';
+import { Badge, Button, Card, Input, PageHeader, Select } from 'dxp-ui';
 import { useAction, useAppSelector } from '../../stores/hooks';
 import { useEntityRecords } from '../../services/entityHooks';
 

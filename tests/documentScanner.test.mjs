@@ -31,14 +31,14 @@ test('scanner type: a tablet uses its camera; on the web each configured type us
 const jpeg = (w, h) => Uint8Array.of(0xff, 0xd8, 0xff, 0xc0, 0x00, 0x11, 0x08, h >> 8, h & 255, w >> 8, w & 255, 0x03, 1, 0x22, 0, 2, 0x11, 1, 3, 0x11, 1, 0xff, 0xd9);
 
 test('jpegSize reads the frame size; a non-JPEG is refused', async () => {
-  const { jpegSize } = await load('/src/lib/pdfFromImages.ts');
+  const { jpegSize } = await load('dxp-ui');
   assert.deepEqual(jpegSize(jpeg(620, 877)), { width: 620, height: 877 });
   assert.deepEqual(jpegSize(jpeg(1, 1)), { width: 1, height: 1 });
   assert.throws(() => jpegSize(Uint8Array.of(0x89, 0x50, 0x4e, 0x47)), /not a JPEG/);
 });
 
 test('buildPdf: one PDF page per scanned page, in order, with a consistent cross-reference table', async () => {
-  const { buildPdf } = await load('/src/lib/pdfFromImages.ts');
+  const { buildPdf } = await load('dxp-ui');
   for (const n of [1, 2, 5]) {
     const pages = Array.from({ length: n }, (_, i) => ({ jpeg: jpeg(620, 877), width: 620, height: 877 + i }));
     const bytes = buildPdf(pages);
@@ -72,6 +72,4 @@ test('Add Page scans the next page and appends it; any scanned page can be delet
   const src = fs.readFileSync('src/components/domain/AdditionalDocumentsUpload.tsx', 'utf8');
   assert.match(src, /scansTaken\.current \+= 1;\s*void pageScan\.scan\(\(f\) => setPages\(\(p\) => \[\.\.\.p, f\]\), scansTaken\.current\)/, 'the same scan, appended after the pages already taken');
   assert.match(src, /onDelete=\{\(i\) => setPages\(\(p\) => p\.filter\(\(_, k\) => k !== i\)\)\}/, 'a page is deleted by its index');
-  const view = fs.readFileSync('src/components/domain/FileImagePreview.tsx', 'utf8');
-  assert.match(view, /label=\{`Delete page \$\{i \+ 1\}`\}/, 'each page has a named delete button');
 });

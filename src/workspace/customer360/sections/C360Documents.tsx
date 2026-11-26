@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { TabStrip, Icon } from 'dxp-ui';
-import { maskAllButLast4 } from '../../../components/patterns/wizard/stepSummary';
+import { Icon, maskAllButLast4, TabStrip } from 'dxp-ui';
 import type { Customer360Data } from '../../../engines/customer360Engine';
 import type { CustomerService } from '../../../engines/customerServicesEngine';
 import { customerDocumentRows, filterDocuments, type CustomerDocumentRow, type DocumentFilter } from '../../../engines/customerDocuments';

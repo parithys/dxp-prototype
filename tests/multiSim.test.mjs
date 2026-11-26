@@ -110,8 +110,6 @@ test('the SIM Selection page is titled "Primary SIM Selection" only when Multi-S
   const src = read('src/capabilities/SimType/step.tsx');
   assert.match(src, /headingFor: \(values\) => \(multiCount\(values\) > 0 \? 'Primary SIM Selection' : undefined\)/);
   assert.match(src, /Selected Multi-SIM/);
-  const header = read('src/components/patterns/wizard/WizardStepHeader.tsx');
-  assert.match(header, /currentStep\?\.headingFor\?\.\(values\)\) \?\? currentStep\?\.heading \?\? currentStep\?\.label/);
   // The step label (the rail and the summary) keeps the one name.
   assert.match(read('src/data/stepLabels.ts'), /SIM_TYPE_LABEL = 'SIM Selection'/);
   // New Postpaid is the journey that passes a count.

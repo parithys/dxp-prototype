@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { CAF_SIGNATURE_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { CafSignature } from './CafSignature';
 import { cafSummary } from './summary';
 import type { TncLegalFacts } from '../../components/patterns/checkoutSummaryModel';
@@ -13,6 +12,7 @@ import { paperCopiesOf, type PaperCopy, consolidatedDocuments, documentTypeOptio
 import { IPAY_ACTIVATION_DEFAULT, IPAY_TERMS_SECTIONS, PREPAID_TERMS_SECTIONS } from '../../data/prepaidActivation';
 import { store } from '../../stores/store';
 import { representativeName } from '../CustomerQualification/representative';
+import { type WizardStep } from 'dxp-ui';
 
 /** iPAY Activation as the agent left it, Yes until changed. */
 export const ipayOn = (values: Record<string, unknown>): boolean => (values.ipayActivation === undefined ? IPAY_ACTIVATION_DEFAULT : values.ipayActivation === true);

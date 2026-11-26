@@ -1,4 +1,4 @@
-import { IconButton, Button, Icon, Spinner, SCAN_CORNERS, TRASH, Card } from 'dxp-ui';
+import { Button, Card, Icon, IconButton, SCAN_CORNERS, ScanFailureNotice, Spinner, TRASH, useConfirmedRemoval } from 'dxp-ui';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { DemoScanVariantContext } from './demoScanVariant';
 import { SCAN_DOCUMENT_TITLE } from './scanDocumentLabels';
@@ -8,9 +8,7 @@ import { SHOW_DEMO_CONTENT, SYNTHETIC_CLASS } from '../../data/synthetic/synthet
 import { SCAN_DURATION_MS } from './qidImageUploadModel';
 import type { QidImageUploadProps } from './qidImageUploadModel';
 import { PassportScanSections } from './PassportScanSections';
-import { ScanFailureNotice } from './ScanFailureNotice';
 import { IdFileUpload } from './IdFileUpload';
-import { useConfirmedRemoval } from './useConfirmedRemoval';
 import { applyIdUpload, missingUploadSide, removeIdUpload, removeIdUploadAt, swapUploadedSides, uploadedSidesInverted } from './idUploadModel';
 
 

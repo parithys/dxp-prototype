@@ -1,10 +1,10 @@
 import { LINE_SELECTION_LABEL } from '../../data/stepLabels';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
 import { lineIneligibility } from '../../components/patterns/lineSelectionModel';
 import type { CustomerLine, LineType } from '../../components/patterns/lineSelectionModel';
 import { LineSelection } from './LineSelection';
 import { at } from '../summaryKit';
+import { type WizardStep } from 'dxp-ui';
 
 /**
  * Line selection, stored under `line`: the customer's postpaid and / or prepaid lines, valid once a line that can be changed is

@@ -1,5 +1,4 @@
-import { SignatureCapture } from './SignatureCapture';
-import { Badge, Card } from 'dxp-ui';
+import { Badge, Card, SignatureCapture } from 'dxp-ui';
 
 export interface SimSwapFormValue {
   signatureDataUrl?: string;

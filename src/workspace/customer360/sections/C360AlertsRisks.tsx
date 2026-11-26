@@ -7,9 +7,9 @@ import type { CustomerService } from '../../../engines/customerServicesEngine';
 import { DetailRows, FilterSelect, GridTable, IconTile, LinkAction, Panel, Pill, StatusPill, TabPage, ViewPill } from './C360Kit';
 import { IC, fmtDate, fmtDateTime, qar, usePaging, type Tone } from './c360KitModel';
 import { Dv } from '../demoValues';
-import { str } from '../../../lib/values';
 import { useEntityRecords } from '../../../services/entityHooks';
 import { blacklistReasonLabel, blacklistReasonsOf } from '../../../engines/blacklistReasons';
+import { str } from 'dxp-ui';
 
 const CLOSED_STAGE = /^(none|no dunning|current)$/i;
 const PAGE_SIZE = 10;

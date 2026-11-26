@@ -1,4 +1,4 @@
-import { SearchField, Icon } from 'dxp-ui';
+import { Icon, SearchField, strOrEmpty as str } from 'dxp-ui';
 import { FilterSelect } from '../sections/C360Kit';
 import { useState } from 'react';
 import { Card, KV, Pill, type Ctx } from './TelesalesOverview';
@@ -6,7 +6,6 @@ import { dateTime } from './telesalesOverviewModel';
 import { ActionList, HeaderLink, SectionHeader, StatStrip, Table, TableCard, WideBlock } from './TelesalesKit';
 import { ICON, pillFor } from './telesalesKitModel';
 import { rowDate, demoOf, arr } from './shared';
-import { strOrEmpty as str } from '../../../lib/values';
 
 // ============================================================================ Leads
 export function LeadsSection({ ctx }: { ctx: Ctx }) {

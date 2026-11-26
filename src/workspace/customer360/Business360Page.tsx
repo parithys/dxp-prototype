@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { EmptyState, Badge, Button, DataTable, type Column, Icon, SearchField, Select, BUILDING, Card } from 'dxp-ui';
+import { Badge, BUILDING, Button, Card, type Column, DataTable, EmptyState, Icon, PageHeader, SearchField, Select } from 'dxp-ui';
 import { useNavigate, useParams } from '../../lib/router';
 import { getBusinessAccount, type BusinessAccount, type LinkedUser } from '../../engines/businessAccountEngine';
 import { BILLING_LABEL, SEGMENT_LABEL, type LinkedUserSegment } from '../../engines/businessSegment';
-import { PageHeader } from '../../components/patterns/PageHeader';
 
 
 export function SegmentBadge({ segment }: { segment: LinkedUserSegment }) {

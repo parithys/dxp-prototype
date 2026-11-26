@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useRestrictedCustomers } from '../../hooks/useRestrictedCustomers';
-import { Tabs, SearchField } from 'dxp-ui';
+import { PageHeader, SearchField, Tabs } from 'dxp-ui';
 import { MySalesOrders } from '../../modules/order-management/MySalesOrders';
 import { OrderApprovalQueue } from '../../modules/order-management/OrderApprovalQueue';
-import { PageHeader } from '../../components/patterns/PageHeader';
 import { FilterSelect } from '../customer360/sections/C360Kit';
 
 import { holdsApproveGrant, ordersAwaitingDecisionBy } from '../../engines/approvalAuthority';

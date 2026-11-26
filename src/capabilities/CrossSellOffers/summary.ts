@@ -1,5 +1,5 @@
-import type { SummaryField } from '../../components/patterns/wizard/stepSummary';
 import { at } from '../summaryKit';
+import { type SummaryField } from 'dxp-ui';
 
 export const crossSalesSummary: SummaryField[] = [
   {

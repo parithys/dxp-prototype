@@ -33,7 +33,7 @@ const activeKeys = (values) => conn.buildConnectionSteps(ctx).filter((s) => !s.s
 // agent), and Back mirrors it - it never lands the agent on a page Continue skipped. Every product, with and without a billing profile.
 const PRODUCT_CASES = [{}, { product: 'postpaid' }, { product: 'prepaid' }, { product: 'fixed-line' }, { product: 'mnp', mnpType: 'postpaid' }, { product: 'mnp', mnpType: 'prepaid' }];
 test('Continue from Customer Verification lands on Recommended Offers for every product, whatever the customer', async () => {
-  const nav = await load('/src/components/patterns/wizard/wizardNavigation.ts');
+  const nav = await import('dxp-ui');
   for (const customer of [{}, { contact: { moiResult: { isNewCustomer: true, createdByAgent: true } } }, { contact: { moiResult: { isNewCustomer: false } } }]) {
     for (const p of PRODUCT_CASES) {
       const values = { ...customer, ...p };
@@ -47,7 +47,7 @@ test('Continue from Customer Verification lands on Recommended Offers for every 
 });
 
 test('Continue never lands on a step that is passed over, and Back never lands on one except to reach the first step', async () => {
-  const nav = await load('/src/components/patterns/wizard/wizardNavigation.ts');
+  const nav = await import('dxp-ui');
   for (const values of PRODUCT_CASES) {
     const steps = conn.buildConnectionSteps(ctx).filter((s) => !s.skip?.(values));
     for (let i = 0; i < steps.length - 1; i++) {
@@ -375,7 +375,6 @@ test('every journey floats its Back and Continue footer: it is the wizard defaul
   const router = routerSource();
   const connectionWizard = fs.readFileSync('src/modules/new-connection/NewConnectionWizard.tsx', 'utf8');
   const guidedWizard = fs.readFileSync('src/capabilities/GuidedActivationWizard/GuidedActivationWizard.tsx', 'utf8');
-  const footer = fs.readFileSync('src/components/patterns/wizard/WizardFooter.tsx', 'utf8');
   const previews = fs.readFileSync('src/capabilities/previewDemos.tsx', 'utf8');
 
   assert.match(guidedWizard, /fixedFooter = true/);
@@ -384,9 +383,7 @@ test('every journey floats its Back and Continue footer: it is the wizard defaul
   assert.doesNotMatch(connectionWizard, /fixedFooter = (true|false)/, 'the wizard default is the only default');
   assert.match(guidedWizard, /fixedToViewport=\{fixedFooter\}/);
   assert.doesNotMatch(guidedWizard, /hasSummaryAside/);
-  assert.match(footer, /action-bar \$\{fixedPosition\}/);
   assert.match(uiComponentsCss(), /\.action-bar \{[^}]*fixed inset-x-0 z-\[var\(--z-sticky-raised\)\] border-t/);
-  assert.match(footer, /row-between w-full/);
   assert.match(guidedWizard, /fixedFooter \?[\s\S]*'pb-24'/);
   // The capability library's framed previews stay inline: a viewport-fixed bar would escape the frame.
   assert.equal((previews.match(/fixedFooter=\{false\}/g) ?? []).length, 2);
@@ -403,4 +400,10 @@ test('New Home Connection: the address is given first, so Product Selection judg
   const addr = conn.buildConnectionSteps({ ...ctx, journey: 'home' }).find((s) => s.key === 'address');
   assert.equal(addr.isValid({ address: { zone: '55', streetNo: '12', buildingNo: '34' } }), true);
   assert.equal(addr.isValid({ address: { zone: '55', streetNo: '12' } }), false, 'zone, street and building are mandatory');
+});
+
+test('an old Check RFS result left in the New Connection draft is dropped when the page is opened any way but from Check RFS, so a New Home offer goes to Check RFS', async () => {
+  const fs = await import('node:fs');
+  const wiz = fs.readFileSync('src/modules/new-connection/NewConnectionWizard.tsx', 'utf8');
+  assert.match(wiz, /if \(st\?\.startFresh \|\| st\?\.startValues \|\| st\?\.resumeOrderId\) return;[\s\S]*unset: \['pendingHome'\]/);
 });

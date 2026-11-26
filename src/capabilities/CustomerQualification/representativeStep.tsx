@@ -1,7 +1,7 @@
 import { ExistingConnectionsSummary } from '../EligibilityGate/ExistingConnectionsSummary';
 import { existingConnectionsSummary } from '../EligibilityGate/existingConnectionsSummaryModel';
 import { CustomerIdentification } from '../CustomerIdentification/CustomerIdentification';
-import { StatusSlot, StatusSlotProvider } from 'dxp-ui';
+import { StatusSlot, StatusSlotProvider, type WizardStep } from 'dxp-ui';
 import { contactSummary } from './summary';
 import { contactIdentificationProps } from './contactIdentity';
 import { isIdTypeSupported } from '../../data/idTypes';
@@ -19,7 +19,6 @@ import type { BillingAccountValue } from '../../components/patterns/billingAccou
 import { EligibilityGateStep } from '../EligibilityGate/EligibilityGateStep';
 import { accountTypeForJourney } from '../../engines/creditLimit';
 import type { EligibilityResult } from '../../components/domain/eligibilityTypes';
-import type { WizardStep } from '../../components/patterns/wizard/guidedWizardTypes';
 import { LAUNCH_CUSTOMER_KEY } from '../../components/patterns/wizard/useJourneyStartResume';
 import { CustomerStatusBanner } from './JourneyBanners';
 import { EligibilityOutcomePanel, OutcomeActions } from '../EligibilityGate/EligibilityOutcomes';

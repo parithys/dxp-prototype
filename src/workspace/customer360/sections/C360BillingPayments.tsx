@@ -1,4 +1,4 @@
-import { Button, Icon } from 'dxp-ui';
+import { Button, Icon, str } from 'dxp-ui';
 import { useMemo, useState } from 'react';
 import { Link, useLocation } from '../../../lib/router';
 import { isUnpaidInvoice, unpaidInvoiceTotal } from '../../../engines/billingBalance';
@@ -8,7 +8,6 @@ import type { CustomerService } from '../../../engines/customerServicesEngine';
 import { GridTable, IconTile, KpiGrid, KpiTile, Panel, Pill, StatusPill, TabPage, type GridCol } from './C360Kit';
 import { IC, fmtDate, qar } from './c360KitModel';
 import { Dv } from '../demoValues';
-import { str } from '../../../lib/values';
 import { formatDate } from '../../../lib/format';
 
 type Rec = Record<string, unknown>;

@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { workflowActions, selectDraft } from '../../../stores/workflowSlice';
 import { notificationActions } from '../../../stores/notificationSlice';
-import type { WizardStep } from './guidedWizardTypes';
-import { forwardJumpAllowed, nextStepIndex, previousStepIndex } from './wizardNavigation';
 import { store } from '../../../stores/store';
 import { useAction } from '../../../stores/hooks';
+import { forwardJumpAllowed, nextStepIndex, previousStepIndex, type WizardStep } from 'dxp-ui';
 
 export function useWizardStepNavigation({
   wizardId,

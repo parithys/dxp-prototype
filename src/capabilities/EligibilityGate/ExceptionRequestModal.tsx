@@ -1,7 +1,6 @@
-import { IconButton, TRASH, Button, Drawer } from 'dxp-ui';
+import { Button, Drawer, forgetDocumentFile, IconButton, readFileAsDataUrl, rememberDocumentFile, TRASH } from 'dxp-ui';
 import { useState } from 'react';
 import { DocumentCaptureActions, UPLOAD_RULES, uploadFileProblem, type AdditionalDocument } from '../DocumentUpload';
-import { forgetDocumentFile, readFileAsDataUrl, rememberDocumentFile } from '../../lib/documentFileStore';
 import { formatBytes } from '../../lib/format';
 
 /**

@@ -1,8 +1,7 @@
 
 import { useRestrictedCustomers } from '../../hooks/useRestrictedCustomers';
 import { RestrictedCustomerNotice } from '../../components/patterns/RestrictedCustomerNotice';
-import { EntityMissing } from '../../components/patterns/EntityMissing';
-import { DataTable, NestedTabs, TabStrip, Button, Badge, Icon, Textarea, Checkbox, ALERT_ICON_ALT, DOC, HISTORY_ICON, IMAGE, Card, Label } from 'dxp-ui';
+import { ALERT_ICON_ALT, Badge, Button, Card, Checkbox, DataTable, DOC, EntityMissing, HISTORY_ICON, Icon, IMAGE, Label, NestedTabs, PageHeader, TabStrip, Textarea } from 'dxp-ui';
 import { formatDateTime } from '../../lib/format';
 import { badgeVariantFor } from '../../lib/statusTone';
 import { useEffect, useRef, useState } from 'react';
@@ -12,7 +11,6 @@ import { MissingInformationPanel, type MissingInformationSubmit } from './Missin
 
 import { notificationActions } from '../../stores/notificationSlice';
 import { isVisibleToAgent } from '../../engines/agentTaskEngine';
-import { PageHeader } from '../../components/patterns/PageHeader';
 import { formatQar } from '../../engines/postpaidPricing';
 import { applyCreditLimitChange, creditLimitChangeOf } from '../../workspace/customer360/creditLimitChange';
 import { applyLineChange, lineChangeOf } from '../mobile-service-changes/applyServiceChange';

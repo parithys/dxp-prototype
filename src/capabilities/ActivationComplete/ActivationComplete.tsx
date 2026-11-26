@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { recordOrderCompletion } from '../../engines/orderCompletion';
 import { ActivationCompleteScreen } from '../../components/patterns/ActivationCompleteScreen';
 import type { ActivationCompleteOrder } from '../../components/patterns/ActivationCompleteScreen';
-import { CustomerViewButton } from '../../components/patterns/wizard/CustomerViewButton';
 import { ORDER_SUBMITTED_KEY } from '../../components/patterns/wizard/customerViewPolicy';
 import { useCustomerViewShare } from '../../components/patterns/wizard/useCustomerViewShare';
 import { customerContextActions } from '../../stores/customerContextSlice';
 import { AddConnectionModal } from './AddConnectionModal';
 import { store } from '../../stores/store';
+import { CustomerViewButton } from 'dxp-ui';
 
 /**
  * ACTIVATION COMPLETE - the one application-wide capability for the page that confirms a submitted activation:

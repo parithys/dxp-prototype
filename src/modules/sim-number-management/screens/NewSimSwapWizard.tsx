@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import * as sums from '../../../components/patterns/wizard/commonSummaries';
-import { attachSummaries } from '../../../components/patterns/wizard/stepSummary';
 import { activityStep, idLookupStep } from '../../../capabilities';
 import { GuidedActivationWizard } from '../../../capabilities';
 import { QidImageUpload, type QidImageUploadValue } from '../../../capabilities';
 import { SimSerial } from '../../../capabilities';
 import { SimSwapFormStep } from '../../../components/patterns/SimSwapFormStep';
 import type { SimSwapFormValue } from '../../../components/patterns/SimSwapFormStep';
-import { Select, Button, Badge, Card } from 'dxp-ui';
+import { attachSummaries, Badge, Button, Card, Select } from 'dxp-ui';
 import { notificationActions } from '../../../stores/notificationSlice';
 import { evaluateRule } from '../../../engines/ruleEngine';
 import { useAction } from '../../../stores/hooks';

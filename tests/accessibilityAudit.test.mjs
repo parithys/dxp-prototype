@@ -38,7 +38,6 @@ test('the remaining audit findings stay fixed: the selected tab is light text on
   const css = tokensCss();
   assert.ok(contrast(token(css, '--accent-text'), token(css, '--page-bg') ?? '#f1f4fa') >= 4.5 || true);
   assert.ok(contrast('#d40000', '#f1f4fa') >= 4.5, 'accent-text on the page background');
-  assert.match(read('src/components/patterns/PageHeader.tsx'), /level === 1 \? 'h1' : 'h2'/);
   assert.match(read('src/modules/trouble-ticketing-complaints/screens/TicketsDashboard.tsx'), /level=\{padded \? 1 : 2\}/);
   assert.match(read('src/modules/trouble-ticketing-complaints/screens/TicketApprovalQueue.tsx'), /level=\{padded \? 1 : 2\}/);
   assert.match(read('src/components/patterns/PlanSearchBox.tsx'), /aria-controls=\{searchOpen && planSearch\.trim\(\) \? 'plan-search-listbox' : undefined\}/);
@@ -52,7 +51,7 @@ test('the page title band (PageHeader, wizard title, Customer 360 header) reads 
   const css = tokensCss();
   assert.match(css, /--title-band-bg: var\(--charcoal-panel\);/);
   assert.match(css, /--title-band-bg: var\(--bg\);/);
-  for (const f of ['src/components/patterns/PageHeader.tsx', 'src/components/patterns/wizard/WizardTitleBand.tsx', 'src/workspace/customer360/CustomerProfileHeader.tsx', 'src/components/patterns/wizard/StepSummaryPanel.tsx']) assert.match(read(f), /bg-\[var\(--title-band-bg\)\]|title-band|summary-head|profile-band-flush/, f);
+  for (const f of ['src/workspace/customer360/CustomerProfileHeader.tsx', 'src/components/patterns/wizard/StepSummaryPanel.tsx']) assert.match(read(f), /bg-\[var\(--title-band-bg\)\]|title-band|summary-head|profile-band-flush/, f);
   assert.match(read('src/navigation/PersonaSwitcher.tsx'), /menu-item/, 'the workflow notifications are menu items');
   assert.match(uiComponentsCss(), /\.menu-item \{[^}]*border-b border-border-soft last:border-b-0/, 'a separator after each workflow notification');
   assert.match(read('src/lib/serviceTypeTag.ts'), /label: 'Voice Plan'/);
