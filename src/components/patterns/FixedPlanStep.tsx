@@ -25,9 +25,12 @@ interface FixedPlan {
   disconnectionFeeQAR?: number;
   /** An offer plan (the Offers tab); every other plan is a Standard Plan. */
   offer?: boolean;
+  /** A 5G Home plan's kind, as its record states it: the Standard Plans tab shows one card for each. */
+  fwaType?: 'indoor' | 'outdoor';
 }
 
 const BUNDLE_TITLE = { double: 'Dual Play', triple: 'Triple Play' } as const;
+const FWA_TITLE = { indoor: '5G Indoor', outdoor: '5G Outdoor' } as const;
 
 type PlanTab = 'offers' | 'standard' | 'special';
 const PLAN_TABS: { key: PlanTab; label: string }[] = [
@@ -97,9 +100,11 @@ export function FixedPlanStep({ values, setValue, specialDiscountType }: { value
   const [paging, setPaging] = useState({ tab: activeTab, page: 1 });
   const page = paging.tab === activeTab ? paging.page : 1;
   const setPage = (n: number) => setPaging({ tab: activeTab, page: n });
-  // The Standard Plans tab of a fibre home connection is two cards - Dual Play and Triple Play - each standing for its bundle's lowest-priced plan; a 5G Home list is shown as it is.
+  // The Standard Plans tab of a fibre home connection is two cards - Dual Play and Triple Play - each standing for its bundle's lowest-priced plan; 
   const bundleCards = (['double', 'triple'] as const).flatMap((b) => standard.filter((p) => homePlayOf(p) === b).slice(0, 1));
-  const standardTab = planType === 'Fixed Line Plan' ? bundleCards : standard;
+  // ...and a 5G Home connection's is two cards in the same way - 5G Indoor and 5G Outdoor - each standing for its kind's lowest-priced Standard Plan.
+  const fwaCards = (['indoor', 'outdoor'] as const).flatMap((k) => standard.filter((p) => p.fwaType === k).slice(0, 1));
+  const standardTab = planType === 'Fixed Line Plan' ? bundleCards : fwaCards;
   const paged = activeTab === 'standard' ? standardTab : activeTab === 'special' ? specialPlans : [];
   const shown = activeTab === 'offers' ? offers : paged.slice((page - 1) * STANDARD_PLANS_PAGE_SIZE, page * STANDARD_PLANS_PAGE_SIZE);
   // The plan's source rides with the choice (an Offers-tab plan is pre-bundled), also for a plan an accepted offer already chose.
@@ -159,7 +164,7 @@ export function FixedPlanStep({ values, setValue, specialDiscountType }: { value
                 <ConnectionTypeTag category="GigaHome Fibre" />
               </div>
               <div className="flex-1 space-y-2">
-                <p className="title title-lg leading-snug">{activeTab === 'special' ? specialOfferPlanName(p.name, specialDiscountType) : activeTab === 'standard' && bundle ? BUNDLE_TITLE[bundle] : p.name}</p>
+                <p className="title title-lg leading-snug">{activeTab === 'special' ? specialOfferPlanName(p.name, specialDiscountType) : activeTab === 'standard' && bundle ? BUNDLE_TITLE[bundle] : activeTab === 'standard' && p.fwaType ? FWA_TITLE[p.fwaType] : p.name}</p>
                 {activeTab === 'special' && <p className="caption-secondary line-through">QAR {formatAmount(p.mrcQAR)}</p>}
                 <p className="text-accent pt-1">
                   <span className="text-[length:var(--fs-body)] font-semibold">QAR </span>

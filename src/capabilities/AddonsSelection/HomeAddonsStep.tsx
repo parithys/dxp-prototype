@@ -41,7 +41,8 @@ export function HomeAddonsStep({ planId, addonIds = [], onAddonsChange, addonBil
   const plan = products?.find((p) => p.productId === planId);
   // A Triple Play plan already includes IPTV: its bundles are listed straight away, with no switch. IPTV does not apply to a Dual Play plan: it has no IPTV tab and no IPTV add-on is offered.
   const triple = homePlayOf(plan) === 'triple';
-  const dual = homePlayOf(plan) === 'double';
+  // A plan that does not include IPTV - Dual Play, or a 5G Home (FWA) plan - has no IPTV tab and no IPTV add-on.
+  const dual = homePlayOf(plan) === 'double' || plan?.type === 'FWA 5G Home Plan';
   const needsFlag = triple && (!iptv?.enabled || !iptv.planIncluded);
   useEffect(() => {
     if (needsFlag) onIptvChange?.({ ...iptv, enabled: true, planIncluded: true });

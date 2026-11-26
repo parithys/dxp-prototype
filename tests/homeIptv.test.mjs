@@ -83,7 +83,7 @@ test('the checkout and CAF read a home add-on back with its lock-in; an add-on t
 
 test('a Dual Play plan has no IPTV tab and no IPTV add-on; a Triple Play plan keeps both', () => {
   const step = fs.readFileSync('src/capabilities/AddonsSelection/HomeAddonsStep.tsx', 'utf8');
-  assert.match(step, /const dual = homePlayOf\(plan\) === 'double';/);
+  assert.match(step, /const dual = homePlayOf\(plan\) === 'double' \|\| plan\?\.type === 'FWA 5G Home Plan';/);
   assert.match(step, /homeTabs=\{dual \? HOME_ADDON_TABS\.filter\(\(t\) => t !== 'IPTV'\) : HOME_ADDON_TABS\} hiddenCategories=\{dual \? \['IPTV'\] : undefined\}/);
   const picker = fs.readFileSync('src/capabilities/AddonsSelection/AddonsPicker.tsx', 'utf8');
   assert.match(picker, /filter\(\(a\) => !a\.addonCategory \|\| !hiddenCategories\?\.includes\(a\.addonCategory\)\)/);
